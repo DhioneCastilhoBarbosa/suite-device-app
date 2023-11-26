@@ -1,0 +1,38 @@
+import * as Switch from '@radix-ui/react-switch'
+
+export default function Conector() {
+  return (
+    <div className="flex flex-col items-center bg-white rounded-lg m-1 pt-2 pb-2 pr-3 pl-3">
+      <div className="w-full border-[1px] border-[#336B9E] p-1 rounded-lg">
+        <form>
+          <div className="flex items-center justify-between pr-2 pl-2">
+            <label className=" text-[12px] text-blue-950" htmlFor="airplane-mode">
+              Modo offline
+            </label>
+            <Switch.Root
+              className="w-[49px] h-[22px] bg-gray-200 border-[1px] border-gray-300 rounded-full relative  data-[state=checked]:bg-green-500 outline-none cursor-default"
+              id="airplane-mode"
+            >
+              <Switch.Thumb className="block w-[18px] h-[18px] bg-white rounded-full shadow-[2px_1px_3px] shadow-black transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[26px]" />
+            </Switch.Root>
+          </div>
+        </form>
+      </div>
+      <div className="pt-6">
+        <span className=" text-[#336B9E] text-[13px] font-bold pl-2 pr-2">
+          Selecionar a porta COM:
+        </span>
+        <select className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer">
+          <option value="">COM3</option>
+          <option value="">COM8</option>
+          <option value="">COM12</option>
+          <option value="">COM21</option>
+          <option value="">COM22</option>
+        </select>
+      </div>
+      <button className="bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-zinc-500 cursor-pointer">
+        Desconectado
+      </button>
+    </div>
+  )
+}
