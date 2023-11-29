@@ -1,6 +1,16 @@
 import Conector from './conector/Conector'
+import { Device } from '@renderer/Context/DeviceContext'
 
 export default function Menu() {
+  const { device, setDevice } = Device()
+
+  console.log(device.name)
+
+  function newDevice(device) {
+    console.log(device)
+    setDevice({ name: device })
+  }
+
   return (
     <div className="flex flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 mb-9">
       <div>
@@ -11,13 +21,19 @@ export default function Menu() {
         <div className="flex items-center justify-center pt-4 text-white  font-bold">
           <ul className="  w-full ml-1 mr-3">
             <li className="">
-              <button className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400">
+              <button
+                className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400"
+                onClick={() => newDevice('terminal')}
+              >
                 Terminal-SDI12
               </button>
             </li>
 
             <li>
-              <button className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400">
+              <button
+                className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400"
+                onClick={() => newDevice('linnidb')}
+              >
                 LinniDB-Borbulha
               </button>
             </li>

@@ -6,7 +6,7 @@ export default function Conector() {
       <div className="w-full border-[1px] border-[#336B9E] p-1 rounded-lg">
         <form>
           <div className="flex items-center justify-between pr-2 pl-2">
-            <label className=" text-[12px] text-blue-950" htmlFor="airplane-mode">
+            <label className=" text-[10px] text-blue-950" htmlFor="airplane-mode">
               Modo offline
             </label>
             <Switch.Root
@@ -19,7 +19,7 @@ export default function Conector() {
         </form>
       </div>
       <div className="pt-6">
-        <span className=" text-[#336B9E] text-[13px] font-bold pl-2 pr-2">
+        <span className=" text-[#336B9E] text-[10px] font-bold pl-2 pr-2">
           Selecionar a porta COM:
         </span>
         <select className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer">

@@ -4,9 +4,10 @@ import Main from './components/Main'
 
 function App(): JSX.Element {
   return (
-    <div className="flex-row min-h-screen ">
+    <div className="flex flex-row min-h-screen">
       <Header />
       <Main />
+      <Footer />
     </div>
   )
 }
