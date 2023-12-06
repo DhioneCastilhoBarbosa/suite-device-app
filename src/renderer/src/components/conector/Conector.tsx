@@ -1,6 +1,39 @@
 import * as Switch from '@radix-ui/react-switch'
+import { useState, useEffect } from 'react'
 
-export default function Conector() {
+export default function Conector({ portDevice, isOnline }) {
+  const [availablePorts, setAvailablePorts] = useState<string[]>([])
+  const [valorSelecionado, setValorSelecionado] = useState('')
+
+  const handleChange = (event) => {
+    setValorSelecionado(event.target.value)
+  }
+
+  const handleClick = () => {
+    portDevice(valorSelecionado)
+  }
+
+  const listSerialPorts = async () => {
+    try {
+      const { SerialPort } = window.require('serialport')
+      const ports = await SerialPort.list()
+      const portNames = ports.map((port) => port.path)
+      setAvailablePorts(portNames)
+    } catch (error: any) {
+      console.error('Erro ao listar portas seriais:', error.message)
+    }
+  }
+
+  useEffect(() => {
+    listSerialPorts()
+    const intervalId = setInterval(() => {
+      listSerialPorts()
+      console.log('atualisei as portas')
+    }, 2000)
+
+    return () => clearInterval(intervalId)
+  }, [])
+
   return (
     <div className="flex flex-col items-center bg-white rounded-lg m-1 pt-2 pb-2 pr-3 pl-3">
       <div className="w-full border-[1px] border-[#336B9E] p-1 rounded-lg">
@@ -22,17 +55,34 @@ export default function Conector() {
         <span className=" text-[#336B9E] text-[10px] font-bold pl-2 pr-2">
           Selecionar a porta COM:
         </span>
-        <select className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer">
-          <option value="">COM3</option>
-          <option value="">COM8</option>
-          <option value="">COM12</option>
-          <option value="">COM21</option>
-          <option value="">COM22</option>
+        <select
+          className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer"
+          value={valorSelecionado}
+          onChange={handleChange}
+        >
+          <option value={'Selecione'}>Selecione</option>
+          {availablePorts.map((port, index) => (
+            <option key={index} value={port}>
+              {port}
+            </option>
+          ))}
         </select>
       </div>
-      <button className="bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-zinc-500 cursor-pointer">
-        Desconectado
-      </button>
+      {isOnline ? (
+        <button
+          className="bg-green-500 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-green-400 cursor-pointer"
+          onClick={handleClick}
+        >
+          Conectado
+        </button>
+      ) : (
+        <button
+          className="bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-zinc-500 cursor-pointer"
+          onClick={handleClick}
+        >
+          Desconectado
+        </button>
+      )}
     </div>
   )
 }

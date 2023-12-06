@@ -12,10 +12,14 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: true,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
+
+  mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
