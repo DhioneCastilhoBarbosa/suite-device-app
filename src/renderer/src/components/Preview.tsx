@@ -13,6 +13,6 @@ export default function Preview() {
   }
 
   if (device.name === 'linnidb') {
-    return <LinnimDB />
+    //return <LinnimDB />
   }
 }

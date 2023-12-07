@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 export const DeviceContext = React.createContext({})
 
 export const DeviceProvider = (props: any) => {
-  const [device, setDevice] = useState({ name: 'linnidb' })
+  const [device, setDevice] = useState({ name: 'terminal' })
   const [port, setPort] = useState({ name: 'selecionar' })
   return (
     <DeviceContext.Provider value={{ device, setDevice, port, setPort }}>

@@ -35,12 +35,12 @@ export default function Menu() {
             </li>
 
             <li>
-              <button
+              {/* <button
                 className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400"
                 onClick={() => newDevice('linnidb')}
               >
                 LinniDB-Borbulha
-              </button>
+              </button> */}
             </li>
           </ul>
         </div>
