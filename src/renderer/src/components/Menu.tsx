@@ -2,18 +2,23 @@ import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 
 export default function Menu() {
-  const { device, setDevice, port, setPort }: any = Device()
+  const { device, setDevice, port, setPort, PortOpen, SetPortOpen }: any = Device()
 
-  console.log(device.name)
+  //console.log(device.name)
 
   function newDevice(device) {
-    console.log(device)
+    // console.log(device)
     setDevice({ name: device })
+  }
+
+  function ChangeStatus(status) {
+    SetPortOpen({ state: status })
+    //console.log('Status e : ' + PortOpen.state)
   }
 
   function ConnectToDevice(isdevice) {
     setPort({ name: isdevice })
-    console.log(isdevice)
+    //console.log(isdevice)
   }
 
   return (
@@ -47,7 +52,7 @@ export default function Menu() {
       </div>
 
       <div>
-        <Conector portDevice={ConnectToDevice} isOnline={true} />
+        <Conector portDevice={ConnectToDevice} isOnline={true} PortStatus={ChangeStatus} />
       </div>
     </div>
   )

@@ -1,16 +1,31 @@
 import * as Switch from '@radix-ui/react-switch'
 import { useState, useEffect } from 'react'
+import { Openport, ClosePort } from '../Terminal/Terminal'
 
-export default function Conector({ portDevice, isOnline }) {
+export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
+  const [OffllineMode, setOfflineMode] = useState('off')
   const [valorSelecionado, setValorSelecionado] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
+
+  //const serialManager = new SerialManager()
 
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
   }
 
-  const handleClick = () => {
+  const handleClickConect = () => {
     portDevice(valorSelecionado)
+    setIsConnected(!isConnected)
+    PortStatus(isConnected)
+    Openport({ portName: valorSelecionado, bauld: 1200 })
+  }
+
+  const handleClickDisconect = () => {
+    portDevice(valorSelecionado)
+    setIsConnected(!isConnected)
+    PortStatus(isConnected)
+    ClosePort()
   }
 
   const listSerialPorts = async () => {
@@ -24,8 +39,14 @@ export default function Conector({ portDevice, isOnline }) {
     }
   }
 
+  const handleSwitchOfflineMode = (event) => {
+    setOfflineMode(event.target.checked)
+    console.log(OffllineMode)
+  }
+
   useEffect(() => {
     listSerialPorts()
+
     const intervalId = setInterval(() => {
       listSerialPorts()
       console.log('atualisei as portas')
@@ -33,7 +54,7 @@ export default function Conector({ portDevice, isOnline }) {
 
     return () => clearInterval(intervalId)
   }, [])
-
+  //console.log(OffllineMode)
   return (
     <div className="flex flex-col items-center bg-white rounded-lg m-1 pt-2 pb-2 pr-3 pl-3">
       <div className="w-full border-[1px] border-[#336B9E] p-1 rounded-lg">
@@ -44,7 +65,8 @@ export default function Conector({ portDevice, isOnline }) {
             </label>
             <Switch.Root
               className="w-[49px] h-[22px] bg-gray-200 border-[1px] border-gray-300 rounded-full relative  data-[state=checked]:bg-green-500 outline-none cursor-default"
-              id="airplane-mode"
+              defaultChecked={false}
+              onCheckedChange={(checked: true) => handleSwitchOfflineMode}
             >
               <Switch.Thumb className="block w-[18px] h-[18px] bg-white rounded-full shadow-[2px_1px_3px] shadow-black transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[26px]" />
             </Switch.Root>
@@ -68,19 +90,19 @@ export default function Conector({ portDevice, isOnline }) {
           ))}
         </select>
       </div>
-      {isOnline ? (
+      {isConnected ? (
         <button
           className="bg-green-500 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-green-400 cursor-pointer"
-          onClick={handleClick}
+          onClick={handleClickDisconect}
         >
           Conectado
         </button>
       ) : (
         <button
           className="bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-zinc-500 cursor-pointer"
-          onClick={handleClick}
+          onClick={handleClickConect}
         >
-          Desconectado
+          Conectar
         </button>
       )}
     </div>

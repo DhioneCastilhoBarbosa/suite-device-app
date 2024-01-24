@@ -3,23 +3,66 @@ import Button from '../button/Button'
 import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 
+import SerialManager from '../../utils/serialSDI12'
+
 interface TerminalProps {
   isConect: boolean
   portCom: string
+  PortStatus: boolean
+}
+
+interface SerialProps {
+  portName: string
+  bauld: number
+}
+
+const serialManager = new SerialManager()
+
+export function Openport({ portName, bauld }: SerialProps) {
+  serialManager.openPort(portName, bauld)
+}
+
+export function ClosePort() {
+  serialManager.closePort()
 }
 
 export default function Terminal(props: TerminalProps) {
   const [inputValue, setInputValue] = useState('')
   const [textValue, setTextValue] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
+  const [valorSelecionado, setValorSelecionado] = useState('')
+
   const textareaRef = useRef(null)
   let newComando = ''
+
+  console.log(props.PortStatus.state)
+  let portname = props.portCom.name
+  console.log(props.portCom.name)
+
+  if (props.PortStatus.state === true) {
+    //serialManager.openPort(portname, 1200)
+    console.log('conectei')
+  }
+
   const handleInputChange = (event) => {
     setInputValue(event.target.value)
   }
 
   const handleClickSendComand = (comando) => {
     newComando = `${textValue}TX: ${comando}\n`
-    setTextValue(newComando)
+
+    serialManager
+      .sendCommand(comando)
+      .then((resposta) => {
+        setTextValue(`${newComando}RX: ${resposta}\n`)
+        console.log('Resultado:', resposta)
+      })
+      .catch((erro) => {
+        console.error('Erro:', erro.message)
+        setTextValue(newComando)
+      })
+
+    console.log(comando)
   }
 
   const handleClearTextArea = () => {
@@ -84,31 +127,31 @@ export default function Terminal(props: TerminalProps) {
             <Button
               texto="a!"
               onClick={() => {
-                handleClickSendComand('a!')
+                handleClickSendComand('0!')
               }}
             />
             <Button
               texto="al!"
               onClick={() => {
-                handleClickSendComand('al!')
+                handleClickSendComand('0l!')
               }}
             />
             <Button
               texto="aAb!"
               onClick={() => {
-                handleClickSendComand('aAb!')
+                handleClickSendComand('0A0!')
               }}
             />
             <Button
               texto="aC!"
               onClick={() => {
-                handleClickSendComand('aC!')
+                handleClickSendComand('0C!')
               }}
             />
             <Button
               texto="aD0!"
               onClick={() => {
-                handleClickSendComand('aD0!')
+                handleClickSendComand('0D0!')
               }}
             />
           </div>
@@ -116,8 +159,6 @@ export default function Terminal(props: TerminalProps) {
             ref={textareaRef}
             name=""
             id=""
-            cols="30"
-            rows="10"
             value={textValue}
             className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none"
           ></textarea>
