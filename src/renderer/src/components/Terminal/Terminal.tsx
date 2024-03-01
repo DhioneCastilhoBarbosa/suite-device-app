@@ -7,8 +7,8 @@ import SerialManager from '../../utils/serialSDI12'
 
 interface TerminalProps {
   isConect: boolean
-  portCom: string
-  PortStatus: boolean
+  portCom?: string
+  PortStatus?: boolean
 }
 
 interface SerialProps {
@@ -26,22 +26,55 @@ export function ClosePort() {
   serialManager.closePort()
 }
 
-export default function Terminal(props: TerminalProps) {
+
+function TimeStamp(){
+  const currentData = new Date();
+
+  const day = String(currentData.getDate()).padStart(2,'0');
+  const month = String(currentData.getMonth()+1).padStart(2,'0');
+  const year = currentData.getFullYear();
+
+  const hours= String(currentData.getHours()).padStart(2,'0');
+  const minutes= String(currentData.getMinutes()).padStart(2,'0');
+  const seconds = String(currentData.getSeconds()).padStart(2,'0')
+  const milliseconds= String(currentData.getMilliseconds()).padStart(2,'0');
+
+  return `${day}/${month}/${year}-${hours}:${minutes}:${seconds}:${milliseconds}`
+}
+
+
+
+
+export function Terminal(props: TerminalProps) {
   const [inputValue, setInputValue] = useState('')
   const [textValue, setTextValue] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   const [valorSelecionado, setValorSelecionado] = useState('')
+  const [timeStapActive, setTimeStapActive] = useState(false)
+  const [autoRetry,setAutoRetry] = useState(false)
+
+
+
+  console.log(`Estado de conexão: ${isConnected}`)
 
   const textareaRef = useRef(null)
   let newComando = ''
 
-  console.log(props.PortStatus.state)
-  let portname = props.portCom.name
-  console.log(props.portCom.name)
 
   if (props.PortStatus.state === true) {
     //serialManager.openPort(portname, 1200)
-    console.log('conectei')
+    console.log('conectado')
+  }
+  else{
+    console.log('Desconectado')
+  }
+
+  const handleCheckboxAutoRetry =()=>{
+    setAutoRetry(!autoRetry)
+  }
+
+  const handleCheckBoxChangeTimeStap = ()=>{
+    setTimeStapActive(!timeStapActive)
   }
 
   const handleInputChange = (event) => {
@@ -49,20 +82,38 @@ export default function Terminal(props: TerminalProps) {
   }
 
   const handleClickSendComand = (comando) => {
-    newComando = `${textValue}TX: ${comando}\n`
+    setValorSelecionado(comando)
 
-    serialManager
-      .sendCommand(comando)
-      .then((resposta) => {
-        setTextValue(`${newComando}RX: ${resposta}\n`)
-        console.log('Resultado:', resposta)
-      })
-      .catch((erro) => {
-        console.error('Erro:', erro.message)
-        setTextValue(newComando)
-      })
+    if(timeStapActive){
+      let timer = TimeStamp()
+      newComando = `${textValue}${timer} TX: ${comando}\n`
+      serialManager
+        .sendCommand(comando)
+        .then((resposta) => {
+          timer = TimeStamp()
+          setTextValue(`${newComando}${timer} RX: ${resposta}\n`)
+          console.log('Resultado:', resposta)
+        })
+        .catch((erro) => {
+          console.error('Erro:', erro.message)
+          setTextValue(newComando)
+        })
 
-    console.log(comando)
+    }
+    else{
+      newComando = `${textValue}TX: ${comando}\n`
+      serialManager
+        .sendCommand(comando)
+        .then((resposta) => {
+          setTextValue(`${newComando}RX: ${resposta}\n`)
+          console.log('Resultado:', resposta)
+        })
+        .catch((erro) => {
+          console.error('Erro:', erro.message)
+          setTextValue(newComando)
+        })
+    }
+
   }
 
   const handleClearTextArea = () => {
@@ -75,11 +126,21 @@ export default function Terminal(props: TerminalProps) {
     saveAs(blob, 'Terminal.txt')
   }
 
-  useEffect(() => {
+  useEffect(()=> {
     if (textareaRef.current) {
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight
     }
-  }, [textValue])
+
+    if(autoRetry===true){
+
+    const intervalId = setInterval(() => {
+      handleClickSendComand(valorSelecionado)
+    }, 2000)
+
+    return () => clearInterval(intervalId)
+  }
+
+  }, [textValue,autoRetry])
 
   return props.isConect ? (
     <div className="w-full mt-16 mb-9 ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center">
@@ -96,7 +157,7 @@ export default function Terminal(props: TerminalProps) {
             <span className="pr-2">Endereço:</span>
             <input
               type="number"
-              value={0}
+              defaultValue={0}
               max={10}
               min={0}
               maxLength={2}
@@ -106,9 +167,17 @@ export default function Terminal(props: TerminalProps) {
 
           <div className="flex items-center justify-betwee">
             <span className="pr-2 pl-4">Auto-Retry</span>
-            <input type="checkbox" />
+            <input
+            type="checkbox"
+            checked={autoRetry}
+            onChange={handleCheckboxAutoRetry}
+            />
             <span className="pr-2 pl-4">timerStamp</span>
-            <input type="checkbox" />
+            <input
+            type="checkbox"
+            checked={timeStapActive}
+            onChange={handleCheckBoxChangeTimeStap}
+            />
           </div>
         </header>
         <div className="flex flex-row items-center justify-end mr-8 mt-4 gap-2">
@@ -122,6 +191,7 @@ export default function Terminal(props: TerminalProps) {
               texto="?!"
               onClick={() => {
                 handleClickSendComand('?!')
+                setValorSelecionado['?!']
               }}
             />
             <Button
@@ -133,7 +203,7 @@ export default function Terminal(props: TerminalProps) {
             <Button
               texto="al!"
               onClick={() => {
-                handleClickSendComand('0l!')
+                handleClickSendComand('0I!')
               }}
             />
             <Button
@@ -152,6 +222,7 @@ export default function Terminal(props: TerminalProps) {
               texto="aD0!"
               onClick={() => {
                 handleClickSendComand('0D0!')
+
               }}
             />
           </div>
@@ -160,7 +231,8 @@ export default function Terminal(props: TerminalProps) {
             name=""
             id=""
             value={textValue}
-            className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none"
+            readOnly
+            className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm"
           ></textarea>
         </div>
         <div className="flex justify-end flex-row mt-4 mr-8 ml-8">

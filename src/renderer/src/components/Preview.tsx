@@ -1,5 +1,5 @@
 import LinnimDB from './LinnimDB/LinnimDB'
-import Terminal from './Terminal/Terminal'
+import {Terminal} from './Terminal/Terminal'
 import { Device } from '@renderer/Context/DeviceContext'
 
 export default function Preview() {
@@ -9,7 +9,7 @@ export default function Preview() {
   //console.log('is preview', port.name)
 
   if (device.name === 'terminal') {
-    return <Terminal isConect={true} portCom={port} PortStatus={PortOpen} />
+    return <Terminal isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
   }
 
   if (device.name === 'linnidb') {

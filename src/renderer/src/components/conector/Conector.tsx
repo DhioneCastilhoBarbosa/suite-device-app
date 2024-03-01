@@ -1,14 +1,18 @@
 import * as Switch from '@radix-ui/react-switch'
-import { useState, useEffect } from 'react'
-import { Openport, ClosePort } from '../Terminal/Terminal'
+import { useState, useEffect, useContext } from 'react'
+import { Openport, ClosePort} from '../Terminal/Terminal'
+import { Device } from '@renderer/Context/DeviceContext'
+
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
   const [OffllineMode, setOfflineMode] = useState('off')
   const [valorSelecionado, setValorSelecionado] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
+  const [isConnected, setIsConnected] = useState(isOnline)
 
-  //const serialManager = new SerialManager()
+  const{SetPortOpen}:any= Device()
+
+
 
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
@@ -18,13 +22,16 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     portDevice(valorSelecionado)
     setIsConnected(!isConnected)
     PortStatus(isConnected)
+    SetPortOpen({state:true})
     Openport({ portName: valorSelecionado, bauld: 1200 })
+
   }
 
   const handleClickDisconect = () => {
     portDevice(valorSelecionado)
     setIsConnected(!isConnected)
     PortStatus(isConnected)
+    SetPortOpen({state:false})
     ClosePort()
   }
 
@@ -46,7 +53,6 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
   useEffect(() => {
     listSerialPorts()
-
     const intervalId = setInterval(() => {
       listSerialPorts()
       console.log('atualisei as portas')
@@ -54,7 +60,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
     return () => clearInterval(intervalId)
   }, [])
-  //console.log(OffllineMode)
+
   return (
     <div className="flex flex-col items-center bg-white rounded-lg m-1 pt-2 pb-2 pr-3 pl-3">
       <div className="w-full border-[1px] border-[#336B9E] p-1 rounded-lg">
