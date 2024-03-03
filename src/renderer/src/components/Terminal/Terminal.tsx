@@ -6,7 +6,7 @@ import SerialManager from '../../utils/serialSDI12'
 import TerminalImagem from '../../assets/TerminalImage.png'
 import {CardInformation}from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
-import { Device,DeviceProviderPros } from '@renderer/Context/DeviceContext'
+import { Device } from '@renderer/Context/DeviceContext'
 
 interface TerminalProps {
   isConect: boolean
@@ -51,17 +51,20 @@ function TimeStamp(){
 export function Terminal(props: TerminalProps) {
   const [inputValue, setInputValue] = useState('')
   const [textValue, setTextValue] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [timeStapActive, setTimeStapActive] = useState(false)
   const [autoRetry,setAutoRetry] = useState(false)
+  const [address,setAddress] = useState(0)
+  const [firstAddress,setFirstAddress] = useState(0)
 
-  const{modeOffLine}:DeviceProviderPros=Device()
+  const{mode,PortOpen}:any = Device()
+
+  console.log(`Status Port: ${PortOpen.state}`)
+
+
 
   const textareaRef = useRef(null)
   let newComando = ''
-
-
 
   const handleCheckboxAutoRetry =()=>{
     setAutoRetry(!autoRetry)
@@ -77,36 +80,61 @@ export function Terminal(props: TerminalProps) {
 
   const handleClickSendComand = (comando) => {
 
-    setValorSelecionado(comando)
 
+
+    setValorSelecionado(comando)
     if(timeStapActive){
       let timer = TimeStamp()
       newComando = `${textValue}${timer} TX: ${comando}\n`
-      serialManager
-        .sendCommand(comando)
-        .then((resposta) => {
-          timer = TimeStamp()
-          setTextValue(`${newComando}${timer} RX: ${resposta}\n`)
-          console.log('Resultado:', resposta)
-        })
-        .catch((erro) => {
-          console.error('Erro:', erro.message)
-          setTextValue(newComando)
-        })
+      setTextValue(newComando)
+      if(!mode.state){
+        serialManager
+          .sendCommand(comando)
+          .then((resposta) => {
+            timer = TimeStamp()
+            setTextValue(`${newComando}${timer} RX: ${resposta}\n`)
+            if(comando==="?!")
+                {
+                  setFirstAddress(parseInt(resposta))
+                }
+
+            console.log('Resultado:', resposta)
+          })
+          .catch((erro) => {
+            console.error('Erro:', erro.message)
+            setTextValue(newComando)
+          })
+
+      }
+      else
+      {
+        setTextValue(newComando)
+      }
 
     }
     else{
       newComando = `${textValue}TX: ${comando}\n`
-      serialManager
-        .sendCommand(comando)
-        .then((resposta) => {
-          setTextValue(`${newComando}RX: ${resposta}\n`)
-          console.log('Resultado:', resposta)
-        })
-        .catch((erro) => {
-          console.error('Erro:', erro.message)
-          setTextValue(newComando)
-        })
+      setTextValue(newComando)
+      if(!mode.state){
+        serialManager
+          .sendCommand(comando)
+          .then((resposta) => {
+            setTextValue(`${newComando}RX: ${resposta}\n`)
+            console.log('Resultado:', resposta)
+            if(comando==="?!")
+                {
+                  setFirstAddress(parseInt(resposta))
+                }
+          })
+          .catch((erro) => {
+            console.error('Erro:', erro.message)
+            setTextValue(newComando)
+          })
+      }
+      else
+      {
+        setTextValue(newComando)
+      }
     }
 
   }
@@ -116,10 +144,31 @@ export function Terminal(props: TerminalProps) {
     setTextValue('')
   }
 
+
+
   const handleSaveToFile = () => {
-    const blob = new Blob([textValue], { type: 'text/plain;charset=utf-8' })
+    const headerFile = 'Dados gerado do conversor USB/SDI-12 - '
+    const date = TimeStamp()
+    let Data = headerFile+date+"\n \n"+textValue
+    const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'Terminal.txt')
   }
+
+  const handleAddress =(event)=>{
+    setAddress(parseInt(event.target.value))
+  }
+
+  const handleKeyPress=(event)=>{
+    if(event.key==='Enter'){
+      console.log("Enter")
+      handleClickSendComand(inputValue)
+    }
+  }
+
+
+  useEffect(()=>{
+    handleClearTextArea()
+  },[PortOpen])
 
   useEffect(()=> {
     if (textareaRef.current) {
@@ -134,6 +183,8 @@ export function Terminal(props: TerminalProps) {
 
     return () => clearInterval(intervalId)
   }
+
+
 
   }, [textValue,autoRetry])
 
@@ -152,10 +203,11 @@ export function Terminal(props: TerminalProps) {
             <span className="pr-2">Endereço:</span>
             <input
               type="number"
-              defaultValue={0}
+              defaultValue={firstAddress}
               max={10}
               min={0}
               maxLength={2}
+              onChange={handleAddress}
               className="border-sky-400 border-[2px] text-center w-12 rounded-md outline-none"
             />
           </div>
@@ -185,38 +237,37 @@ export function Terminal(props: TerminalProps) {
             <Button
               texto="?!"
               onClick={() => {
-
-               modeOffLine? console.log("modooffiline"):handleClickSendComand('?!')
+              handleClickSendComand('?!')
               }}
             />
             <Button
               texto="a!"
               onClick={() => {
-                handleClickSendComand('0!')
+                handleClickSendComand( `${address}!`)
               }}
             />
             <Button
               texto="al!"
               onClick={() => {
-                handleClickSendComand('0I!')
+                handleClickSendComand(`${address}I!`)
               }}
             />
             <Button
               texto="aAb!"
               onClick={() => {
-                handleClickSendComand('0A0!')
+                handleClickSendComand(`${firstAddress}A${address}!`)
               }}
             />
             <Button
               texto="aC!"
               onClick={() => {
-                handleClickSendComand('0C!')
+                handleClickSendComand(`${address}C!`)
               }}
             />
             <Button
               texto="aD0!"
               onClick={() => {
-                handleClickSendComand('0D0!')
+                handleClickSendComand(`${address}D0!`)
 
               }}
             />
@@ -235,6 +286,7 @@ export function Terminal(props: TerminalProps) {
             className="w-[20rem] border-[2px] mb-2 mr-2 rounded-md outline-sky-400"
             type="text"
             onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
             placeholder="Digite o comando"
           />
           <Button texto="Enviar" onClick={() => handleClickSendComand(inputValue)} />

@@ -5,9 +5,6 @@ import { Device } from '@renderer/Context/DeviceContext'
 export default function Menu() {
   const { device, setDevice, port, setPort, PortOpen, SetPortOpen }: any = Device()
 
-  //console.log(device.name)
-  console.log('Status e : ' + PortOpen.state)
-
   function newDevice(device) {
     // console.log(device)
     setDevice({ name: device })
@@ -15,12 +12,10 @@ export default function Menu() {
 
   function ChangeStatus(status) {
     SetPortOpen({ state: status })
-
   }
 
   function ConnectToDevice(isdevice) {
     setPort({ name: isdevice })
-    //console.log(isdevice)
   }
 
   return (

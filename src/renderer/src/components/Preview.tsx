@@ -1,12 +1,11 @@
 import LinnimDB from './LinnimDB/LinnimDB'
 import {Terminal} from './Terminal/Terminal'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device} from '@renderer/Context/DeviceContext'
 
 export default function Preview() {
-  const { device, setDevice, port, setPort, PortOpen, SetPortOpen }: any = Device()
+  const { device, setDevice, port, setPort, PortOpen, SetPortOpen }:any = Device()
 
-  //console.log(device.name)
-  //console.log('is preview', port.name)
+
 
   if (device.name === 'terminal') {
     return <Terminal isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />

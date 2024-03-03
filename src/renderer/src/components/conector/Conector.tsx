@@ -1,18 +1,16 @@
 import * as Switch from '@radix-ui/react-switch'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect} from 'react'
 import { Openport, ClosePort} from '../Terminal/Terminal'
-import { Device,DeviceProviderPros } from '@renderer/Context/DeviceContext'
+import { Device} from '@renderer/Context/DeviceContext'
 
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
-  const [OffllineMode, setOfflineMode] = useState(false)
+  const [OfflineMode, setOfflineMode] = useState(false)
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [isConnected, setIsConnected] = useState(isOnline)
 
-  const{SetPortOpen, setModeOffiLine }:DeviceProviderPros= Device()
-
-
+  const{SetPortOpen, mode ,setMode}:any = Device()
 
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
@@ -25,12 +23,12 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     PortStatus(isConnected)
     SetPortOpen({state:true})
 
-    if(OffllineMode===false)
+    if(OfflineMode===false)
     {
       Openport({ portName: valorSelecionado, bauld: 1200 })
     }
     else{
-      setModeOffiLine({state:false})
+      setMode({state:true})
     }
 
 
@@ -43,13 +41,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     PortStatus(isConnected)
     SetPortOpen({state:false})
 
-    if(OffllineMode===false)
+    if(OfflineMode===false)
     {
       ClosePort()
     }
     else
     {
-      setModeOffiLine({state:false})
+      setMode({state:false})
     }
 
   }
@@ -66,8 +64,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   }
 
   const modeOffLine = ()=>{
-    setOfflineMode(!OffllineMode)
-    console.log('oi')
+    setOfflineMode(!OfflineMode)
   }
 
 
@@ -91,7 +88,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
             </label>
             <Switch.Root
               className="w-[49px] h-[22px] bg-gray-200 border-[1px] border-gray-300 rounded-full relative  data-[state=checked]:bg-green-500 outline-none cursor-default"
-              defaultChecked={OffllineMode}
+              defaultChecked={OfflineMode}
               onCheckedChange={modeOffLine}
               disabled={isConnected? true:false}
             >
@@ -108,7 +105,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
           className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer"
           value={valorSelecionado}
           onChange={handleChange}
-          disabled={OffllineMode}
+          disabled={OfflineMode}
         >
           <option value={'Selecione'} >Selecione</option>
           {availablePorts.map((port, index) => (
