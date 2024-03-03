@@ -2,8 +2,11 @@ import { TerminalWindow } from '@phosphor-icons/react'
 import Button from '../button/Button'
 import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
-
 import SerialManager from '../../utils/serialSDI12'
+import TerminalImagem from '../../assets/TerminalImage.png'
+import {CardInformation}from '../cardInfomation/CardInformation'
+import { ImageDevice } from '../imageDevice/ImageDevice'
+import { Device,DeviceProviderPros } from '@renderer/Context/DeviceContext'
 
 interface TerminalProps {
   isConect: boolean
@@ -53,21 +56,12 @@ export function Terminal(props: TerminalProps) {
   const [timeStapActive, setTimeStapActive] = useState(false)
   const [autoRetry,setAutoRetry] = useState(false)
 
-
-
-  console.log(`Estado de conexão: ${isConnected}`)
+  const{modeOffLine}:DeviceProviderPros=Device()
 
   const textareaRef = useRef(null)
   let newComando = ''
 
 
-  if (props.PortStatus.state === true) {
-    //serialManager.openPort(portname, 1200)
-    console.log('conectado')
-  }
-  else{
-    console.log('Desconectado')
-  }
 
   const handleCheckboxAutoRetry =()=>{
     setAutoRetry(!autoRetry)
@@ -82,6 +76,7 @@ export function Terminal(props: TerminalProps) {
   }
 
   const handleClickSendComand = (comando) => {
+
     setValorSelecionado(comando)
 
     if(timeStapActive){
@@ -143,7 +138,7 @@ export function Terminal(props: TerminalProps) {
   }, [textValue,autoRetry])
 
   return props.isConect ? (
-    <div className="w-full mt-16 mb-9 ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center">
+    <div className="w-full  mt-16  ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center">
       <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11 top-0">
         <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
           <TerminalWindow size={30} />
@@ -190,8 +185,8 @@ export function Terminal(props: TerminalProps) {
             <Button
               texto="?!"
               onClick={() => {
-                handleClickSendComand('?!')
-                setValorSelecionado['?!']
+
+               modeOffLine? console.log("modooffiline"):handleClickSendComand('?!')
               }}
             />
             <Button
@@ -247,13 +242,34 @@ export function Terminal(props: TerminalProps) {
       </div>
     </div>
   ) : (
-    <div className="w-full mt-16 mb-9 ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg">
+    <div className="w-full mt-16 ml-4 mr-[1px]  bg-[#FFFFFF] rounded-lg">
       <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11">
         <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
           <TerminalWindow size={30} />
         </div>
         <h2 className="text-white  font-semibold pl-2">Terminal SDI12</h2>
       </header>
+      <ImageDevice image={TerminalImagem}/>
+
+      <div className='bg-[#EDF4FB] pt-3 flex items-center  flex-col justify-center rounded-b-lg  overflow-auto'>
+      <CardInformation title='VISÃO GERAL'>
+        <p>Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de verificar o funcionamento e acessar configurações.</p>
+      </CardInformation>
+
+      <CardInformation title='CARACTERÍSTICAS'>
+        <p>Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir alguns atalhos para comandos pré-definidos.</p>
+        <p>Aceita múltiplos sensores ligados simultaneamente.</p>
+        <p>Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor no barramento).</p>
+        <p>Pode salvar LOG de comunicação.</p>
+      </CardInformation>
+
+      <CardInformation title='ESPECIFICAÇÃO'>
+        <p >Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).</p>
+          <p>Compatível com todas as versões do SDI-12 (incluindo v1.4).</p>
+          <p> Compatível com USB2.0.</p>
+          <p>Alimentação pela porta USB (5V).</p>
+      </CardInformation>
+      </div>
     </div>
   )
 }

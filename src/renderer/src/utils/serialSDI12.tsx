@@ -1,4 +1,3 @@
-import { error } from 'console'
 
 // Importando a biblioteca serialport
 const { SerialPort } = window.require('serialport')
@@ -9,12 +8,15 @@ class SerialManager {
   private port: SerialPort | null = null
   private isOpen: boolean = false
 
+
   // Método para abrir a porta serial
   openPort(portName: string, baudRate: number): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.isOpen) {
         console.warn('A porta serial já está aberta.')
         resolve()
+
+
         return
       }
 
@@ -24,15 +26,19 @@ class SerialManager {
         dataBits: 7,
         parity: 'even',
         stopBits: 1
+
       })
 
-      this.port.on('open', () => {
+
+
+
+      this.port.once('open', () => {
         console.log(`Porta serial ${portName} aberta com sucesso.`)
         this.isOpen = true
         resolve()
       })
 
-      this.port.on('error', (err) => {
+      this.port.once('error', (err) => {
         console.error(`Erro ao abrir a porta serial: ${err.message}`)
         reject(err)
       })
@@ -46,7 +52,7 @@ class SerialManager {
         reject(new Error('Porta serial não está aberta.'))
         return
       }
-      this.port.setMaxListeners(20)
+      this.port.setMaxListeners(30)
       this.port.set({ brk: true }, (err) => {
         if (err) {
           console.log('Erro ao definir o breakState')
@@ -68,6 +74,7 @@ class SerialManager {
                       console.log('Comando enviado com sucesso')
 
                       const parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+                      this.port.setMaxListeners(30)
                       parser.once('data', (data) => {
                         //console.log('Resposta SDI12:', data)
                         resolve(data)
@@ -91,13 +98,13 @@ class SerialManager {
         return
       }
 
-      this.port.on('data', (data) => {
+      this.port.once('data', (data) => {
         const receivedData = data.toString()
         console.log(`Dados recebidos: ${receivedData}`)
         resolve(receivedData)
       })
 
-      this.port.on('error', (err) => {
+      this.port.once('error', (err) => {
         console.error(`Erro ao receber dados: ${err.message}`)
         reject(err)
       })
