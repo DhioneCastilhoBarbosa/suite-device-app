@@ -3,7 +3,7 @@ import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 
 export default function Menu() {
-  const { device, setDevice, port, setPort, PortOpen, SetPortOpen }: any = Device()
+  const { setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
 
   function newDevice(device) {
     // console.log(device)

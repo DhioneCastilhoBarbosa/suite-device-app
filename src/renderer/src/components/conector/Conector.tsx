@@ -10,7 +10,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [isConnected, setIsConnected] = useState(isOnline)
 
-  const{SetPortOpen, mode ,setMode}:any = Device()
+  const{SetPortOpen,setMode}:any = Device()
 
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)

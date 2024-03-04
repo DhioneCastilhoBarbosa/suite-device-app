@@ -63,7 +63,7 @@ export function Terminal(props: TerminalProps) {
 
 
 
-  const textareaRef = useRef(null)
+  const textareaRef:React.MutableRefObject<any> = useRef(null)
   let newComando = ''
 
   const handleCheckboxAutoRetry =()=>{
@@ -170,9 +170,10 @@ export function Terminal(props: TerminalProps) {
     handleClearTextArea()
   },[PortOpen])
 
-  useEffect(()=> {
+  useEffect(()=>{
     if (textareaRef.current) {
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight
+
     }
 
     if(autoRetry===true){
@@ -181,10 +182,8 @@ export function Terminal(props: TerminalProps) {
       handleClickSendComand(valorSelecionado)
     }, 2000)
 
-    return () => clearInterval(intervalId)
+    clearInterval(intervalId)
   }
-
-
 
   }, [textValue,autoRetry])
 

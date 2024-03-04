@@ -5,7 +5,7 @@ const { ReadlineParser } = require('@serialport/parser-readline')
 
 // Definindo uma classe para o gerenciamento da porta serial
 class SerialManager {
-  private port: SerialPort | null = null
+  private port: typeof SerialPort | null = null
   private isOpen: boolean = false
 
 
