@@ -1,7 +1,18 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, autoUpdater, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
+
+require('update-electron-app')({
+  updateInterval: '5 minutes',
+  logger: require('electron-log'),
+  notifyUser: true,
+})
+
 
 function createWindow(): void {
   // Create the browser window.
@@ -10,7 +21,7 @@ function createWindow(): void {
     height: 1080,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    ...(process.platform === 'linux' ? { icon } : {icon}),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -73,3 +84,16 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  const dialogOpts:any = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: process.platform === 'darwin' ? releaseNotes : releaseName,
+    detail:
+      'A new version has been downloaded. Restart the application to apply the updates.'
+  }
+
+  dialog.showMessageBox(dialogOpts)
+})
