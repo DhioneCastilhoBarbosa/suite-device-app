@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 import SerialManager from '../../utils/serialSDI12'
 import TerminalImagem from '../../assets/TerminalImage.png'
-import {CardInformation}from '../cardInfomation/CardInformation'
+import { CardInformation } from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import { Device } from '@renderer/Context/DeviceContext'
 
@@ -29,48 +29,42 @@ export function ClosePort() {
   serialManager.closePort()
 }
 
+function TimeStamp() {
+  const currentData = new Date()
 
-function TimeStamp(){
-  const currentData = new Date();
+  const day = String(currentData.getDate()).padStart(2, '0')
+  const month = String(currentData.getMonth() + 1).padStart(2, '0')
+  const year = currentData.getFullYear()
 
-  const day = String(currentData.getDate()).padStart(2,'0');
-  const month = String(currentData.getMonth()+1).padStart(2,'0');
-  const year = currentData.getFullYear();
-
-  const hours= String(currentData.getHours()).padStart(2,'0');
-  const minutes= String(currentData.getMinutes()).padStart(2,'0');
-  const seconds = String(currentData.getSeconds()).padStart(2,'0')
-  const milliseconds= String(currentData.getMilliseconds()).padStart(2,'0');
+  const hours = String(currentData.getHours()).padStart(2, '0')
+  const minutes = String(currentData.getMinutes()).padStart(2, '0')
+  const seconds = String(currentData.getSeconds()).padStart(2, '0')
+  const milliseconds = String(currentData.getMilliseconds()).padStart(2, '0')
 
   return `${day}/${month}/${year}-${hours}:${minutes}:${seconds}:${milliseconds}`
 }
-
-
-
 
 export function Terminal(props: TerminalProps) {
   const [inputValue, setInputValue] = useState('')
   const [textValue, setTextValue] = useState('')
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [timeStapActive, setTimeStapActive] = useState(false)
-  const [autoRetry,setAutoRetry] = useState(false)
-  const [address,setAddress] = useState(0)
-  const [firstAddress,setFirstAddress] = useState(0)
+  const [autoRetry, setAutoRetry] = useState(false)
+  const [address, setAddress] = useState(0)
+  const [firstAddress, setFirstAddress] = useState(0)
 
-  const{mode,PortOpen}:any = Device()
+  const { mode, PortOpen }: any = Device()
 
   console.log(`Status Port: ${PortOpen.state}`)
 
-
-
-  const textareaRef:React.MutableRefObject<any> = useRef(null)
+  const textareaRef: React.MutableRefObject<any> = useRef(null)
   let newComando = ''
 
-  const handleCheckboxAutoRetry =()=>{
+  const handleCheckboxAutoRetry = () => {
     setAutoRetry(!autoRetry)
   }
 
-  const handleCheckBoxChangeTimeStap = ()=>{
+  const handleCheckBoxChangeTimeStap = () => {
     setTimeStapActive(!timeStapActive)
   }
 
@@ -79,24 +73,20 @@ export function Terminal(props: TerminalProps) {
   }
 
   const handleClickSendComand = (comando) => {
-
-
-
     setValorSelecionado(comando)
-    if(timeStapActive){
+    if (timeStapActive) {
       let timer = TimeStamp()
       newComando = `${textValue}${timer} TX: ${comando}\n`
       setTextValue(newComando)
-      if(!mode.state){
+      if (!mode.state) {
         serialManager
           .sendCommand(comando)
           .then((resposta) => {
             timer = TimeStamp()
             setTextValue(`${newComando}${timer} RX: ${resposta}\n`)
-            if(comando==="?!")
-                {
-                  setFirstAddress(parseInt(resposta))
-                }
+            if (comando === '?!') {
+              setFirstAddress(parseInt(resposta))
+            }
 
             console.log('Resultado:', resposta)
           })
@@ -104,39 +94,30 @@ export function Terminal(props: TerminalProps) {
             console.error('Erro:', erro.message)
             setTextValue(newComando)
           })
-
-      }
-      else
-      {
+      } else {
         setTextValue(newComando)
       }
-
-    }
-    else{
+    } else {
       newComando = `${textValue}TX: ${comando}\n`
       setTextValue(newComando)
-      if(!mode.state){
+      if (!mode.state) {
         serialManager
           .sendCommand(comando)
           .then((resposta) => {
             setTextValue(`${newComando}RX: ${resposta}\n`)
             console.log('Resultado:', resposta)
-            if(comando==="?!")
-                {
-                  setFirstAddress(parseInt(resposta))
-                }
+            if (comando === '?!') {
+              setFirstAddress(parseInt(resposta))
+            }
           })
           .catch((erro) => {
             console.error('Erro:', erro.message)
             setTextValue(newComando)
           })
-      }
-      else
-      {
+      } else {
         setTextValue(newComando)
       }
     }
-
   }
 
   const handleClearTextArea = () => {
@@ -144,51 +125,48 @@ export function Terminal(props: TerminalProps) {
     setTextValue('')
   }
 
-
-
   const handleSaveToFile = () => {
     const headerFile = 'Dados gerado do conversor USB/SDI-12 - '
     const date = TimeStamp()
-    let Data = headerFile+date+"\n \n"+textValue
+    const Data = headerFile + date + '\n \n' + textValue
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'Terminal.txt')
   }
 
-  const handleAddress =(event)=>{
+  const handleAddress = (event) => {
     setAddress(parseInt(event.target.value))
   }
 
-  const handleKeyPress=(event)=>{
-    if(event.key==='Enter'){
-      console.log("Enter")
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      console.log('Enter')
       handleClickSendComand(inputValue)
     }
   }
 
-
-  useEffect(()=>{
+  useEffect(() => {
     handleClearTextArea()
-  },[PortOpen])
+  }, [PortOpen])
 
-  useEffect(()=>{
+  useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight
-
     }
 
-    if(autoRetry===true){
+    if (autoRetry === true) {
+      const intervalId = setInterval(() => {
+        handleClickSendComand(valorSelecionado)
+      }, 2000)
 
-    const intervalId = setInterval(() => {
-      handleClickSendComand(valorSelecionado)
-    }, 2000)
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      return () => clearInterval(intervalId)
+    }
 
-    clearInterval(intervalId)
-  }
-
-  }, [textValue,autoRetry])
+    return undefined
+  }, [textValue, autoRetry])
 
   return props.isConect ? (
-    <div className="w-full  mt-16  ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center">
+    <div className="w-full  mt-16  ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center h-screen">
       <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11 top-0">
         <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
           <TerminalWindow size={30} />
@@ -213,16 +191,12 @@ export function Terminal(props: TerminalProps) {
 
           <div className="flex items-center justify-betwee">
             <span className="pr-2 pl-4">Auto-Retry</span>
-            <input
-            type="checkbox"
-            checked={autoRetry}
-            onChange={handleCheckboxAutoRetry}
-            />
+            <input type="checkbox" checked={autoRetry} onChange={handleCheckboxAutoRetry} />
             <span className="pr-2 pl-4">timerStamp</span>
             <input
-            type="checkbox"
-            checked={timeStapActive}
-            onChange={handleCheckBoxChangeTimeStap}
+              type="checkbox"
+              checked={timeStapActive}
+              onChange={handleCheckBoxChangeTimeStap}
             />
           </div>
         </header>
@@ -236,13 +210,13 @@ export function Terminal(props: TerminalProps) {
             <Button
               texto="?!"
               onClick={() => {
-              handleClickSendComand('?!')
+                handleClickSendComand('?!')
               }}
             />
             <Button
               texto="a!"
               onClick={() => {
-                handleClickSendComand( `${address}!`)
+                handleClickSendComand(`${address}!`)
               }}
             />
             <Button
@@ -267,7 +241,6 @@ export function Terminal(props: TerminalProps) {
               texto="aD0!"
               onClick={() => {
                 handleClickSendComand(`${address}D0!`)
-
               }}
             />
           </div>
@@ -293,33 +266,42 @@ export function Terminal(props: TerminalProps) {
       </div>
     </div>
   ) : (
-    <div className="w-full mt-16 ml-4 mr-[1px]  bg-[#FFFFFF] rounded-lg">
+    <div className="w-full mt-16 ml-4 mr-[1px]  bg-[#FFFFFF] rounded-lg overflow-y-auto">
       <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11">
         <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
           <TerminalWindow size={30} />
         </div>
         <h2 className="text-white  font-semibold pl-2">Terminal SDI12</h2>
       </header>
-      <ImageDevice image={TerminalImagem}/>
+      <ImageDevice image={TerminalImagem} />
 
-      <div className='bg-[#EDF4FB] pt-3 flex items-center  flex-col justify-center rounded-b-lg  overflow-auto'>
-      <CardInformation title='VISÃO GERAL'>
-        <p>Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de verificar o funcionamento e acessar configurações.</p>
-      </CardInformation>
+      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
+        <CardInformation title="VISÃO GERAL">
+          <p>
+            Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de
+            verificar o funcionamento e acessar configurações.
+          </p>
+        </CardInformation>
 
-      <CardInformation title='CARACTERÍSTICAS'>
-        <p>Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir alguns atalhos para comandos pré-definidos.</p>
-        <p>Aceita múltiplos sensores ligados simultaneamente.</p>
-        <p>Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor no barramento).</p>
-        <p>Pode salvar LOG de comunicação.</p>
-      </CardInformation>
+        <CardInformation title="CARACTERÍSTICAS">
+          <p>
+            Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir
+            alguns atalhos para comandos pré-definidos.
+          </p>
+          <p>Aceita múltiplos sensores ligados simultaneamente.</p>
+          <p>
+            Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor
+            no barramento).
+          </p>
+          <p>Pode salvar LOG de comunicação.</p>
+        </CardInformation>
 
-      <CardInformation title='ESPECIFICAÇÃO'>
-        <p >Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).</p>
+        <CardInformation title="ESPECIFICAÇÃO">
+          <p>Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).</p>
           <p>Compatível com todas as versões do SDI-12 (incluindo v1.4).</p>
           <p> Compatível com USB2.0.</p>
           <p>Alimentação pela porta USB (5V).</p>
-      </CardInformation>
+        </CardInformation>
       </div>
     </div>
   )

@@ -2,26 +2,33 @@ import { app, shell, BrowserWindow, autoUpdater, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import squirrelStartup from 'electron-squirrel-startup'
 
-if (require('electron-squirrel-startup')) {
-  app.quit();
+if (squirrelStartup) {
+  app.quit()
 }
-
-require('update-electron-app')({
+/*
+window.require('update-electron-app')({
   updateInterval: '5 minutes',
   logger: require('electron-log'),
-  notifyUser: true,
-})
+  notifyUser: true
+})*/
 
+const { updateElectronApp } = require('update-electron-app')
+updateElectronApp({
+  updateInterval: '5 minutes',
+  logger: require('electron-log'),
+  notifyUser: true
+})
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 1024,
+    height: 768,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {icon}),
+    ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -86,13 +93,12 @@ app.on('window-all-closed', () => {
 // code. You can also put them in separate files and require them here.
 
 autoUpdater.on('update-downloaded', (releaseNotes, releaseName) => {
-  const dialogOpts:any = {
+  const dialogOpts: any = {
     type: 'info',
     buttons: ['Restart', 'Later'],
     title: 'Application Update',
     message: process.platform === 'darwin' ? releaseNotes : releaseName,
-    detail:
-      'A new version has been downloaded. Restart the application to apply the updates.'
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
   }
 
   dialog.showMessageBox(dialogOpts)

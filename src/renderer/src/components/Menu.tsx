@@ -1,4 +1,3 @@
-
 import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 
@@ -19,7 +18,7 @@ export default function Menu() {
   }
 
   return (
-    <div className="flex h-[900px] flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
+    <div className="flex max-h-screen flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
       <div>
         <div className="flex items-center justify-center border-b-[2px] border-sky-500 pt-1 pb-3">
           <span className="text-white text-sm font-bold">Dispostivos</span>
@@ -49,7 +48,11 @@ export default function Menu() {
       </div>
 
       <div>
-        <Conector portDevice={ConnectToDevice} isOnline={PortOpen.state} PortStatus={ChangeStatus} />
+        <Conector
+          portDevice={ConnectToDevice}
+          isOnline={PortOpen.state}
+          PortStatus={ChangeStatus}
+        />
       </div>
     </div>
   )

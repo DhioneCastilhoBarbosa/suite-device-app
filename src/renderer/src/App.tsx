@@ -4,10 +4,10 @@ import Main from './components/Main'
 
 function App(): JSX.Element {
   return (
-    <div className="flex flex-col h-full items-center ">
+    <div className="flex flex-col  items-center ">
       <Header />
       <Main />
-      <Footer/>
+      <Footer />
     </div>
   )
 }

@@ -2,9 +2,17 @@
   "name": "suite-device-app",
   "version": "1.0.0",
   "description": "An Electron application with React and TypeScript",
-  "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://www.electronjs.org",
+  "main": "./dist/main/index.js",
+  "author": "Dhione Castilho",
+  "homepage": "https://www.dhionecastilho.com.br",
+  "repository": "https://github.com/DhioneCastilhoBarbosa/suite-device-app",
+  "publish": {
+    "provide": "github",
+    "releaseType": "release"
+  },
+  "config": {
+    "forge": "forge.config.js"
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -31,6 +39,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@serialport/parser-byte-length": "^12.0.0",
     "@serialport/parser-readline": "^12.0.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
     "dotenv": "^16.4.5",
     "electron-log": "^5.1.1",
     "electron-squirrel-startup": "^1.0.0",
@@ -47,6 +56,7 @@
     "@electron-forge/maker-wix": "^7.3.0",
     "@electron-forge/maker-zip": "^7.3.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.3.0",
+    "@electron-forge/plugin-vite": "^7.3.0",
     "@electron-forge/publisher-github": "^7.3.0",
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
@@ -58,6 +68,7 @@
     "autoprefixer": "^10.4.16",
     "electron": "^25.6.0",
     "electron-builder": "^24.6.3",
+    "electron-packager": "^17.1.2",
     "electron-vite": "^1.0.27",
     "eslint": "^8.47.0",
     "eslint-plugin-react": "^7.33.2",

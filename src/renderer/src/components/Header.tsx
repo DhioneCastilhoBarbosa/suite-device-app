@@ -4,7 +4,7 @@ import SelectLanguage from './Select/SelectLanguage'
 
 export function Header() {
   return (
-    <div className="max-h-16 bg-slate-50 border-b-[2px] border-sky-500 flex flex-row justify-between px-2 py-1 items-center absolute w-full">
+    <div className="max-h-16 bg-slate-50 border-b-[2px] border-sky-500 flex flex-row justify-between px-2 py-1 items-center w-screen fixed z-20">
       <div>
         <img className="w-44" src={logo} alt="Logotipo da empresa dualbase" />
       </div>

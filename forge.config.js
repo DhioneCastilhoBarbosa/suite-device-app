@@ -1,11 +1,10 @@
-const path = require('path');
+const path = require('path')
 require('dotenv').config()
 
 module.exports = {
-
   publishers: [
     {
-     name: '@electron-forge/publisher-github',
+      name: '@electron-forge/publisher-github',
       platforms: ['darwin', 'linux'],
       config: {
         repository: {
@@ -17,50 +16,46 @@ module.exports = {
         draft: true
       }
     }
-
   ],
 
   packagerConfig: {
     asar: true,
-    icon: path.join(__dirname, "resources", "icon")
+    icon: path.join(__dirname, 'resources', 'icon')
   },
 
   rebuildConfig: {},
 
   makers: [
-        {
-      name: "@electron-forge/maker-squirrel",
+    {
+      name: '@electron-forge/maker-squirrel',
       config: {
-        name: "Suite-Device",
-        version:'1.0.0',
-        setupExe: "Suite-Device.exe",
-        appIconPath: path.join(__dirname, "resources","icon.ico"),
-        loadingGif: path.join(__dirname, "resources","cubi.gif"),
-        iconUrl: "https://raw.githubusercontent.com/malept/electron-forge-demo123/forge6-issue-1635/assets/storm.ico",
-        setupIcon: path.join(__dirname, "resources","icon.ico"),
-        noMsi: true,
-      },
+        name: 'Suite-Device',
+        version: '1.0.0',
+        setupExe: 'Suite-Device.exe',
+        appIconPath: path.join(__dirname, 'resources', 'icon.ico'),
+        loadingGif: path.join(__dirname, 'resources', 'cubi.gif'),
+        iconUrl:
+          'https://raw.githubusercontent.com/malept/electron-forge-demo123/forge6-issue-1635/assets/storm.ico',
+        setupIcon: path.join(__dirname, 'resources', 'icon.ico'),
+        noMsi: true
+      }
     },
-
-
 
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {}
     },
 
     {
       name: '@electron-forge/maker-rpm',
-      config: {},
-    },
-
+      config: {}
+    }
   ],
-
 
   plugins: [
     {
       name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
-  ],
-};
+      config: {}
+    }
+  ]
+}
