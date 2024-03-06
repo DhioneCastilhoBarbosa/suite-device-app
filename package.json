@@ -1,9 +1,9 @@
 {
   "name": "suite-device-app",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "An Electron application with React and TypeScript",
   "main": "./dist/main/index.js",
-  "author": "Dhione Castilho",
+  "author": "Dualbase",
   "homepage": "https://www.dhionecastilho.com.br",
   "repository": "https://github.com/DhioneCastilhoBarbosa/suite-device-app",
   "publish": {

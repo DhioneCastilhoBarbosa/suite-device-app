@@ -1,18 +1,13 @@
 import { app, shell, BrowserWindow, autoUpdater, dialog } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
+import iconLinux from '../../resources/icon.png?asset'
+import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
 
 if (squirrelStartup) {
   app.quit()
 }
-/*
-window.require('update-electron-app')({
-  updateInterval: '5 minutes',
-  logger: require('electron-log'),
-  notifyUser: true
-})*/
 
 const { updateElectronApp } = require('update-electron-app')
 updateElectronApp({
@@ -28,7 +23,8 @@ function createWindow(): void {
     height: 768,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : { icon }),
+    icon: join(__dirname, '../../resources/icon.ico?asset'),
+    ...(process.platform === 'linux' ? { iconLinux } : { iconWin }),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -50,12 +46,14 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+
+  mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
 }
+
+app.on('ready', function () {
+  createWindow()
+  autoUpdater.checkForUpdates()
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -70,8 +68,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  createWindow()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -95,7 +91,7 @@ app.on('window-all-closed', () => {
 autoUpdater.on('update-downloaded', (releaseNotes, releaseName) => {
   const dialogOpts: any = {
     type: 'info',
-    buttons: ['Restart', 'Later'],
+    buttons: ['Reiniciar', 'Depois'],
     title: 'Application Update',
     message: process.platform === 'darwin' ? releaseNotes : releaseName,
     detail: 'A new version has been downloaded. Restart the application to apply the updates.'
