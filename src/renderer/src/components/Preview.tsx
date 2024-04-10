@@ -1,4 +1,5 @@
 
+import LinnimDbCap from './LinnimDB-Cap/LinnimDbCap';
 import {Terminal} from './Terminal/Terminal'
 import { Device} from '@renderer/Context/DeviceContext'
 
@@ -10,8 +11,8 @@ export default function Preview() {
   }
 
 
-  if (device.name === 'linnidb') {
-    //return <LinnimDB />
+  if (device.name === 'linnimDB-cap') {
+    return <LinnimDbCap isConect={PortOpen.state} portCom={port} PortStatus={PortOpen}/>
     return undefined;
   }
   else{

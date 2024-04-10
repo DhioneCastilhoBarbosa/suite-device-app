@@ -7,6 +7,9 @@ import TerminalImagem from '../../assets/TerminalImage.png'
 import { CardInformation } from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import { Device } from '@renderer/Context/DeviceContext'
+import HeaderDevice from '../headerDevice/HeaderDevice'
+import Footer from '../Footer'
+import ContainerDevice from '../containerDevice/containerDevice'
 
 interface TerminalProps {
   isConect: boolean
@@ -166,14 +169,10 @@ export function Terminal(props: TerminalProps) {
   }, [textValue, autoRetry])
 
   return props.isConect ? (
-    <div className="w-full  mt-16  ml-4 mr-[1px]  bg-[#EDF4FB] rounded-lg flex flex-col items-center h-screen">
-      <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11 top-0">
-        <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
-          <TerminalWindow size={30} />
-        </div>
-        <h2 className="text-white  font-semibold pl-2">Terminal SDI12</h2>
-      </header>
-
+    <ContainerDevice heightScreen={true}>
+      <HeaderDevice DeviceName={"Terminal SDI12"}>
+        <TerminalWindow size={30} />
+      </HeaderDevice>
       <div className="bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl">
         <header className="flex items-center justify-between mr-8 ml-8 pt-4 border-b-[1px] border-sky-500">
           <div className=" mb-2">
@@ -264,15 +263,13 @@ export function Terminal(props: TerminalProps) {
           <Button texto="Enviar" onClick={() => handleClickSendComand(inputValue)} />
         </div>
       </div>
-    </div>
+
+    </ContainerDevice>
   ) : (
-    <div className="w-full mt-16 ml-4 mr-[1px]  bg-[#FFFFFF] rounded-lg overflow-y-auto">
-      <header className="w-full flex items-center justify-start bg-[#1769A0] rounded-t-lg h-11">
-        <div className=" flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
-          <TerminalWindow size={30} />
-        </div>
-        <h2 className="text-white  font-semibold pl-2">Terminal SDI12</h2>
-      </header>
+    <ContainerDevice>
+      <HeaderDevice DeviceName={"Terminal SDI12"}>
+        <TerminalWindow size={30} />
+      </HeaderDevice>
       <ImageDevice image={TerminalImagem} />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
@@ -303,6 +300,6 @@ export function Terminal(props: TerminalProps) {
           <p>Alimentação pela porta USB (5V).</p>
         </CardInformation>
       </div>
-    </div>
+    </ContainerDevice>
   )
 }
