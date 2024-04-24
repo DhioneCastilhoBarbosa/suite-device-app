@@ -45,6 +45,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.1.1",
     "file-saver": "^2.0.5",
+    "modbus-serial": "^8.0.16",
     "serialport": "^10.5.0",
     "tailwind-merge": "^2.2.2",
     "update-electron-app": "^3.0.0"

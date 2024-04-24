@@ -2,6 +2,7 @@ import * as Switch from '@radix-ui/react-switch'
 import { useState, useEffect} from 'react'
 import { Openport, ClosePort} from '../Terminal/Terminal'
 import { Device} from '@renderer/Context/DeviceContext'
+import { CloseModBus, connectClient } from '@renderer/utils/modbusRTU'
 
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
@@ -10,11 +11,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [isConnected, setIsConnected] = useState(isOnline)
 
-  const{SetPortOpen,setMode}:any = Device()
+  const{SetPortOpen,setMode,device}:any = Device()
 
+  console.log("Device is ",device.name)
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
   }
+
 
   const handleClickConect = () => {
 
@@ -23,9 +26,15 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     PortStatus(isConnected)
     SetPortOpen({state:true})
 
+    let ModBusProps ={
+      SerialName : valorSelecionado,
+      BaudRate: 9600
+    }
+
     if(OfflineMode===false)
     {
-      Openport({ portName: valorSelecionado, bauld: 1200 })
+      device.name ==='terminal' ? Openport({ portName: valorSelecionado, bauld: 1200 })
+      :connectClient(ModBusProps)
     }
     else{
       setMode({state:true})
@@ -44,6 +53,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     if(OfflineMode===false)
     {
       ClosePort()
+      device.name ==='terminal' ? ClosePort() : CloseModBus()
     }
     else
     {

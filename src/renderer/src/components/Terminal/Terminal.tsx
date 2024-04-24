@@ -8,7 +8,6 @@ import { CardInformation } from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import { Device } from '@renderer/Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
-import Footer from '../Footer'
 import ContainerDevice from '../containerDevice/containerDevice'
 
 interface TerminalProps {
@@ -200,48 +199,58 @@ export function Terminal(props: TerminalProps) {
           </div>
         </header>
         <div className="flex flex-row items-center justify-end mr-8 mt-4 gap-2">
-          <Button texto="Salvar" onClick={handleSaveToFile} />
-          <Button texto="Limpar" onClick={handleClearTextArea} />
+          <Button size={"small"} onClick={handleSaveToFile} >Salvar</Button>
+          <Button size={"small"} onClick={handleClearTextArea}> Limpar</Button>
         </div>
         <div className="w-full pr-8 pl-8 pt-4 flex">
           <div className="flex flex-col items-center mr-4 w-36">
             <span className="mb-2 mr-1 font-light">Comandos</span>
             <Button
-              texto="?!"
+              size={"small"}
               onClick={() => {
                 handleClickSendComand('?!')
               }}
-            />
+            >
+              ?!
+            </Button>
             <Button
-              texto="a!"
+              size={"small"}
               onClick={() => {
                 handleClickSendComand(`${address}!`)
               }}
-            />
+            >
+              a!
+            </Button>
             <Button
-              texto="al!"
+              size={"small"}
               onClick={() => {
                 handleClickSendComand(`${address}I!`)
               }}
-            />
+            >
+              al!
+            </Button>
             <Button
-              texto="aAb!"
+              size={"small"}
               onClick={() => {
                 handleClickSendComand(`${firstAddress}A${address}!`)
               }}
-            />
+            >
+              aAb!
+            </Button>
             <Button
-              texto="aC!"
+              size={"small"}
               onClick={() => {
                 handleClickSendComand(`${address}C!`)
               }}
-            />
+            >aC!</Button>
             <Button
-              texto="aD0!"
+            size={"small"}
               onClick={() => {
                 handleClickSendComand(`${address}D0!`)
               }}
-            />
+            >
+              aD0!
+            </Button>
           </div>
           <textarea
             ref={textareaRef}
@@ -260,7 +269,12 @@ export function Terminal(props: TerminalProps) {
             onKeyDown={handleKeyPress}
             placeholder="Digite o comando"
           />
-          <Button texto="Enviar" onClick={() => handleClickSendComand(inputValue)} />
+          <Button
+          size={"small"}
+          onClick={() => handleClickSendComand(inputValue)}
+          >
+            Enviar
+          </Button>
         </div>
       </div>
 

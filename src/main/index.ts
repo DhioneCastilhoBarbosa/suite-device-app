@@ -19,8 +19,10 @@ updateElectronApp({
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 768,
+    width: 1200,
+    height: 830,
+    minWidth: 1200, // Define a largura mínima da janela
+    minHeight: 830, // Define a altura mínima da janela
     show: false,
     autoHideMenuBar: true,
     icon: join(__dirname, '../../resources/icon.ico?asset'),

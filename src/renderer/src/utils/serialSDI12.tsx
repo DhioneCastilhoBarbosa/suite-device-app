@@ -20,6 +20,8 @@ class SerialManager {
         return
       }
 
+
+
       this.port = new SerialPort({
         path: portName,
         baudRate: baudRate,

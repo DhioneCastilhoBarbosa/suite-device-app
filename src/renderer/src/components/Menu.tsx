@@ -1,8 +1,9 @@
+import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 
 export default function Menu() {
-  const { setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
+  const { device,setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
 
   function newDevice(device) {
     // console.log(device)
@@ -17,6 +18,7 @@ export default function Menu() {
     setPort({ name: isdevice })
   }
 
+
   return (
     <div className="flex max-h-screen flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
       <div>
@@ -28,8 +30,12 @@ export default function Menu() {
           <ul className="  w-full ml-1 mr-3">
             <li className="">
               <button
-                className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400"
+                className={ twMerge("w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
+                device.name ==='terminal'? "bg-white text-[#1E9EF4]": "bg-[#1E9EF4] hover:bg-sky-400 hover:text-white",
+
+                )}
                 onClick={() => newDevice('terminal')}
+                disabled = {PortOpen.state? true: false}
               >
                 Terminal-SDI12
               </button>
@@ -37,8 +43,12 @@ export default function Menu() {
 
             <li>
               { <button
-                className="bg-[#1E9EF4] w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 hover:bg-sky-400"
+                className={ twMerge("w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 ",
+                device.name ==='linnimDB-cap'? "bg-white text-[#1E9EF4]": "bg-[#1E9EF4] hover:bg-sky-400 hover:text-white",
+
+                )}
                 onClick={() => newDevice('linnimDB-cap')}
+                disabled = {PortOpen.state? true: false}
               >
                 LimniDB-CAP
               </button> }

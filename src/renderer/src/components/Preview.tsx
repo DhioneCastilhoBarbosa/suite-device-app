@@ -13,7 +13,7 @@ export default function Preview() {
 
   if (device.name === 'linnimDB-cap') {
     return <LinnimDbCap isConect={PortOpen.state} portCom={port} PortStatus={PortOpen}/>
-    return undefined;
+
   }
   else{
     return undefined;

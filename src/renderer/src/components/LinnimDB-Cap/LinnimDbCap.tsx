@@ -7,6 +7,8 @@ import { useState } from 'react'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
+import Measure from './components/measure'
+import UpdateModubus from '../updateModbus/updateModbus'
 
 interface LinnimDbCapProps {
   isConect: boolean
@@ -17,9 +19,31 @@ interface LinnimDbCapProps {
 
 export default function LinnimDbCap(props : LinnimDbCapProps) {
   const [menuName, setMenuName] = useState('info')
+  const [colorInfo, setColorInfo] = useState(true)
+  const [colorConfig, setColorConfig] = useState(false)
+  const [colorUpdate, setColorUpdate] = useState(false)
 
   function handleMenu(menu){
+    if(menu==="info"){
+      setColorInfo(true)
+      setColorConfig(false)
+      setColorUpdate(false)
+    }
+    else if(menu === "config"){
+      setColorInfo(false)
+      setColorConfig(true)
+      setColorUpdate(false)
+    }
+    else{
+      setColorInfo(false)
+      setColorConfig(false)
+      setColorUpdate(true)
+    }
+
+
     setMenuName(menu)
+
+
   }
 
 
@@ -29,23 +53,23 @@ export default function LinnimDbCap(props : LinnimDbCapProps) {
       <Drop size={30} />
      </HeaderDevice>
 
-      <div className=" flex flex-col  bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl h-3/6">
-        <header className="flex items-start justify-between mr-8 ml-8 pt-4 border-b-[1px] border-sky-500 ">
+      <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl ">
+        <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 ">
           <div className="flex gap-4">
             <button
-            className='border-b-2 border-transparent hover:text-sky-500 hover:border-b-2 hover:border-sky-500 inline-block relative duration-300'
+            className={`border-b-2 border-transparent ${colorInfo? 'text-sky-500': ''} hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
             onClick={()=>handleMenu("info")}
             >
               Informações
               </button>
             <button
-            className='border-b-2 border-transparent hover:text-sky-500 hover:border-b-2 hover:border-sky-500 inline-block relative duration-300'
+            className= {`border-b-2 border-transparent ${colorConfig? 'text-sky-500': ''} hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
             onClick={()=>handleMenu("config")}
             >
               Configurações
             </button>
             <button
-            className='border-b-2 border-transparent hover:text-sky-500 hover:border-b-2 hover:border-sky-500 inline-block relative duration-300'
+            className= {`border-b-2 border-transparent ${colorUpdate? 'text-sky-500': ''} hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
             onClick={()=>handleMenu("update")}
             >
             Atualização
@@ -54,10 +78,16 @@ export default function LinnimDbCap(props : LinnimDbCapProps) {
         </header>
 
         { menuName==="info"?<Information/>
-        : menuName==="config"?<Settings/>
-        : <div>Update</div>
+        : menuName==="config"? <div className=''><Settings/><Measure/></div>
+        : <UpdateModubus/>
         }
 
+        {
+          /*menuName ==="config"?
+          <Measure/>
+          :
+          <div></div>*/
+        }
       </div>
     </ContainerDevice>
   ) : (
