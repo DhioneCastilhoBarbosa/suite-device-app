@@ -1,14 +1,17 @@
 import Button from "@renderer/components/button/Button";
-import { connectClient, readModbusData } from "@renderer/utils/modbusRTU";
+import { readModbusData } from "@renderer/utils/modbusRTU";
+import { useState } from "react";
 
 
 export default function Measure(){
-
+  const[readPressure, setReadPressure] = useState<number>(0)
 
   async function handleModbus(){
 
     try {
-      const data = await readModbusData(256, 8, false);
+      const data = await readModbusData(2, 2, false,true);
+
+      setReadPressure(data as number)
       console.log(data); // Aqui você terá os dados lidos do Modbus
   } catch (error) {
       console.error('Erro ao ler dados Modbus:', error);
@@ -26,6 +29,7 @@ export default function Measure(){
           <label>Pressão</label>
           <input
           type="text"
+          value={readPressure.toString()}
           disabled={true}
           className='border border-zinc-400 w-48 rounded-md h-6 outline-none text-center'
           min={0}

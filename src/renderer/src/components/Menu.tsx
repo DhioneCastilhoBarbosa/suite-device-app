@@ -1,6 +1,8 @@
 import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
+import { useEffect } from 'react'
+
 
 export default function Menu() {
   const { device,setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
@@ -17,6 +19,10 @@ export default function Menu() {
   function ConnectToDevice(isdevice) {
     setPort({ name: isdevice })
   }
+
+  useEffect(()=>{
+    console.log("Menu renderizou")
+  }, [PortOpen.state])
 
 
   return (

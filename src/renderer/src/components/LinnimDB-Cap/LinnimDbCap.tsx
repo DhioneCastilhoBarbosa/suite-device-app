@@ -1,6 +1,6 @@
 import {  Drop } from '@phosphor-icons/react'
 import { CardInformation } from '../cardInfomation/CardInformation'
-import ImgBorbulha from '../../assets/LinnimDdBorbulha.svg'
+import ImgBorbulha from '../../assets/LinnimDdCAP.svg'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import Information from './components/information'
 import { useState } from 'react'
@@ -82,12 +82,6 @@ export default function LinnimDbCap(props : LinnimDbCapProps) {
         : <UpdateModubus/>
         }
 
-        {
-          /*menuName ==="config"?
-          <Measure/>
-          :
-          <div></div>*/
-        }
       </div>
     </ContainerDevice>
   ) : (
@@ -96,34 +90,36 @@ export default function LinnimDbCap(props : LinnimDbCapProps) {
         <Drop size={30} />
      </HeaderDevice>
 
-      <ImageDevice image={ImgBorbulha} />
+      <ImageDevice image={ImgBorbulha} link='https://dualbase.com.br/produto/limnidb-cap/'/>
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
         <CardInformation title="VISÃO GERAL">
           <p>
-            Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de
-            verificar o funcionamento e acessar configurações.
+          O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico
+          o que o deixa muito robusto sem perder as qualidades metrológicas.
           </p>
         </CardInformation>
 
         <CardInformation title="CARACTERÍSTICAS">
-          <p>
-            Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir
-            alguns atalhos para comandos pré-definidos.
-          </p>
-          <p>Aceita múltiplos sensores ligados simultaneamente.</p>
-          <p>
-            Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor
-            no barramento).
-          </p>
-          <p>Pode salvar LOG de comunicação.</p>
+          <p>Corpo em aço inox 316L.</p>
+          <p>Elemento do sensor capacitivo cerâmico com compensação de temperatura.</p>
+          <p>Cabo em poliuretano com filtro contra radiação UV com Kevlar (opcional).</p>
+          <p>Tipo de medição disponível: absoluto ou diferencial.</p>
+
         </CardInformation>
 
         <CardInformation title="ESPECIFICAÇÃO">
-          <p>Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).</p>
-          <p>Compatível com todas as versões do SDI-12 (incluindo v1.4).</p>
-          <p> Compatível com USB2.0.</p>
-          <p>Alimentação pela porta USB (5V).</p>
+          <p>Faixa de medição: 0 a 20 mca (metro de coluna d'água).</p>
+          <p>Resolução: 0,001 mca (1 mm)</p>
+          <p>Faixa de temperatura compensada: -20º a +80ºC</p>
+          <p>Faixa de temperatura de operação: -40º a +80ºC</p>
+          <p>Incerteza máxima associada: ± 0,1% F.E. @ -10º a +60ºC</p>
+          <p>Grau de proteção: IP68</p>
+          <p>Alimentação: 8 a 28 Vcc</p>
+          <p>Consumo: 5 mA máx</p>
+          <p>Sinal de saída digital: RS-485</p>
+          <p>Sinal de saída (opcional): SDI-12</p>
+          <p>Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI</p>
         </CardInformation>
       </div>
     </ContainerDevice>

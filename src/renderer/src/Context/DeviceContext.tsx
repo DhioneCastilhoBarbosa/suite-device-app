@@ -12,6 +12,8 @@ export interface DeviceProviderPros {
   SetPortOpen?: boolean
   mode?: boolean
   setMode?: boolean
+  restUpdate?: boolean
+  setResetUpdate?:boolean
 }
 
 export const DeviceProvider = (props: DeviceProviderPros) => {
@@ -19,9 +21,10 @@ export const DeviceProvider = (props: DeviceProviderPros) => {
   const [port, setPort] = useState({ name: 'selecionar' })
   const [PortOpen, SetPortOpen] = useState({ state: false })
   const [mode,setMode] = useState({state: false})
+  const [resetUpdate, setResetUpdate] = useState({state: false})
 
   return (
-    <DeviceContext.Provider value={{ device, setDevice, port, setPort, PortOpen, SetPortOpen, mode,setMode }}>
+    <DeviceContext.Provider value={{ device, setDevice, port, setPort, PortOpen, SetPortOpen, mode,setMode,resetUpdate, setResetUpdate }}>
       {props.children}
     </DeviceContext.Provider>
   )

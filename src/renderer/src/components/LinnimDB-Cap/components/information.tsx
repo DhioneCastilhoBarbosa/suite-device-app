@@ -15,18 +15,18 @@ export default function Information(){
 
                 // Array de chamadas Modbus com argumentos específicos
                 const modbusCalls = [
-                    { address: 288, register: 4, Int16: false },
-                    { address: 256, register: 8, Int16: false },
-                    { address: 320, register: 4, Int16: false },
-                    { address: 304, register: 4, Int16: false },
-                    { address: 272, register: 8, Int16: false }
+                    { address: 288, register: 4, Int16: false, float32: false },
+                    { address: 256, register: 8, Int16: false, float32: false },
+                    { address: 320, register: 4, Int16: false, float32: false },
+                    { address: 304, register: 4, Int16: false, float32: false },
+                    { address: 272, register: 8, Int16: false, float32: false }
                 ];
 
                 // Função para fazer chamadas Modbus em sequência
                 const makeModbusCalls = async (calls) => {
                     for (let i = 0; i < calls.length; i++) {
-                        const { address, register, Int16 } = calls[i];
-                        const data = await readModbusData(address, register, Int16);
+                        const { address, register, Int16,float32 } = calls[i];
+                        const data = await readModbusData(address, register, Int16,float32);
                         setModbusData(prevData => [...prevData, data as string]);
                         await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda 200ms antes de fazer a próxima chamada
                         //const timestamp = new Date().toISOString();
