@@ -35,29 +35,33 @@ export default function Menu() {
         <div className="flex items-center justify-center pt-4 text-white  font-bold">
           <ul className="  w-full ml-1 mr-3">
             <li className="">
-              <button
-                className={ twMerge("w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
-                device.name ==='terminal'? "bg-white text-[#1E9EF4]": "bg-[#1E9EF4] hover:bg-sky-400 hover:text-white",
-
+            <button
+                className={twMerge(
+                  "w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
+                  device.name === 'terminal'
+                    ? "bg-white text-[#1E9EF4]"
+                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
                 )}
                 onClick={() => newDevice('terminal')}
-                disabled = {PortOpen.state? true: false}
+                disabled={PortOpen.state}
               >
                 Terminal-SDI12
               </button>
             </li>
 
             <li>
-              { <button
-                className={ twMerge("w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2 ",
-                device.name ==='linnimDB-cap'? "bg-white text-[#1E9EF4]": "bg-[#1E9EF4] hover:bg-sky-400 hover:text-white",
-
+            <button
+                className={twMerge(
+                  "w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
+                  device.name === 'linnimDB-cap'
+                    ? "bg-white text-[#1E9EF4]"
+                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
                 )}
                 onClick={() => newDevice('linnimDB-cap')}
-                disabled = {PortOpen.state? true: false}
+                disabled={PortOpen.state}
               >
                 LimniDB-CAP
-              </button> }
+              </button>
             </li>
           </ul>
         </div>

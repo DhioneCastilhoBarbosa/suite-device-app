@@ -22,7 +22,7 @@ const MBS_STATE_FAIL_CONNECT  = "State fail (port)";
 let mbsId      = 1;
 let mbsIdScan  = 1;
 const mbsScan  = 1000;
-const mbsTimeout  = 6000;
+let mbsTimeout  = 6000;
 let mbsState    = MBS_STATE_INIT;
 
 // Upon SerialPort error
@@ -40,34 +40,7 @@ interface ModBusConectProps{
 }
 
 //==============================================================
-/*export function connectClient({SerialName,BaudRate}:ModBusConectProps)
-{
-    // set requests parameters
-
-    client.setTimeout (mbsTimeout);
-
-    // try to connect
-    client.connectRTUBuffered (SerialName, { baudRate: BaudRate, parity: "One", dataBits: 8, stopBits: 1 })
-        .then(function()
-        {
-            mbsState  = MBS_STATE_GOOD_CONNECT;
-            mbsStatus = "Connected, wait for reading...";
-            console.log(mbsStatus);
-            scanNextAddress();
-        })
-        .catch(function(e)
-        {
-            mbsState  = MBS_STATE_FAIL_CONNECT;
-            mbsStatus = e.message;
-            console.log(e);
-        });
-
-
-};*/
-
-
-// src/modbus.ts
-let cancelScan = false;
+/*let cancelScan = false;
 
 export const scanNextAddress = async (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -89,6 +62,7 @@ export const scanNextAddress = async (): Promise<boolean> => {
           client.setID(mbsId);
           mbsId = 1;
           console.log("Varredura parada, dispositivo encontrado.");
+
           resolve(true); // Dispositivo encontrado
         })
         .catch(err => {
@@ -104,13 +78,75 @@ export const scanNextAddress = async (): Promise<boolean> => {
             scan(mbsId);
           } else {
             console.log("Varredura completa.");
+
             resolve(false); // Varredura completa, nenhum dispositivo encontrado
+
           }
         });
     };
     scan(1); // Comece com o endereço 1
   });
+};*/
+
+let cancelScan = false;
+const MAX_ADDRESS = 247;
+const CONCURRENCY = 20; // Número de endereços a escanear em paralelo
+let deviceFound = false;
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const scanAddress = async (mbsId: number): Promise<number | null> => {
+  if (cancelScan || deviceFound) {
+    return null;
+  }
+  client.setID(mbsId); // Definir o endereço Modbus que estamos verificando
+  console.log(`Verificando endereço ${mbsId}...`);
+  try {
+    const data = await client.readHoldingRegisters(0, 1);
+    if (cancelScan || deviceFound) {
+      return null;
+    }
+    console.log(`Dispositivo encontrado no endereço ${mbsId}:`, data.data);
+    deviceFound = true;
+
+    return mbsId; // Dispositivo encontrado;
+  } catch (err) {
+    //console.error(`Nenhum dispositivo encontrado no endereço ${mbsId}`);
+    return null;
+  }
 };
+
+export const scanNextAddress = async (): Promise<boolean> => {
+  for (let i = 1; i <= MAX_ADDRESS; i += CONCURRENCY) {
+    if (cancelScan || deviceFound) {
+      return deviceFound;
+    }
+    const promises: Promise<number | null>[] = [];
+    for (let j = i; j < i + CONCURRENCY && j <= MAX_ADDRESS; j++) {
+      promises.push(scanAddress(j));
+      await delay(200); // Atraso de 50ms entre as verificações (ajuste conforme necessário)
+    }
+    const results = await Promise.all(promises);
+    const foundAddress = results.find(result => result !== null);
+    if (foundAddress !== undefined) {
+      client.setID(foundAddress); // Definir o cliente para o endereço encontrado
+      console.log("Varredura parada, dispositivo encontrado.");
+      return true; // Dispositivo encontrado
+    }
+  }
+  console.log("Varredura completa, nenhum dispositivo encontrado.");
+  return false; // Varredura completa, nenhum dispositivo encontrado
+};
+
+// Para cancelar a varredura
+export const cancelScanProcess = () => {
+  cancelScan = true;
+  mbsId=1;
+};
+
+
+
+
 
 export async function connectClient({ SerialName, BaudRate }: ModBusConectProps): Promise<boolean> {
   cancelScan = false; // Resetar o sinal de cancelamento
@@ -127,7 +163,7 @@ export async function connectClient({ SerialName, BaudRate }: ModBusConectProps)
 
   } catch (e) {
     mbsState = MBS_STATE_FAIL_CONNECT;
-    mbsStatus = e.message;
+    mbsStatus = (e as Error).message;
     console.log(e);
     return false;
   }
@@ -135,35 +171,8 @@ export async function connectClient({ SerialName, BaudRate }: ModBusConectProps)
 
 export const cancelConnection = () => {
   cancelScan = true;
+  mbsId=1;
 };
-
-
-/*export const scanNextAddress = () => {
-  client.setID(mbsId); // Definir o endereço Modbus que estamos verificando
-
-  client.readHoldingRegisters(0, 1)
-      .then(data => {
-          console.log(`Dispositivo encontrado no endereço ${mbsId}:`, data.data);
-          // Faça algo com os dados, se necessário
-            client.setID      (mbsId);
-            mbsId = 1
-          // Parar a varredura ao encontrar um dispositivo
-          console.log("Varredura parada, dispositivo encontrado.");
-          // client.close(); // Descomente se desejar fechar a conexão aqui
-      })
-      .catch(err => {
-          console.error(`Nenhum dispositivo encontrado no endereço ${mbsId}`);
-
-          // Verifique o próximo endereço
-          mbsId++;
-          if (mbsId <= 247) { // 247 é o endereço máximo permitido em Modbus
-              scanNextAddress();
-          } else {
-              console.log("Varredura completa.");
-              // client.close(); // Fechar a conexão Modbus quando a varredura estiver completa
-          }
-      });
-};*/
 
 
 
@@ -246,6 +255,9 @@ export const WriteModbus = async (register, value, type = 'int') => {
         console.error('Erro ao fechar a conexão:', err);
     } else {
         console.log('Conexão fechada com sucesso.');
+        mbsId=1;
+        cancelScan= false;
+        deviceFound = false;
     }
 });
 }

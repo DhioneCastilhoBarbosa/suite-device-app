@@ -92,6 +92,7 @@ const WriteCoil = async () => {
 
 
 
+
 useEffect(() => {
   if (!mode.state) {
     fetchData();
@@ -180,9 +181,9 @@ useEffect(()=>{
           type="number"
           className='border border-zinc-400 w-48 rounded-md h-6 outline-none text-center'
           min={1}
-          value={inptsData[0]}
+          value={inptsData[0] === 0 ? "" : inptsData[0]}
           onChange={(event)=>updateData(0,event)}
-
+          inputMode="numeric"
           />
         </div>
 

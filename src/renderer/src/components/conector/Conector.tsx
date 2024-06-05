@@ -47,11 +47,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       }
       else{
         setIsLoading(true);
-        const result:boolean = await connectClient(ModBusProps);
+        let result:boolean = await connectClient(ModBusProps);
         setDeviceFound(result);
         SetPortOpen({state:true})
         setIsLoading(false);
-
+        console.log("Result",result)
+        result=false
+        console.log("Result",result)
       }
 
 
@@ -108,18 +110,18 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   };
 
   useEffect(() => {
+    if (PortOpen.state === false) {
+      listSerialPorts();
+      const intervalId = setInterval(() => {
+        listSerialPorts();
+        console.log('Atualizei as portas', PortOpen.state);
+      }, 2000);
 
-    if(PortOpen.state===false){
-    listSerialPorts()
-    const intervalId = setInterval(() => {
-      listSerialPorts()
-      //console.log('atualisei as portas', PortOpen.state)
-    }, 2000)
-
-    return () => clearInterval(intervalId)
-  }
-  return undefined;
-  }, [])
+      return () => clearInterval(intervalId);
+    }
+    // Limpeza opcional, se necessário, quando PortOpen.state for true.
+    return undefined;
+  }, [PortOpen.state]);
 
 
   useEffect(()=>{

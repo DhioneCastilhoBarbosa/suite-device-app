@@ -4,7 +4,7 @@ interface ModalProps{
   show: boolean
   onClose:()=>void
 }
-export function ModalSucess({show,onClose}:ModalProps){
+export function ModalFailUpdate({show,onClose}:ModalProps){
 
   if(!show){
     return null
@@ -13,8 +13,8 @@ export function ModalSucess({show,onClose}:ModalProps){
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
         <h2 className="text-xl font-bold mb-4">Atenção!</h2>
-        <p >Dispositivo atualizado com Sucesso!</p>
-        <p className="mb-6">E necessario reiniciar a conexão.</p>
+        <p >Falha na atualização do dispositivo!</p>
+        <p className="mb-6">Reinicie a conexão e tente novamente.</p>
         <div className="flex justify-center mx-8">
           <Button
           size={"small"}

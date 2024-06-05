@@ -17,7 +17,7 @@ async function openSerialPort(portName: string, baudRate: number): Promise<void>
       if (err) {
         return reject(`Erro ao abrir a porta serial: ${err.message}`);
       }
-      console.log("Porta serial aberta com sucesso");
+      //console.log("Porta serial aberta com sucesso");
       parser = serialPort.pipe(new ReadlineParser({ delimiter: '*' }));
       resolve();
     });
@@ -34,7 +34,7 @@ function closeSerialPort(): Promise<void> {
         if (err) {
           return reject(`Erro ao fechar a porta serial: ${err.message}`);
         }
-        console.log("Porta serial fechada com sucesso");
+        //console.log("Porta serial fechada com sucesso");
         resolve();
       });
     } else {
@@ -58,11 +58,10 @@ async function update(stateInfo, fail) {
 
 let Data =""
  serialPort.on('data', async (data) =>{
-    console.log('Dados recebidos:', data.toString());
+    //console.log('Dados recebidos:', data.toString());
     Data = ""
     Data+= data.toString()
     if(data.includes('ERRO NO CRC')){
-      console.log('Falha na atualização');
       fail()
       return
     }
@@ -128,59 +127,60 @@ interface UpdateFirmwareProps{
   finished: ()=>void
   fail:()=> void
 }
-async function handleCorruptedSensor({file, portName,baudRate, synced, finished, fail}: UpdateFirmwareProps) {
-
-  const stateInfo = [file];
-
-  try {
-    await openSerialPort(portName, baudRate);
-    await wait(200)
-    console.log("Aguardando resposta 'BL2.0' da porta serial...");
-    await aguardarRespostaSerial(serialPort, 'BL2.0', 1000);
-
-    console.log("Resposta 'BL2.0' recebida. Enviando comando '#'");
-    serialPort.write('#');
-
-    console.log("Aguardando resposta 'Recebendo arquivo...' da porta serial...");
-    await aguardarRespostaSerial(serialPort, 'Recebendo arquivo...', 1000)
-
-    synced()
-    console.log("Resposta 'Recebendo arquivo...' recebida. Enviando dados.");
-    await wait(3000);
-
-    // Envie os dados aqui
-    await update(stateInfo, fail);
-    await closeSerialPort();
-    finished()
-  } catch (error:string | any) {
-    console.error(`Erro durante a reexecução após sensor corrompido: ${error.message}`);
-    fail()
-  }
+function timeoutPromise(ms) {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), ms));
 }
+
+async function WriteModbusWithTimeout(address, value, timeout) {
+  return Promise.race([
+    WriteModbus(address, value),
+    timeoutPromise(timeout)
+  ]);
+}
+
+async function CloseModBusWithTimeout(timeout) {
+  return Promise.race([
+    CloseModBus(),
+    timeoutPromise(timeout)
+  ]);
+}
+
 
 
 export async function atualizaFirmware ({file, portName,baudRate, synced, finished, fail}: UpdateFirmwareProps) {
 
   const stateInfo = [file];
+  try {
+    await WriteModbusWithTimeout(416, 1, 5000); // 5000 ms = 5 segundos de timeout para WriteModbus
+  } catch (error) {
+    console.error("WriteModbus failed or timed out:", error);
+  }
 
-    try {
+  try {
+    await CloseModBusWithTimeout(5000); // 5000 ms = 5 segundos de timeout para CloseModBus
+  } catch (error) {
+    console.error("CloseModBus failed or timed out:", error);
+  }
 
-      await WriteModbus(416,1) // comando reset
-      await CloseModBus()
+
+  try {
+
+      //await WriteModbus(416,1) // comando reset
+      //await CloseModBus()
       await wait(1000)
       await openSerialPort(portName, baudRate);
       await wait(200)
-      console.log("Aguardando resposta 'BL2.0' da porta serial...");
+      //console.log("Aguardando resposta 'BL2.0' da porta serial...");
       await aguardarRespostaSerial(serialPort, 'BL2.0', 10000);
 
-      console.log("Resposta 'BL2.0' recebida. Enviando comando '#'");
+     // console.log("Resposta 'BL2.0' recebida. Enviando comando '#'");
       serialPort.write('#');
 
-      console.log("Aguardando resposta 'Recebendo arquivo...' da porta serial...");
+      //console.log("Aguardando resposta 'Recebendo arquivo...' da porta serial...");
       await aguardarRespostaSerial(serialPort, 'Recebendo arquivo...', 10000)
 
       synced()
-      console.log("Resposta 'Recebendo arquivo...' recebida. Enviando dados.");
+      //console.log("Resposta 'Recebendo arquivo...' recebida. Enviando dados.");
 
       await wait(3000)
         // Envie os dados aqui
@@ -193,3 +193,5 @@ export async function atualizaFirmware ({file, portName,baudRate, synced, finish
     }
 
 };
+
+//ERRO NO CRC!!!

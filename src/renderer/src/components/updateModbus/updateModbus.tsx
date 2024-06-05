@@ -6,6 +6,7 @@ import { atualizaFirmware } from "@renderer/utils/updateFirmware";
 import { Device} from "@renderer/Context/DeviceContext";
 import { ModalUpdate } from "../modal/modalUpdate";
 import { ModalSucess } from "../modal/modalSucces";
+import { ModalFailUpdate } from "../modal/modalFailUpdate";
 
 
 
@@ -16,6 +17,7 @@ export default function UpdateModubus(){
   const [baudRateSelect, setBaudRateSelect] = useState<number>(57600)
   const [showModal, setShowModal] = useState(false);
   const [showModalSucess, setShowModalSucess] = useState(false);
+  const [showModalFail, setShowModalFail] = useState(false);
   const [status, setStatus]= useState('')
 
   const handleSelectFile = () => {
@@ -37,10 +39,10 @@ export default function UpdateModubus(){
   const fail =()=>{
     console.log("Erro durante a atualização")
     setStatus(status=> status +'Erro durante a atualização. \n')
+    setShowModalFail(true)
   }
 
   const finished=()=>{
-   // console.log("Atualização concluida com sucesso")
     setStatus(status=> status +'Atualização concluida com sucesso! \n')
     //SetPortOpen({state:false})
     setShowModalSucess(true)
@@ -59,15 +61,16 @@ export default function UpdateModubus(){
     setShowModal(false);
   };
 
-  const handleSuceesClose = () => {
+  const handleCloseModal = () => {
     setShowModalSucess(false);
     SetPortOpen({state:false})
     setResetUpdate({state:true})
+    setShowModalFail(false)
+    setFileContent('');
   };
 
   const openModal = () => {
     setShowModal(true);
-
   };
 
 
@@ -109,7 +112,8 @@ export default function UpdateModubus(){
       </Button>
     </div>
     <ModalUpdate show={showModal} onUpdate={handleUpdate} onClose={handleClose} />
-    <ModalSucess show={showModalSucess} onClose={handleSuceesClose}/>
+    <ModalSucess show={showModalSucess} onClose={handleCloseModal}/>
+    <ModalFailUpdate show={showModalFail} onClose={handleCloseModal}/>
   </div>
 
   )}
