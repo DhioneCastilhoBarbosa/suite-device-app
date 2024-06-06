@@ -29,7 +29,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     portDevice(valorSelecionado)
     setIsConnected(!isConnected)
     PortStatus(isConnected)
-
+    //SetPortOpen({state:true})
     let ModBusProps ={
       SerialName : valorSelecionado,
       BaudRate: 9600
@@ -48,8 +48,8 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       else{
         setIsLoading(true);
         let result:boolean = await connectClient(ModBusProps);
-        setDeviceFound(result);
         SetPortOpen({state:true})
+        setDeviceFound(result);
         setIsLoading(false);
         console.log("Result",result)
         result=false
@@ -61,6 +61,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     }
     else{
       setMode({state:true})
+      SetPortOpen({state:true})
     }
 
 
