@@ -30,10 +30,10 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'Suite-Device',
-        version: '1.0.2',
+        version: '1.1.6',
         setupExe: 'Suite-Device.exe',
         appIconPath: path.join(__dirname, 'resources', 'icon.ico'),
-        loadingGif: path.join(__dirname, 'resources', 'cubi.gif'),
+        loadingGif: path.join(__dirname, 'resources', 'db.gif'),
         iconUrl:
           'https://raw.githubusercontent.com/DhioneCastilhoBarbosa/suite-device-app/main/resources/icon.ico',
         setupIcon: path.join(__dirname, 'resources', 'icon.ico'),

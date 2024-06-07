@@ -3,9 +3,8 @@ import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 import { useEffect } from 'react'
 
-
 export default function Menu() {
-  const { device,setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
+  const { device, setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
 
   function newDevice(device) {
     // console.log(device)
@@ -20,10 +19,9 @@ export default function Menu() {
     setPort({ name: isdevice })
   }
 
-  useEffect(()=>{
-    console.log("Menu renderizou")
+  useEffect(() => {
+    //console.log("Menu renderizou")
   }, [PortOpen.state])
-
 
   return (
     <div className="flex max-h-screen flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
@@ -35,11 +33,11 @@ export default function Menu() {
         <div className="flex items-center justify-center pt-4 text-white  font-bold">
           <ul className="  w-full ml-1 mr-3">
             <li className="">
-            <button
+              <button
                 className={twMerge(
-                  "w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
+                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
                   device.name === 'terminal'
-                    ? "bg-white text-[#1E9EF4]"
+                    ? 'bg-white text-[#1E9EF4]'
                     : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
                 )}
                 onClick={() => newDevice('terminal')}
@@ -50,11 +48,11 @@ export default function Menu() {
             </li>
 
             <li>
-            <button
+              <button
                 className={twMerge(
-                  "w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2",
+                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
                   device.name === 'linnimDB-cap'
-                    ? "bg-white text-[#1E9EF4]"
+                    ? 'bg-white text-[#1E9EF4]'
                     : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
                 )}
                 onClick={() => newDevice('linnimDB-cap')}

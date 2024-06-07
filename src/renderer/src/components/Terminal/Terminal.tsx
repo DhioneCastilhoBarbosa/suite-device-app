@@ -57,7 +57,7 @@ export function Terminal(props: TerminalProps) {
 
   const { mode, PortOpen }: any = Device()
 
-  console.log(`Status Port: ${PortOpen.state}`)
+  //console.log(`Status Port: ${PortOpen.state}`)
 
   const textareaRef: React.MutableRefObject<any> = useRef(null)
   let newComando = ''
@@ -107,13 +107,13 @@ export function Terminal(props: TerminalProps) {
           .sendCommand(comando)
           .then((resposta) => {
             setTextValue(`${newComando}RX: ${resposta}\n`)
-            console.log('Resultado:', resposta)
+            //console.log('Resultado:', resposta)
             if (comando === '?!') {
               setFirstAddress(parseInt(resposta))
             }
           })
           .catch((erro) => {
-            console.error('Erro:', erro.message)
+            //console.error('Erro:', erro.message)
             setTextValue(newComando)
           })
       } else {
@@ -141,7 +141,7 @@ export function Terminal(props: TerminalProps) {
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      console.log('Enter')
+      //console.log('Enter')
       handleClickSendComand(inputValue)
     }
   }
@@ -169,7 +169,7 @@ export function Terminal(props: TerminalProps) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={"Terminal SDI12"}>
+      <HeaderDevice DeviceName={'Terminal SDI12'}>
         <TerminalWindow size={30} />
       </HeaderDevice>
       <div className="bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl">
@@ -199,14 +199,19 @@ export function Terminal(props: TerminalProps) {
           </div>
         </header>
         <div className="flex flex-row items-center justify-end mr-8 mt-4 gap-2">
-          <Button size={"small"} onClick={handleSaveToFile} >Salvar</Button>
-          <Button size={"small"} onClick={handleClearTextArea}> Limpar</Button>
+          <Button size={'small'} onClick={handleSaveToFile}>
+            Salvar
+          </Button>
+          <Button size={'small'} onClick={handleClearTextArea}>
+            {' '}
+            Limpar
+          </Button>
         </div>
         <div className="w-full pr-8 pl-8 pt-4 flex">
           <div className="flex flex-col items-center mr-4 w-36">
             <span className="mb-2 mr-1 font-light">Comandos</span>
             <Button
-              size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand('?!')
               }}
@@ -214,7 +219,7 @@ export function Terminal(props: TerminalProps) {
               ?!
             </Button>
             <Button
-              size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand(`${address}!`)
               }}
@@ -222,7 +227,7 @@ export function Terminal(props: TerminalProps) {
               a!
             </Button>
             <Button
-              size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand(`${address}I!`)
               }}
@@ -230,7 +235,7 @@ export function Terminal(props: TerminalProps) {
               al!
             </Button>
             <Button
-              size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand(`${firstAddress}A${address}!`)
               }}
@@ -238,13 +243,15 @@ export function Terminal(props: TerminalProps) {
               aAb!
             </Button>
             <Button
-              size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand(`${address}C!`)
               }}
-            >aC!</Button>
+            >
+              aC!
+            </Button>
             <Button
-            size={"small"}
+              size={'small'}
               onClick={() => {
                 handleClickSendComand(`${address}D0!`)
               }}
@@ -269,19 +276,15 @@ export function Terminal(props: TerminalProps) {
             onKeyDown={handleKeyPress}
             placeholder="Digite o comando"
           />
-          <Button
-          size={"small"}
-          onClick={() => handleClickSendComand(inputValue)}
-          >
+          <Button size={'small'} onClick={() => handleClickSendComand(inputValue)}>
             Enviar
           </Button>
         </div>
       </div>
-
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={"Terminal SDI12"}>
+      <HeaderDevice DeviceName={'Terminal SDI12'}>
         <TerminalWindow size={30} />
       </HeaderDevice>
       <ImageDevice image={TerminalImagem} />

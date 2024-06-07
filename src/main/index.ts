@@ -1,9 +1,10 @@
 import { app, shell, BrowserWindow, autoUpdater, dialog } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import iconLinux from '../../resources/icon.png?asset'
 import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
+import { spawn } from 'child_process'
 
 if (squirrelStartup) {
   app.quit()
@@ -12,21 +13,20 @@ if (squirrelStartup) {
 const { updateElectronApp } = require('update-electron-app')
 updateElectronApp({
   updateInterval: '5 minutes',
-  logger: require('electron-log'),
   notifyUser: true
 })
 
+let mainWindow: BrowserWindow | null
+
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 830,
-    minWidth: 1200, // Define a largura mínima da janela
-    minHeight: 830, // Define a altura mínima da janela
+    minWidth: 1200,
+    minHeight: 830,
     show: false,
     autoHideMenuBar: true,
-    icon: join(__dirname, '../../resources/icon.ico?asset'),
-    ...(process.platform === 'linux' ? { iconLinux } : { iconWin }),
+    icon: process.platform === 'linux' ? iconLinux : iconWin,
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -35,10 +35,8 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.webContents.openDevTools()
-
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow!.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -46,62 +44,110 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  //mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
 }
 
-app.on('ready', function () {
-  createWindow()
-  autoUpdater.checkForUpdates()
-})
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
-
-autoUpdater.on('update-downloaded', (releaseNotes, releaseName) => {
-  const dialogOpts: any = {
-    type: 'info',
-    buttons: ['Reiniciar', 'Depois'],
-    title: 'Application Update',
-    message: process.platform === 'darwin' ? releaseNotes : releaseName,
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+function handleSquirrelEvent(): boolean {
+  if (process.argv.length === 1) {
+    return false
   }
 
-  dialog.showMessageBox(dialogOpts)
-})
+  const appFolder = path.resolve(process.execPath, '..')
+  const rootAtomFolder = path.resolve(appFolder, '..')
+  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'))
+  const exeName = path.basename(process.execPath)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const spawnUpdate = (args: string[]): any => {
+    try {
+      return spawn(updateDotExe, args, { detached: true })
+    } catch (error) {
+      return null
+    }
+  }
+
+  const squirrelEvent = process.argv[1]
+  switch (squirrelEvent) {
+    case '--squirrel-install':
+    case '--squirrel-updated':
+      spawnUpdate(['--createShortcut', exeName])
+      setTimeout(app.quit, 1000)
+      return true
+
+    case '--squirrel-uninstall':
+      spawnUpdate(['--removeShortcut', exeName])
+      setTimeout(app.quit, 1000)
+      return true
+
+    case '--squirrel-obsolete':
+      app.quit()
+      return true
+  }
+  return false
+}
+
+if (!handleSquirrelEvent()) {
+  app.on('ready', () => {
+    createWindow()
+    //if (!is.dev) {
+    autoUpdater.checkForUpdates()
+    //}
+  })
+
+  app.whenReady().then(() => {
+    electronApp.setAppUserModelId('com.electron')
+
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    app.on('activate', function () {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
+  })
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
+  })
+
+  autoUpdater.on('update-downloaded', (releaseNotes, releaseName) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dialogOpts: any = {
+      type: 'info',
+      buttons: ['Restart', 'Later'],
+      title: 'Application Update',
+      message: process.platform === 'darwin' ? releaseNotes : releaseName,
+      detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+    }
+
+    dialog.showMessageBox(dialogOpts)
+
+    /*dialog.showMessageBox(dialogOpts).then((returnValue) => {
+      if (returnValue.response === 0) {
+        autoUpdater.quitAndInstall()
+      }
+    })*/
+  })
+
+  autoUpdater.on('checking-for-update', () => {
+    // Aqui você pode adicionar qualquer lógica necessária quando o aplicativo está verificando por atualizações
+  })
+
+  autoUpdater.on('update-available', () => {
+    // Aqui você pode adicionar qualquer lógica necessária quando uma atualização está disponível
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    // Aqui você pode adicionar qualquer lógica necessária quando uma atualização não está disponível
+  })
+
+  autoUpdater.on('error', () => {
+    // Aqui você pode adicionar qualquer lógica necessária para lidar com erros de atualização
+  })
+}

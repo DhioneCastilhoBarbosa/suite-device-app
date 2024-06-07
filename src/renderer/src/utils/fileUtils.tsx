@@ -1,6 +1,7 @@
-const selectFile = (onFileLoad: (content: string) => void , typeFile:string, ) => {
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = event.target.files;
+const selectFile = (onFileLoad: (content: string) => void, typeFile: string) => {
+  const handleFileChange = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const fileList = input.files;
     if (fileList && fileList.length > 0) {
       const file = fileList[0];
       const fileExtension = file.name.split('.').pop();
