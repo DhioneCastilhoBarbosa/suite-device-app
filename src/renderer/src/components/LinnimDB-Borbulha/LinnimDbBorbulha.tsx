@@ -16,7 +16,7 @@ interface LinnimDbCapProps {
   PortStatus?: boolean
 }
 
-export default function LinnimDbCap(props: LinnimDbCapProps) {
+export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
   const [menuName, setMenuName] = useState('info')
   const [colorInfo, setColorInfo] = useState(true)
   const [colorConfig, setColorConfig] = useState(false)
@@ -42,7 +42,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'LinnimDB-Cap'}>
+      <HeaderDevice DeviceName={'LinnimDB-Borbulha'}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -90,11 +90,11 @@ export default function LinnimDbCap(props: LinnimDbCapProps) {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'LinnimDB-Cap'}>
+      <HeaderDevice DeviceName={'LinnimDB-Borbulha'}>
         <Drop size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-cap/" />
+      <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-borbulha/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
         <CardInformation title="VISÃO GERAL">
