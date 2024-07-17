@@ -1,6 +1,7 @@
 import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
 import { Device } from '@renderer/Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
+import LoadingData from '@renderer/components/loading/loadingData'
 import selectFile from '@renderer/utils/fileUtils'
 import { IdModBus, WriteModbus, readModbusData } from '@renderer/utils/modbusRTU'
 import { useEffect, useState } from 'react'
@@ -11,13 +12,19 @@ export default function Settings() {
   const [unit, setUnit] = useState(0)
   const [coefA, setCoefA] = useState(0)
   const [coefB, setCoefB] = useState(0)
+  const [timeStability, setTimeStability] = useState(0)
+  const [timePumping, setTimePumping] = useState(0)
   const { mode }: any = Device()
   const [fileContent, setFileContent] = useState<string>('')
-  const [inptsData, setInptsData] = useState<number[]>([1, 7, 0, 0])
+  const [inptsData, setInptsData] = useState<number[]>([1, 7, 0, 0, 1, 1])
   const [sendData, setSendData] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
 
   const fetchData = async () => {
     setModbusData([])
+    setTitleLoading('Baixando informações do dispositivo!')
+    setIsLoading(true)
     try {
       // Espera 500 millsegundo antes de fazer a chamada Modbus
 
@@ -28,14 +35,16 @@ export default function Settings() {
         { address: 255, register: 1, Int16: true, float32: false }, //
         { address: 336, register: 1, Int16: true, float32: false }, //
         { address: 352, register: 2, Int16: false, float32: true }, //
-        { address: 368, register: 2, Int16: false, float32: true } //
+        { address: 368, register: 2, Int16: false, float32: true }, //
+        { address: 174, register: 1, Int16: true, float32: false }, //
+        { address: 178, register: 1, Int16: true, float32: false } //
       ]
 
       // Função para fazer chamadas Modbus em sequência
       const makeModbusCalls = async (calls) => {
         for (let i = 0; i < calls.length; i++) {
           const { address, register, Int16, float32 } = calls[i]
-          const data = await readModbusData(address, register, Int16, float32)
+          const data = await readModbusData(address, register, Int16, float32, 250)
           setModbusData((prevData) => [...prevData, data as string])
           await new Promise((resolve) => setTimeout(resolve, 300)) // Aguarda 200ms antes de fazer a próxima chamada
         }
@@ -50,6 +59,8 @@ export default function Settings() {
 
   const WriteCoil = async () => {
     try {
+      setIsLoading(true)
+      setTitleLoading('Enviando informações para o dispositivo!')
       // Espera 500 milissegundos antes de fazer a chamada Modbus
       await new Promise((resolve) => setTimeout(resolve, 500))
       //console.log(inptsData[0], inptsData[1], inptsData[2], inptsData[3])
@@ -59,7 +70,9 @@ export default function Settings() {
         { address: 368, register: coefB, type: 'float' },
         { address: 352, register: coefA, type: 'float' },
         { address: 336, register: unit, type: 'int' },
-        { address: 255, register: address, type: 'int' }
+        { address: 255, register: address, type: 'int' },
+        { address: 174, register: timePumping, type: 'int' },
+        { address: 178, register: timeStability, type: 'int' }
       ]
 
       // Função para fazer chamadas Modbus em sequência
@@ -82,6 +95,8 @@ export default function Settings() {
     } catch (error) {
       console.error('Erro ao fazer chamadas Modbus:', error)
       setSendData(false)
+    } finally {
+      setTimeout(() => setIsLoading(false), 1000)
     }
   }
 
@@ -92,10 +107,11 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    if (modbusData.length >= 4) {
+    if (modbusData.length >= 6) {
       for (let i = 0; i < modbusData.length; i++) {
         updateValueInputs(i, modbusData[i])
       }
+      setTimeout(() => setIsLoading(false), 1000)
     }
   }, [modbusData])
 
@@ -138,6 +154,8 @@ export default function Settings() {
     setUnit(inptsData[1])
     setCoefA(inptsData[2])
     setCoefB(inptsData[3])
+    setTimePumping(inptsData[4])
+    setTimeStability(inptsData[5])
 
     //console.log(inptsData[3], inptsData[2], inptsData[1], inptsData[0])
     //console.log(coefB, coefA, unit, address)
@@ -150,7 +168,7 @@ export default function Settings() {
     if (sendData === true) {
       WriteCoil()
     }
-  }, [address, unit, coefA, coefB])
+  }, [address, unit, coefA, coefB, timePumping, timeStability])
 
   return (
     <div className="flex flex-col items-center justify-center ">
@@ -191,7 +209,7 @@ export default function Settings() {
           </select>
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col mt-11">
           <label>Coeficiente</label>
           <div className=" flex flex-row w-52 items-center justify-center border border-zinc-400 rounded-md p-2 gap-2">
             <div className="w-auto flex flex-col items-center pb-5">
@@ -219,12 +237,43 @@ export default function Settings() {
             </div>
           </div>
         </div>
+
+        <div className="flex flex-col w-52 mt-2 ">
+          <div className="border border-zinc-400 rounded-md p-2 w-48">
+            <label>Tempo de Bombeamento</label>
+            <div className="flex gap-1 items-center">
+              <input
+                type="number"
+                className="border border-zinc-400 w-24 rounded-md h-6 outline-none text-center mt-1"
+                min={1}
+                value={inptsData[4]}
+                onChange={(event) => updateData(4, event)}
+                inputMode="numeric"
+              />
+              <p className="text-xs">segundos</p>
+            </div>
+          </div>
+          <div className="mt-1.5 border border-zinc-400 rounded-md p-2 w-48">
+            <label>Tempo de estabilização</label>
+            <div className="flex gap-1 items-center">
+              <input
+                type="number"
+                className="border border-zinc-400 w-24 rounded-md h-6 outline-none text-center mt-1"
+                min={1}
+                value={inptsData[5]}
+                onChange={(event) => updateData(5, event)}
+                inputMode="numeric"
+              />
+              <p className="text-xs">segundos</p>
+            </div>
+          </div>
+        </div>
       </div>
       <div className=" flex flex-row gap-5 h-14 my-10 pr-10 ">
         {/*<Button size={'large'} onClick={handleSelectFile}>
           <FolderOpen size={24} />
           Selecione o arquivo
-  </Button>*/}
+        </Button>*/}
         <Button size={'large'} onClick={fetchData}>
           <DownloadSimple size={24} />
           Baixa informações
@@ -234,6 +283,7 @@ export default function Settings() {
           Enviar configurações
         </Button>
       </div>
+      <LoadingData visible={isLoading} title={titleLoading} />
     </div>
   )
 }

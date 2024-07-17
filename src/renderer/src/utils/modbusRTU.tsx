@@ -21,7 +21,7 @@ const MBS_STATE_FAIL_CONNECT = 'State fail (port)'
 
 // eslint-disable-next-line no-unused-vars
 let mbsId = 1
-let mbsTimeout = 6000
+let mbsTimeout = 250 // 250
 // eslint-disable-next-line no-unused-vars
 let mbsState = MBS_STATE_INIT
 
@@ -53,7 +53,7 @@ const scanAddress = async (mbsId: number): Promise<number | null> => {
   client.setID(mbsId) // Definir o endereço Modbus que estamos verificando
   console.log(`Verificando endereço ${mbsId}...`)
   try {
-    const data = await client.readHoldingRegisters(0, 1)
+    const data = await client.readHoldingRegisters(255, 1)
     if (cancelScan || deviceFound) {
       return null
     }
@@ -75,7 +75,7 @@ export const scanNextAddress = async (): Promise<boolean> => {
     const promises: Promise<number | null>[] = []
     for (let j = i; j < i + CONCURRENCY && j <= MAX_ADDRESS; j++) {
       promises.push(scanAddress(j))
-      await delay(200) // Atraso de 50ms entre as verificações (ajuste conforme necessário)
+      await delay(250) // Atraso de 50ms entre as verificações (ajuste conforme necessário)/250
     }
     const results = await Promise.all(promises)
     const foundAddress = results.find((result) => result !== null)
@@ -130,10 +130,12 @@ export function readModbusData(
   address: number,
   register: number,
   Int16: boolean,
-  Float32LE: boolean
+  Float32LE: boolean,
+  timeout: number
 ) {
   return new Promise((resolve, reject) => {
     // try to read data
+    client.setTimeout(timeout)
     client
       .readHoldingRegisters(address, register)
       .then(function (data) {

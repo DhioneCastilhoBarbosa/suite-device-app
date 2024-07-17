@@ -1,25 +1,27 @@
-import Button from "@renderer/components/button/Button";
-import { readModbusData } from "@renderer/utils/modbusRTU";
-import { useState } from "react";
+import Button from '@renderer/components/button/Button'
+import LoadingData from '@renderer/components/loading/loadingData'
+import { readModbusData } from '@renderer/utils/modbusRTU'
+import { useState } from 'react'
 
+export default function Measure() {
+  const [readPressure, setReadPressure] = useState<number>(0)
+  const [isLoading, setIsLoading] = useState(false)
 
-export default function Measure(){
-  const[readPressure, setReadPressure] = useState<number>(0)
-
-  async function handleModbus(){
-
+  async function handleModbus() {
     try {
-      const data = await readModbusData(2, 2, false,true);
+      setIsLoading(true)
+      const data = await readModbusData(2, 2, false, true, 1000)
 
       setReadPressure(data as number)
-      console.log(data); // Aqui você terá os dados lidos do Modbus
-  } catch (error) {
-      console.error('Erro ao ler dados Modbus:', error);
+      console.log(data) // Aqui você terá os dados lidos do Modbus
+    } catch (error) {
+      console.error('Erro ao ler dados Modbus:', error)
+    } finally {
+      setTimeout(() => setIsLoading(false), 1000)
+    }
   }
 
-  }
-
-  return(
+  return (
     <>
       <div className="flex items-start justify-between  mb-4 border-b-[1px] border-sky-500 mr-8 ml-8 ">
         <label>Leitura</label>
@@ -28,15 +30,18 @@ export default function Measure(){
         <div className="flex flex-col mt-4">
           <label>Pressão</label>
           <input
-          type="text"
-          value={readPressure.toString()}
-          disabled={true}
-          className='border border-zinc-400 w-48 rounded-md h-6 outline-none text-center'
-          min={0}
+            type="text"
+            value={readPressure.toString()}
+            disabled={true}
+            className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
+            min={0}
           />
         </div>
-        <Button filled={true} size={"medium"} onClick={handleModbus}>Medir</Button>
+        <Button filled={true} size={'medium'} onClick={handleModbus}>
+          Medir
+        </Button>
       </div>
+      <LoadingData visible={isLoading} title="Solicitando dados de medição ao dispositivo!" />
     </>
   )
 }

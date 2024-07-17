@@ -93,9 +93,10 @@ function handleSquirrelEvent(): boolean {
 if (!handleSquirrelEvent()) {
   app.on('ready', () => {
     createWindow()
-    //if (!is.dev) {
+    if (is.dev) {
+      mainWindow?.webContents.openDevTools()
+    }
     autoUpdater.checkForUpdates()
-    //}
   })
 
   app.whenReady().then(() => {

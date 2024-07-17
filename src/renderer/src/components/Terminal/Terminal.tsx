@@ -10,6 +10,8 @@ import { Device } from '@renderer/Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 
+import { z } from 'zod'
+
 interface TerminalProps {
   isConect: boolean
   portCom?: string
@@ -22,6 +24,8 @@ interface SerialProps {
 }
 
 const serialManager = new SerialManager()
+
+const numericSchema = z.string().regex(/^\d*$/, 'Deve conter apenas números')
 
 export function Openport({ portName, bauld }: SerialProps) {
   serialManager.openPort(portName, bauld)
@@ -56,6 +60,7 @@ export function Terminal(props: TerminalProps) {
   const [firstAddress, setFirstAddress] = useState(0)
 
   const { mode, PortOpen }: any = Device()
+  const [error, setError] = useState('')
 
   //console.log(`Status Port: ${PortOpen.state}`)
 
@@ -136,13 +141,30 @@ export function Terminal(props: TerminalProps) {
   }
 
   const handleAddress = (event) => {
-    setAddress(parseInt(event.target.value))
+    const newValue = event.target.value
+    const result = numericSchema.safeParse(newValue)
+
+    if (result.success) {
+      setAddress(parseInt(newValue))
+      setError('')
+      console.log('input succes sem virgula e ponto')
+    } else {
+      setError(result.error.errors[0].message)
+      console.log(error)
+    }
   }
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       //console.log('Enter')
       handleClickSendComand(inputValue)
+    }
+  }
+
+  const handleBeforeInput = (event) => {
+    const invalidChars = ['.', ',']
+    if (invalidChars.includes(event.data) || event.target.value.length >= 2) {
+      event.preventDefault()
     }
   }
 
@@ -183,6 +205,7 @@ export function Terminal(props: TerminalProps) {
               min={0}
               maxLength={2}
               onChange={handleAddress}
+              onBeforeInput={handleBeforeInput}
               className="border-sky-400 border-[2px] text-center w-12 rounded-md outline-none"
             />
           </div>

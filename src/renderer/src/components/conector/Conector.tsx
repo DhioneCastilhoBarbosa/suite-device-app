@@ -17,9 +17,18 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
   const { PortOpen, SetPortOpen, setMode, device, resetUpdate, setResetUpdate }: any = Device()
 
+  const [buttonAbility, setButtonAbility] = useState(true)
+
   //console.log("Device is ",device.name)
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
+    setButtonAbility(false)
+
+    if (event.target.value === 'Selecione') {
+      setButtonAbility(true)
+    }
+
+    console.log(event.target.value)
   }
 
   const handleClickConect = async () => {
@@ -78,7 +87,12 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
   const modeOffLine = () => {
     setOfflineMode(!OfflineMode)
-    console.log(OfflineMode)
+
+    if (OfflineMode === false) {
+      setButtonAbility(false)
+    } else {
+      setButtonAbility(true)
+    }
   }
 
   const closeNoDeviceFoundModal = () => {
@@ -160,13 +174,17 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
           <button
             className="bg-green-500 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-green-400 cursor-pointer"
             onClick={handleClickDisconect}
+            disabled={buttonAbility}
           >
             Conectado
           </button>
         ) : (
           <button
-            className="bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-zinc-500 cursor-pointer"
+            className={`bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white ${
+              buttonAbility ? 'cursor-not-allowed' : ' hover:bg-zinc-500 cursor-pointer'
+            } `}
             onClick={handleClickConect}
+            disabled={buttonAbility}
           >
             Conectar
           </button>

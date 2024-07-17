@@ -1,6 +1,7 @@
 import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
 import { Device } from '@renderer/Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
+import LoadingData from '@renderer/components/loading/loadingData'
 import selectFile from '@renderer/utils/fileUtils'
 import { IdModBus, WriteModbus, readModbusData } from '@renderer/utils/modbusRTU'
 import { useEffect, useState } from 'react'
@@ -15,9 +16,13 @@ export default function Settings() {
   const [fileContent, setFileContent] = useState<string>('')
   const [inptsData, setInptsData] = useState<number[]>([1, 7, 0, 0])
   const [sendData, setSendData] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
 
   const fetchData = async () => {
     setModbusData([])
+    setTitleLoading('Baixando informações do dispositivo!')
+    setIsLoading(true)
     try {
       // Espera 500 millsegundo antes de fazer a chamada Modbus
 
@@ -35,7 +40,7 @@ export default function Settings() {
       const makeModbusCalls = async (calls) => {
         for (let i = 0; i < calls.length; i++) {
           const { address, register, Int16, float32 } = calls[i]
-          const data = await readModbusData(address, register, Int16, float32)
+          const data = await readModbusData(address, register, Int16, float32, 250)
           setModbusData((prevData) => [...prevData, data as string])
           await new Promise((resolve) => setTimeout(resolve, 300)) // Aguarda 200ms antes de fazer a próxima chamada
         }
@@ -50,6 +55,8 @@ export default function Settings() {
 
   const WriteCoil = async () => {
     try {
+      setIsLoading(true)
+      setTitleLoading('Enviando informações para o dispositivo!')
       // Espera 500 milissegundos antes de fazer a chamada Modbus
       await new Promise((resolve) => setTimeout(resolve, 500))
       //console.log(inptsData[0], inptsData[1], inptsData[2], inptsData[3])
@@ -82,6 +89,8 @@ export default function Settings() {
     } catch (error) {
       console.error('Erro ao fazer chamadas Modbus:', error)
       setSendData(false)
+    } finally {
+      setTimeout(() => setIsLoading(false), 1000)
     }
   }
 
@@ -96,6 +105,7 @@ export default function Settings() {
       for (let i = 0; i < modbusData.length; i++) {
         updateValueInputs(i, modbusData[i])
       }
+      setTimeout(() => setIsLoading(false), 1000)
     }
   }, [modbusData])
 
@@ -234,6 +244,7 @@ export default function Settings() {
           Enviar configurações
         </Button>
       </div>
+      <LoadingData visible={isLoading} title={titleLoading} />
     </div>
   )
 }
