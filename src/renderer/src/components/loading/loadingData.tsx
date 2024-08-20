@@ -1,10 +1,15 @@
+import { Device } from '@renderer/Context/DeviceContext'
+
 interface LoadingDataProps {
   visible: boolean
   title: string
 }
 
 export default function LoadingData({ visible, title }: LoadingDataProps) {
-  if (!visible) return null
+  const { mode }: any = Device()
+  console.log('Mode:', mode.state)
+
+  if (!visible || mode.state) return null
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
       <div className="bg-white flex flex-col items-center justify-center p-6 rounded-md shadow-md">

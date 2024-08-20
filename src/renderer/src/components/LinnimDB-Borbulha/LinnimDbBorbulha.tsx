@@ -46,7 +46,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
         <Drop size={30} />
       </HeaderDevice>
 
-      <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl ">
+      <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl">
         <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 ">
           <div className="flex gap-4">
             <button

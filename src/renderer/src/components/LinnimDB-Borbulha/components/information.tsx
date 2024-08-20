@@ -56,7 +56,7 @@ export default function Information() {
   }, [modbusData])
 
   return (
-    <div className=" m-auto bg-transparent grid grid-cols-2  gap-4 my-36">
+    <div className=" m-auto bg-transparent grid grid-cols-2  gap-4 my-24">
       <div className="flex flex-col w-52">
         <label> Número de Série</label>
         <input

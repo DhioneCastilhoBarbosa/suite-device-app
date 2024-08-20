@@ -7,7 +7,6 @@ export default function Information() {
   const [modbusData, setModbusData] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const { mode }: any = Device()
-
   if (!mode.state) {
     useEffect(() => {
       const fetchData = async () => {

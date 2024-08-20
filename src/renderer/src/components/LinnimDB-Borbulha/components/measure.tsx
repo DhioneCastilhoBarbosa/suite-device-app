@@ -10,7 +10,7 @@ export default function Measure() {
   async function handleModbus() {
     try {
       setIsLoading(true)
-      const data = await readModbusData(2, 2, false, true, 10000)
+      const data = await readModbusData(2, 2, false, true, 60000)
 
       setReadPressure(data as number)
       console.log(data) // Aqui você terá os dados lidos do Modbus
@@ -26,8 +26,8 @@ export default function Measure() {
       <div className="flex items-start justify-between  mb-4 border-b-[1px] border-sky-500 mr-8 ml-8 ">
         <label>Leitura</label>
       </div>
-      <div className="flex flex-row justify-center gap-20 items-end mr-auto ml-auto mt-4 mb-8">
-        <div className="flex flex-col mt-4">
+      <div className="flex flex-row justify-center gap-20 items-end mr-auto ml-auto mt-1 mb-8">
+        <div className="flex flex-col mt-1">
           <label>Pressão</label>
           <input
             type="text"

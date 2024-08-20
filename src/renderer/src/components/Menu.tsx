@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '@renderer/Context/DeviceContext'
 import { useEffect } from 'react'
+import Footer from './Footer'
 
 export default function Menu() {
   const { device, setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
@@ -30,7 +31,7 @@ export default function Menu() {
           <span className="text-white text-sm font-bold">Dispostivos</span>
         </div>
 
-        <div className="flex items-center justify-center pt-4 text-white  font-bold">
+        <div className="flex items-center justify-center pt-4 text-white font-bold">
           <ul className="  w-full ml-1 mr-3">
             <li className="">
               <button

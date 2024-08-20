@@ -54,11 +54,11 @@ async function update(stateInfo, fail) {
 
   const line = array[0].toString()
   const linearray = line.split('\n')
-  //console.log('lineArray:',linearray)
+  console.log('lineArray:',linearray)
 
   let Data = ''
   serialPort.on('data', async (data) => {
-    //console.log('Dados recebidos:', data.toString());
+    console.log('Dados recebidos:', data.toString());
     Data = ''
     Data += data.toString()
     if (data.includes('ERRO NO CRC')) {
@@ -69,7 +69,7 @@ async function update(stateInfo, fail) {
   const tempoInicial: Date = new Date()
   for (let i = 0; i < linearray.length; i++) {
     const tt = linearray[i]
-    //console.log(linearray[i])
+    console.log(linearray[i])
 
     if (tt.length > 10) {
       serialPort.write(linearray[i])
@@ -77,7 +77,7 @@ async function update(stateInfo, fail) {
     }
 
     if ((i + 1) % 16 == 0 && tt.length === linearray[1].length) {
-      while (!Data.includes('.')) {
+      while (!Data.includes('.')){
         await wait(12) //12
       }
       Data = ''

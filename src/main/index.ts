@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, autoUpdater, dialog } from 'electron'
+import { app, shell, BrowserWindow, autoUpdater, dialog, screen } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import iconLinux from '../../resources/icon.png?asset'
@@ -21,9 +21,9 @@ let mainWindow: BrowserWindow | null
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1200,
-    height: 830,
+    height: 800,
     minWidth: 1200,
-    minHeight: 830,
+    minHeight: 800,
     show: false,
     autoHideMenuBar: true,
     icon: process.platform === 'linux' ? iconLinux : iconWin,
@@ -34,6 +34,23 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  // Ajuste quando a tela principal muda
+  screen.on('display-metrics-changed', () => {
+    if (mainWindow) {
+      const currentScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+      const { width: maxWidth, height: maxHeight } = currentScreen.workAreaSize
+
+      const [currentWidth, currentHeight] = mainWindow.getSize()
+
+      const widthRatio = currentWidth / maxWidth
+      const heightRatio = currentHeight / maxHeight
+
+      mainWindow.setSize(Math.floor(widthRatio * maxWidth), Math.floor(heightRatio * maxHeight))
+    }
+  })
+
+  mainWindow.setTitle('Suite Device')
 
   mainWindow.on('ready-to-show', () => {
     mainWindow!.show()
@@ -93,9 +110,7 @@ function handleSquirrelEvent(): boolean {
 if (!handleSquirrelEvent()) {
   app.on('ready', () => {
     createWindow()
-    if (is.dev) {
-      mainWindow?.webContents.openDevTools()
-    }
+
     autoUpdater.checkForUpdates()
   })
 

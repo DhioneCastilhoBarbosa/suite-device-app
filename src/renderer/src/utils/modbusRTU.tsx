@@ -141,7 +141,7 @@ export function readModbusData(
       .then(function (data) {
         mbsState = MBS_STATE_GOOD_READ
         mbsStatus = 'success'
-        //console.log(data.buffer);
+        //console.log("Buffer:",data.buffer);
 
         let Data = data.buffer
         let asciiData = ''

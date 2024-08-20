@@ -11,6 +11,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [OfflineMode, setOfflineMode] = useState(false)
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [isConnected, setIsConnected] = useState(isOnline)
+  const [conected, setConected] = useState(false)
 
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -19,7 +20,6 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
   const [buttonAbility, setButtonAbility] = useState(true)
 
-  //console.log("Device is ",device.name)
   const handleChange = (event) => {
     setValorSelecionado(event.target.value)
     setButtonAbility(false)
@@ -35,6 +35,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     portDevice(valorSelecionado)
     setIsConnected(!isConnected)
     PortStatus(isConnected)
+    setConected(true)
 
     const ModBusProps = {
       SerialName: valorSelecionado,
@@ -56,7 +57,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
         console.log('Result', result)
       }
     } else {
-      setMode({ state: false })
+      setMode({ state: true })
       SetPortOpen({ state: true })
     }
   }
@@ -66,6 +67,8 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     setIsConnected(!isConnected)
     PortStatus(isConnected)
     SetPortOpen({ state: false })
+    setConected(false)
+
     if (OfflineMode === false) {
       ClosePort()
       device.name === 'terminal' ? ClosePort() : CloseModBus()
@@ -80,8 +83,17 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       const ports = await SerialPort.list()
       const portNames = ports.map((port) => port.path)
       setAvailablePorts(portNames)
+      console.log(isConnected)
     } catch (error: any) {
       //console.error('Erro ao listar portas seriais:', error.message)
+    }
+  }
+
+  const verifyPortStatus = async () => {
+    if (!PortOpen.state) {
+      // console.log('Esta conectado')
+    } else {
+      // console.log('Não esta conectado')
     }
   }
 
@@ -90,6 +102,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
     if (OfflineMode === false) {
       setButtonAbility(false)
+      setValorSelecionado('Selecione')
     } else {
       setButtonAbility(true)
     }
@@ -103,26 +116,30 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     cancelConnection()
     setIsLoading(false)
     setDeviceFound(null)
+    setMode({ state: true })
   }
 
   useEffect(() => {
-    if (PortOpen.state === false) {
+    if (conected === false) {
       listSerialPorts()
       const intervalId = setInterval(() => {
         listSerialPorts()
-        // console.log('Atualizei as portas', PortOpen.state)
+        console.log('Atualizei as portas', PortOpen.state)
       }, 2000)
 
       return () => clearInterval(intervalId)
     }
     // Limpeza opcional, se necessário, quando PortOpen.state for true.
     return undefined
-  }, [])
+  }, [conected])
 
   useEffect(() => {
     if (resetUpdate.state === true) {
       setIsConnected(false)
       setResetUpdate({ state: false })
+      setMode({ state: false })
+      setConected(false)
+
       //console.log('ResetState:', resetUpdate.state)
     }
     //console.log('ResetState:', resetUpdate.state)

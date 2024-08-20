@@ -9,6 +9,7 @@ import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import Measure from './components/measure'
 import UpdateModubus from '../updateModbus/updateModbus'
+import Footer from '../Footer'
 
 interface LinnimDbCapProps {
   isConect: boolean
@@ -96,7 +97,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps) {
 
       <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-cap/" />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
+      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
         <CardInformation title="VISÃO GERAL">
           <p>
             O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico o que o

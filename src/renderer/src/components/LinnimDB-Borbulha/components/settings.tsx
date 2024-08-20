@@ -36,8 +36,8 @@ export default function Settings() {
         { address: 336, register: 1, Int16: true, float32: false }, //
         { address: 352, register: 2, Int16: false, float32: true }, //
         { address: 368, register: 2, Int16: false, float32: true }, //
-        { address: 174, register: 1, Int16: true, float32: false }, //
-        { address: 178, register: 1, Int16: true, float32: false } //
+        { address: 372, register: 1, Int16: true, float32: false }, //
+        { address: 376, register: 1, Int16: true, float32: false } //
       ]
 
       // Função para fazer chamadas Modbus em sequência
@@ -71,8 +71,8 @@ export default function Settings() {
         { address: 352, register: coefA, type: 'float' },
         { address: 336, register: unit, type: 'int' },
         { address: 255, register: address, type: 'int' },
-        { address: 174, register: timePumping, type: 'int' },
-        { address: 178, register: timeStability, type: 'int' }
+        { address: 372, register: timePumping, type: 'int' },
+        { address: 376, register: timeStability, type: 'int' }
       ]
 
       // Função para fazer chamadas Modbus em sequência
@@ -269,7 +269,7 @@ export default function Settings() {
           </div>
         </div>
       </div>
-      <div className=" flex flex-row gap-5 h-14 my-10 pr-10 ">
+      <div className=" flex flex-row gap-5 h-10 my-5 pr-10 ">
         {/*<Button size={'large'} onClick={handleSelectFile}>
           <FolderOpen size={24} />
           Selecione o arquivo

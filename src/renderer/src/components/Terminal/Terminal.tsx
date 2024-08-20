@@ -312,7 +312,7 @@ export function Terminal(props: TerminalProps) {
       </HeaderDevice>
       <ImageDevice image={TerminalImagem} />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
+      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
         <CardInformation title="VISÃO GERAL">
           <p>
             Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de

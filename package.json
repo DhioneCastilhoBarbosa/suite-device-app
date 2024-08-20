@@ -1,7 +1,7 @@
 {
   "name": "suite-device-app",
-  "version": "1.1.6",
-  "description": "An Electron application with React and TypeScript",
+  "version": "1.1.7",
+  "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
   "homepage": "https://www.dhionecastilho.com.br",
@@ -44,6 +44,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "file-saver": "^2.0.5",
     "modbus-serial": "^8.0.16",
+    "rimraf": "^6.0.1",
     "serialport": "^10.5.0",
     "tailwind-merge": "^2.2.2",
     "update-electron-app": "^3.0.0",
