@@ -1,5 +1,6 @@
 import LinnimDbBorbulha from './LinnimDB-Borbulha/LinnimDbBorbulha'
 import LinnimDbCap from './LinnimDB-Cap/LinnimDbCap'
+import TecladoSDI12 from './Teclado-SDI12/Teclado'
 import { Terminal } from './Terminal/Terminal'
 import { Device } from '@renderer/Context/DeviceContext'
 
@@ -15,6 +16,9 @@ export default function Preview() {
   }
   if (device.name === 'linnimDB-cap') {
     return <LinnimDbCap isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
+  }
+  if (device.name === 'teclado-sdi12') {
+    return <TecladoSDI12 isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
   } else {
     return undefined
   }
