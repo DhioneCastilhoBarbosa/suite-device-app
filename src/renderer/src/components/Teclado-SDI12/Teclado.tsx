@@ -3,13 +3,14 @@ import { CardInformation } from '../cardInfomation/CardInformation'
 import ImgBorbulha from '../../assets/LinnimDdCAP.svg'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 
-import { useState } from 'react'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
-import Measure from './components/measure'
 import VariableMain from './components/variableMain'
 import VariableControl from './components/variableControl'
+import ButtonSet from './components/buttonSet'
+import SerialManagerRS232 from '@renderer/utils/serial'
+import { useEffect, useState } from 'react'
 
 interface TecladoSDI12Props {
   isConect: boolean
@@ -17,11 +18,55 @@ interface TecladoSDI12Props {
   PortStatus?: boolean
 }
 
+interface SerialProps {
+  portName: string
+  bauld: number
+}
+
+const serialManagerRS232 = new SerialManagerRS232()
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function OpenPortRS232({ portName, bauld }: SerialProps) {
+  serialManagerRS232.openPortRS232(portName, bauld)
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function ClosePortRS232() {
+  serialManagerRS232.sendCommandRS232('!QUIT%').then(() => serialManagerRS232.closePortRS232)
+  //serialManagerRS232.closePortRS232()
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function TecladoSDI12(props: TecladoSDI12Props) {
   const [, setMenuName] = useState('config')
-
   const [colorConfig, setColorConfig] = useState(true)
+  const [ResponseComandConect, setResponseComandConect] = useState('')
+  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>()
+  const [ClearInformations, setClearInformations] = useState(false)
+
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  function handleComandConect() {
+    serialManagerRS232
+      .sendCommandRS232('!A%')
+      .then((response) => console.log('Resposta:', response.toString()))
+  }
+
+  function handleDownInformation(comand: string) {
+    setResponseDownInformation(''),
+      serialManagerRS232
+        .sendCommandRS232(comand)
+        .then((response) => setResponseDownInformation(response))
+    console.log(ResponseDonwInformation)
+  }
+
+  function handleClearInformation(comand: boolean) {
+    console.log('funcao handleClearInformation acessada')
+    if (comand) {
+      setClearInformations(true)
+    } else {
+      setClearInformations(false)
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleMenu(menu) {
@@ -31,6 +76,19 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
     setMenuName(menu)
   }
+
+  useEffect(() => {
+    if (props.isConect) {
+      const timer = setTimeout(() => {
+        // Chame a função desejada aqui
+        handleComandConect()
+      }, 2000) // 2000 milissegundos = 2 segundos
+
+      // Limpeza do timer quando o componente for desmontado
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      return () => clearTimeout(timer)
+    }
+  }, [props.isConect])
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
@@ -54,10 +112,17 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
         {
           <div className="h-[70vh] overflow-y-auto mt-2">
-            <Settings />
-            <VariableMain />
-            <VariableControl />
-            <Measure />
+            <Settings
+              informations={ResponseDonwInformation}
+              clear={ClearInformations}
+              onClearReset={handleClearInformation}
+            />
+            <VariableMain informations={ResponseDonwInformation} />
+            <VariableControl informations={ResponseDonwInformation} />
+            <ButtonSet
+              handleDownInformation={handleDownInformation}
+              handleClearInformation={handleClearInformation}
+            />
           </div>
         }
       </div>

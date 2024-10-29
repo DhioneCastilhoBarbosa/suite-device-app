@@ -1,8 +1,29 @@
+import { useEffect, useState } from 'react'
 import VariableInput from './variableInput'
 
-export default function VariableControl() {
+type Props = {
+  informations: string | undefined
+}
+
+export default function VariableControl({ informations }: Props) {
   // Correção da tipagem no Array.from
-  const inputs = Array.from({ length: 10 }, (_, index: number) => index + 1)
+  const [data, setData] = useState<string[]>([])
+  const inputs = Array.from({ length: 8 }, (_, index: number) => index + 1)
+
+  useEffect(() => {
+    console.log(informations)
+    if (informations) {
+      setData(informations.split(',').map((item) => item.trim()))
+    } else {
+      setData([])
+    }
+  }, [informations])
+
+  const handleInputChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newData = [...data] // Faz uma cópia do estado atual
+    newData[4 + index] = event.target.value // Atualiza o valor do input correspondente
+    setData(newData) // Atualiza o estado com os novos dados
+  }
 
   return (
     <div className="flex flex-col">
@@ -14,7 +35,12 @@ export default function VariableControl() {
 
       <div className="grid grid-cols-5 gap-4  mr-8 ml-8">
         {inputs.map((input: number, index: number) => (
-          <VariableInput key={index} addres={input} />
+          <VariableInput
+            key={index}
+            addres={input}
+            value={data[14 + index]}
+            onChange={handleInputChange(index)}
+          />
         ))}
       </div>
 
@@ -23,7 +49,8 @@ export default function VariableControl() {
         <input
           className=" text-center text-white w-10 bg-sky-500 border rounded-md"
           type="text"
-          value={1}
+          readOnly
+          value={data[22] || ''}
         />
       </div>
     </div>

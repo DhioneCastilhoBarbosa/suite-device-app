@@ -5,6 +5,7 @@ import { Device } from '@renderer/Context/DeviceContext'
 import { CloseModBus, cancelConnection, connectClient } from '@renderer/utils/modbusRTU'
 import Loading from '../loading/loading'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
+import { ClosePortRS232, OpenPortRS232 } from '../Teclado-SDI12/Teclado'
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
@@ -46,6 +47,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       if (device.name === 'terminal') {
         Openport({ portName: valorSelecionado, bauld: 1200 })
         SetPortOpen({ state: true })
+      } else if (device.name === 'teclado-sdi12') {
+        OpenPortRS232({ portName: valorSelecionado, bauld: 9600 })
+        SetPortOpen({ state: true })
       } else {
         setIsLoading(true)
         let result: boolean = await connectClient(ModBusProps)
@@ -68,10 +72,14 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     PortStatus(isConnected)
     SetPortOpen({ state: false })
     setConected(false)
-
+    console.log('Device Name', device.name)
     if (OfflineMode === false) {
       ClosePort()
-      device.name === 'terminal' ? ClosePort() : CloseModBus()
+      device.name === 'terminal'
+        ? ClosePort()
+        : device.name === 'teclado-sdi12'
+          ? ClosePortRS232()
+          : CloseModBus()
     } else {
       setMode({ state: false })
     }
