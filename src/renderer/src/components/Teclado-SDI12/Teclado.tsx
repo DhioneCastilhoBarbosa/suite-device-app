@@ -40,8 +40,7 @@ export function ClosePortRS232() {
 export default function TecladoSDI12(props: TecladoSDI12Props) {
   const [, setMenuName] = useState('config')
   const [colorConfig, setColorConfig] = useState(true)
-  const [ResponseComandConect, setResponseComandConect] = useState('')
-  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>()
+  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>('')
   const [ClearInformations, setClearInformations] = useState(false)
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -59,13 +58,30 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     console.log(ResponseDonwInformation)
   }
 
+  function handleSendInformation() {
+    serialManagerRS232.sendCommandRS232(ResponseDonwInformation)
+  }
+
   function handleClearInformation(comand: boolean) {
-    console.log('funcao handleClearInformation acessada')
     if (comand) {
       setClearInformations(true)
     } else {
       setClearInformations(false)
     }
+  }
+
+  function handleFileInformation(comand: string) {
+    setResponseDownInformation(comand)
+  }
+
+  function handleSaveInformation() {
+    console.log('File: ', ResponseDonwInformation)
+    const blob = new Blob([ResponseDonwInformation], { type: 'text/plain;charset=utf-8' })
+    saveAs(blob, 'TecladoSDI12.txt')
+  }
+
+  function handleChangeInformations(comand: string) {
+    console.log('valueInputs:', comand)
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -116,12 +132,24 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
               informations={ResponseDonwInformation}
               clear={ClearInformations}
               onClearReset={handleClearInformation}
+              changeInformations={handleChangeInformations}
             />
-            <VariableMain informations={ResponseDonwInformation} />
-            <VariableControl informations={ResponseDonwInformation} />
+            <VariableMain
+              informations={ResponseDonwInformation}
+              clear={ClearInformations}
+              onClearReset={handleClearInformation}
+            />
+            <VariableControl
+              informations={ResponseDonwInformation}
+              clear={ClearInformations}
+              onClearReset={handleClearInformation}
+            />
             <ButtonSet
               handleDownInformation={handleDownInformation}
               handleClearInformation={handleClearInformation}
+              handleFileInformations={handleFileInformation}
+              handleSaveInformation={handleSaveInformation}
+              handleSendInformation={handleSendInformation}
             />
           </div>
         }

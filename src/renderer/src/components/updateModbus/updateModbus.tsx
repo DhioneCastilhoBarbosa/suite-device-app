@@ -1,7 +1,7 @@
 import { ArrowsClockwise, FolderOpen } from '@phosphor-icons/react'
 import Button from '../button/Button'
 import { useEffect, useState } from 'react'
-import selectFile from '@renderer/utils/fileUtils'
+import { selectFile } from '@renderer/utils/fileUtils'
 import { atualizaFirmware } from '@renderer/utils/updateFirmware'
 import { Device } from '@renderer/Context/DeviceContext'
 import { ModalUpdate } from '../modal/modalUpdate'

@@ -2,7 +2,6 @@ import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
 import { Device } from '@renderer/Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
-import selectFile from '@renderer/utils/fileUtils'
 import { IdModBus, WriteModbus, readModbusData } from '@renderer/utils/modbusRTU'
 import { useEffect, useState } from 'react'
 
@@ -10,16 +9,16 @@ type Props = {
   informations: string | undefined
   clear: boolean | undefined
   onClearReset: (newValue: boolean) => void
+  changeInformations: (value: string) => void
 }
 
-export default function Settings({ informations, clear, onClearReset }: Props) {
+export default function Settings({ informations, clear, onClearReset, changeInformations }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
   const [inputValueSDI12, setInputValueSDI12] = useState<string>('')
   const [inputValueDisplay, setInputValueDisplay] = useState<string>('')
   const [inputValueData, setInputValueData] = useState<string>('')
   const [data, setData] = useState<string[]>([])
-  const [clearInput, setClearInput] = useState(false)
 
   useEffect(() => {
     if (informations) {
@@ -49,9 +48,16 @@ export default function Settings({ informations, clear, onClearReset }: Props) {
       setInputValueSDI12(addresSDI12)
       setInputValueDisplay(TimerDisplay)
       setInputValueData(TimerData)
-      console.log(inputValueSDI12)
+      const valueInputs = `!${addresSDI12},${TimerDisplay},${TimerData},`
+
+      changeInformations(valueInputs)
     }
   }, [data])
+
+  useEffect(() => {
+    const valueInputs = `!${inputValueSDI12},${inputValueDisplay},${inputValueData},`
+    changeInformations(valueInputs)
+  }, [inputValueSDI12, inputValueData, inputValueDisplay])
 
   const handleChangeSDI12 = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
@@ -79,7 +85,7 @@ export default function Settings({ informations, clear, onClearReset }: Props) {
           <input
             type="number"
             className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
-            min={1}
+            min={0}
             value={inputValueSDI12}
             onChange={handleChangeSDI12}
             inputMode="numeric"

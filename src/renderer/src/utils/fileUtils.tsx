@@ -1,4 +1,6 @@
-const selectFile = (onFileLoad: (content: string) => void, typeFile: string) => {
+import { saveAs } from 'file-saver'
+
+export const selectFile = (onFileLoad: (content: string) => void, typeFile: string) => {
   const handleFileChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const fileList = input.files;
@@ -34,4 +36,22 @@ const selectFile = (onFileLoad: (content: string) => void, typeFile: string) => 
   openFileDialog();
 };
 
-export default selectFile;
+
+// criar um funsao generica de salvar aqui
+
+
+
+/*export const saveFile = (fileContent: string, defaultFileName: string, fileType: string) => {
+  // Abre uma caixa de diálogo para o usuário inserir o nome do arquivo
+  const fileName = prompt("Digite o nome do arquivo:", defaultFileName);
+  if (!fileName) {
+    alert("Nome de arquivo não pode ser vazio.");
+    return;
+  }
+
+  // Define o blob para o conteúdo do arquivo
+  const blob = new Blob([fileContent], { type: fileType });
+
+  // Salva o arquivo com o nome inserido pelo usuário
+  saveAs(blob, `${fileName}.${fileType}`);
+};*/

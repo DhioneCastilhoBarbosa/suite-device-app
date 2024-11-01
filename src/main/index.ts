@@ -28,8 +28,8 @@ function createWindow(): void {
     autoHideMenuBar: true,
     icon: process.platform === 'linux' ? iconLinux : iconWin,
     webPreferences: {
-      contextIsolation: false,
-      nodeIntegration: true,
+      contextIsolation: false, // false
+      nodeIntegration: true, // true
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }

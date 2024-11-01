@@ -3,9 +3,11 @@ import VariableInput from './variableInput'
 
 type Props = {
   informations: string | undefined
+  clear: boolean | undefined
+  onClearReset: (newValue: boolean) => void
 }
 
-export default function VariableControl({ informations }: Props) {
+export default function VariableControl({ informations, clear, onClearReset }: Props) {
   // Correção da tipagem no Array.from
   const [data, setData] = useState<string[]>([])
   const inputs = Array.from({ length: 8 }, (_, index: number) => index + 1)
@@ -18,6 +20,13 @@ export default function VariableControl({ informations }: Props) {
       setData([])
     }
   }, [informations])
+
+  useEffect(() => {
+    if (clear) {
+      setData([])
+      onClearReset(false)
+    }
+  }, [clear, onClearReset])
 
   const handleInputChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newData = [...data] // Faz uma cópia do estado atual
@@ -50,7 +59,7 @@ export default function VariableControl({ informations }: Props) {
           className=" text-center text-white w-10 bg-sky-500 border rounded-md"
           type="text"
           readOnly
-          value={data[22] || ''}
+          value={data[22] && data[22].includes('%') ? data[22].replace('%', '') : data[22] || ''}
         />
       </div>
     </div>

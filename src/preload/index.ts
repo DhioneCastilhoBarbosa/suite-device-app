@@ -1,8 +1,11 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  showSaveDialog: () => ipcRenderer.invoke('show-save-dialog')
+}
 
 window.require = require
 
