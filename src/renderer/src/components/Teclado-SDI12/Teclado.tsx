@@ -36,12 +36,41 @@ export function ClosePortRS232() {
   //serialManagerRS232.closePortRS232()
 }
 
+const arrayInit = [
+  '!0', // 2 caracteres
+  '030', // 3 caracteres
+  '0060', // 4 caracteres
+  '00', // 2 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '           ', // 10 caracteres
+  '0%' // 2 caracteres
+]
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function TecladoSDI12(props: TecladoSDI12Props) {
   const [, setMenuName] = useState('config')
   const [colorConfig, setColorConfig] = useState(true)
-  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>('')
+  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>(arrayInit.join())
   const [ClearInformations, setClearInformations] = useState(false)
+  const [changeInformations, setChangeInformations] = useState<string>('')
+  const [changeVariablesMain, setChangeVariablesMain] = useState<string>('')
+  const [changeVariablesControl, setChangeVariablesControl] = useState<string>('')
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleComandConect() {
@@ -81,7 +110,11 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
   }
 
   function handleChangeInformations(comand: string) {
-    console.log('valueInputs:', comand)
+    setChangeInformations(comand)
+  }
+
+  function handleChangeVariablesMain(comand: string) {
+    setChangeVariablesMain(comand)
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -92,6 +125,14 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
     setMenuName(menu)
   }
+
+  useEffect(() => {
+    console.log('setting informations', changeInformations)
+    console.log('Variables Main', changeVariablesMain)
+
+    const newvalue = changeInformations + changeVariablesMain
+    console.log('SendNewValue', newvalue)
+  }, [changeInformations, changeVariablesMain])
 
   useEffect(() => {
     if (props.isConect) {
@@ -138,6 +179,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
               informations={ResponseDonwInformation}
               clear={ClearInformations}
               onClearReset={handleClearInformation}
+              changeVariableMain={handleChangeVariablesMain}
             />
             <VariableControl
               informations={ResponseDonwInformation}

@@ -15,13 +15,14 @@ type Props = {
 export default function Settings({ informations, clear, onClearReset, changeInformations }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
-  const [inputValueSDI12, setInputValueSDI12] = useState<string>('')
-  const [inputValueDisplay, setInputValueDisplay] = useState<string>('')
-  const [inputValueData, setInputValueData] = useState<string>('')
+  const [inputValueSDI12, setInputValueSDI12] = useState<string>('0')
+  const [inputValueDisplay, setInputValueDisplay] = useState<string>('30')
+  const [inputValueData, setInputValueData] = useState<string>('60')
   const [data, setData] = useState<string[]>([])
 
   useEffect(() => {
     if (informations) {
+      console.log('informations', informations)
       setData(informations.split(',').map((item) => item.trim()))
       setInputValueSDI12[data[1]]
     } else {

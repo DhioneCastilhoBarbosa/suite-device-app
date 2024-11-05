@@ -7,33 +7,96 @@ type Props = {
   informations: string | undefined
   clear: boolean | undefined
   onClearReset: (newValue: boolean) => void
+  changeVariableMain: (value: string) => void
 }
 
-export default function VariableMain({ informations, clear, onClearReset }: Props) {
+export default function VariableMain({
+  informations,
+  clear,
+  onClearReset,
+  changeVariableMain
+}: Props) {
   // Correção da tipagem no Array.from
   const [data, setData] = useState<string[]>([])
   const inputs = Array.from({ length: 10 }, (_, index: number) => index + 1)
+  const [variableMainInUse, setVariableMainInUse] = useState<number>(0)
+
+  const [enabledInputs, setEnabledInputs] = useState([
+    true,
+    ...Array(inputs.length - 1).fill(false)
+  ])
+
+  function handleChangeVariableMain(): void {
+    const newData = `${variableMainInUse},${data.join()}`
+    changeVariableMain(newData)
+  }
 
   useEffect(() => {
-    console.log(informations)
+    console.log('imformation main:', informations)
     if (informations) {
-      setData(informations.split(',').map((item) => item.trim()))
+      const loadedData = informations.split(',').map((item) => item.trim())
+      // Ignora as quatro primeiras posições e mantém os próximos valores
+      setData(loadedData.slice(4, 14)) // Mantém os itens de 5 a 14, ou seja, de índice 4 a 13
     } else {
-      setData([])
+      setData(Array(10).fill(''))
     }
   }, [informations])
 
   useEffect(() => {
     if (clear) {
-      setData([])
+      setData(Array(10).fill(''))
       onClearReset(false)
     }
   }, [clear, onClearReset])
 
+  useEffect(() => {
+    handleChangeVariableMain()
+    console.log('data:', data)
+    if (data.length === 0) {
+      setVariableMainInUse(0) // Se data estiver vazio, setar para 0
+    } else {
+      const nonEmptyCount = data.filter((item) => item.trim() !== '').length // Conta apenas os itens não vazios
+      setVariableMainInUse(nonEmptyCount) // Define o contador com base nos itens não vazios
+    }
+  }, [data])
+
+  useEffect(() => {
+    handleChangeVariableMain()
+    setEnabledInputs((prev) => {
+      const newEnabled = [...prev]
+      for (let i = 0; i < data.length; i++) {
+        // Habilita o input se o atual não estiver vazio e o anterior também estiver preenchido
+        if (i === 0 || (data[i - 1] && data[i - 1].trim() !== '')) {
+          newEnabled[i] = true
+        } else {
+          newEnabled[i] = false // Desabilita se o anterior estiver vazio
+        }
+      }
+      return newEnabled
+    })
+  }, [data, variableMainInUse])
+
   const handleInputChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
     const newData = [...data] // Faz uma cópia do estado atual
-    newData[4 + index] = event.target.value // Atualiza o valor do input correspondente
+    newData[index] = value // Atualiza o valor do input correspondente
     setData(newData) // Atualiza o estado com os novos dados
+
+    setEnabledInputs((prev) => {
+      const newEnabledInputs = [...prev]
+      if (value) {
+        // Se o valor atual não estiver vazio, habilita o próximo input
+        if (index + 1 < newEnabledInputs.length) {
+          newEnabledInputs[index + 1] = true // Habilita o próximo input
+        }
+      } else {
+        // Se o valor estiver vazio, desabilita todos os inputs após o atual
+        for (let i = index + 1; i < newEnabledInputs.length; i++) {
+          newEnabledInputs[i] = false
+        }
+      }
+      return newEnabledInputs
+    })
   }
 
   return (
@@ -49,8 +112,9 @@ export default function VariableMain({ informations, clear, onClearReset }: Prop
           <VariableInput
             key={index}
             addres={input}
-            value={data[4 + index]}
+            value={data[index]}
             onChange={handleInputChange(index)}
+            disabled={!enabledInputs[index]} // Desabilita o input se não estiver habilitado
           />
         ))}
       </div>
@@ -61,7 +125,11 @@ export default function VariableMain({ informations, clear, onClearReset }: Prop
           className=" text-center text-white w-10 bg-sky-500 border rounded-md"
           type="text"
           readOnly
-          value={data[3] && data[3].match(/^0+/) ? data[3].replace(/^0+/, '') : data[3] || ''}
+          value={
+            data[3] && data[3].match(/^0+/)
+              ? data[3].replace(/^0+/, '')
+              : data[3] || variableMainInUse.toString()
+          }
         />
       </div>
     </div>

@@ -22,28 +22,28 @@
 
 Para construir o aplicativo, siga as etapas abaixo:
 
-1. **Instalar dependências**  
+1. **Instalar dependências**
    Execute o comando abaixo para instalar as dependências necessárias:
    ```bash
    npm install
    ```
 
-2. **Executar o projeto em modo de desenvolvimento**  
+2. **Executar o projeto em modo de desenvolvimento**
    Use o comando abaixo para iniciar o aplicativo em modo de desenvolvimento:
    ```bash
    npm start
    ```
 
-3. **Compilar o aplicativo para produção**  
+3. **Compilar o aplicativo para produção**
    Para gerar a build de produção, utilize o comando:
    ```bash
    npm run make
    ```
 
-4. **Distribuir o aplicativo**  
+4. **Distribuir o aplicativo**
    Após a compilação, você pode acessar o pacote gerado na pasta `out` para distribuição.
 
-5. **Publicar o aplicativo**  
+5. **Publicar o aplicativo**
    Para publicar o aplicativo em um servidor ou plataforma de distribuição, utilize o comando:
    ```bash
    npm run publish
