@@ -5,7 +5,7 @@ interface LoadingDataProps {
   title: string
 }
 
-export default function LoadingData({ visible, title }: LoadingDataProps) {
+export default function LoadingData({ visible, title }: LoadingDataProps): JSX.Element | null {
   const { mode }: any = Device()
   console.log('Mode:', mode.state)
 

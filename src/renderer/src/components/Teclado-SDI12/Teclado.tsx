@@ -71,6 +71,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
   const [changeInformations, setChangeInformations] = useState<string>('')
   const [changeVariablesMain, setChangeVariablesMain] = useState<string>('')
   const [changeVariablesControl, setChangeVariablesControl] = useState<string>('')
+  const [SendNewConfiguration, setSendNewConfiguration] = useState<string>('')
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleComandConect() {
@@ -79,7 +80,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
       .then((response) => console.log('Resposta:', response.toString()))
   }
 
-  function handleDownInformation(comand: string) {
+  function handleDownInformation(comand: string): void {
     setResponseDownInformation(''),
       serialManagerRS232
         .sendCommandRS232(comand)
@@ -87,11 +88,11 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     console.log(ResponseDonwInformation)
   }
 
-  function handleSendInformation() {
-    serialManagerRS232.sendCommandRS232(ResponseDonwInformation)
+  function handleSendInformation(): void {
+    serialManagerRS232.sendCommandRS232(SendNewConfiguration)
   }
 
-  function handleClearInformation(comand: boolean) {
+  function handleClearInformation(comand: boolean): void {
     if (comand) {
       setClearInformations(true)
     } else {
@@ -99,22 +100,26 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     }
   }
 
-  function handleFileInformation(comand: string) {
+  function handleFileInformation(comand: string): void {
     setResponseDownInformation(comand)
   }
 
-  function handleSaveInformation() {
+  function handleSaveInformation(): void {
     console.log('File: ', ResponseDonwInformation)
     const blob = new Blob([ResponseDonwInformation], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'TecladoSDI12.txt')
   }
 
-  function handleChangeInformations(comand: string) {
+  function handleChangeInformations(comand: string): void {
     setChangeInformations(comand)
   }
 
-  function handleChangeVariablesMain(comand: string) {
+  function handleChangeVariablesMain(comand: string): void {
     setChangeVariablesMain(comand)
+  }
+
+  function handleChangeVariablesControler(comand: string): void {
+    setChangeVariablesControl(comand)
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -126,22 +131,28 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     setMenuName(menu)
   }
 
+  function addSpacesToEmptyValues(input: string): string {
+    // Substitui cada vírgula vazia (,,) por uma vírgula com espaço (, )
+    return input.replace(/,(?=,)/g, ',            ')
+  }
+
   useEffect(() => {
     console.log('setting informations', changeInformations)
     console.log('Variables Main', changeVariablesMain)
+    console.log('Variables Controler', changeVariablesControl)
 
-    const newvalue = changeInformations + changeVariablesMain
-    console.log('SendNewValue', newvalue)
-  }, [changeInformations, changeVariablesMain])
+    const newvalue = changeInformations + changeVariablesMain + changeVariablesControl
+
+    console.log('SendNewValue', addSpacesToEmptyValues(newvalue))
+    setSendNewConfiguration(addSpacesToEmptyValues(newvalue))
+  }, [changeInformations, changeVariablesMain, changeVariablesControl])
 
   useEffect(() => {
     if (props.isConect) {
       const timer = setTimeout(() => {
-        // Chame a função desejada aqui
         handleComandConect()
-      }, 2000) // 2000 milissegundos = 2 segundos
+      }, 1000) // 1000 milissegundos = 1 segundos
 
-      // Limpeza do timer quando o componente for desmontado
       // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
       return () => clearTimeout(timer)
     }
@@ -185,6 +196,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
               informations={ResponseDonwInformation}
               clear={ClearInformations}
               onClearReset={handleClearInformation}
+              changeVariableMain={handleChangeVariablesControler}
             />
             <ButtonSet
               handleDownInformation={handleDownInformation}

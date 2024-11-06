@@ -32,9 +32,9 @@ export default function Settings({ informations, clear, onClearReset, changeInfo
 
   useEffect(() => {
     if (clear) {
-      setInputValueSDI12('')
-      setInputValueDisplay('')
-      setInputValueData('')
+      setInputValueSDI12('0')
+      setInputValueDisplay('30')
+      setInputValueData('60')
       setData([])
       onClearReset(false) // Chama o callback para redefinir `clear` externamente
     }
@@ -49,14 +49,14 @@ export default function Settings({ informations, clear, onClearReset, changeInfo
       setInputValueSDI12(addresSDI12)
       setInputValueDisplay(TimerDisplay)
       setInputValueData(TimerData)
-      const valueInputs = `!${addresSDI12},${TimerDisplay},${TimerData},`
+      const valueInputs = `!${addresSDI12},${TimerDisplay.padStart(3, '0')},${TimerData.padStart(4, '0')},`
 
       changeInformations(valueInputs)
     }
   }, [data])
 
   useEffect(() => {
-    const valueInputs = `!${inputValueSDI12},${inputValueDisplay},${inputValueData},`
+    const valueInputs = `!${inputValueSDI12},${inputValueDisplay.padStart(3, '0')},${inputValueData.padStart(4, '0')},`
     changeInformations(valueInputs)
   }, [inputValueSDI12, inputValueData, inputValueDisplay])
 

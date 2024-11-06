@@ -27,8 +27,10 @@ export default function VariableMain({
   ])
 
   function handleChangeVariableMain(): void {
-    const newData = `${variableMainInUse},${data.join()}`
+    const formattedData = data.map((item) => item.toString().padEnd(11, ' '))
+    const newData = `${variableMainInUse.toString().padStart(2, '0')},${formattedData.join()}`
     changeVariableMain(newData)
+    console.log('varible in use:', variableMainInUse.toString())
   }
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function VariableMain({
       const loadedData = informations.split(',').map((item) => item.trim())
       // Ignora as quatro primeiras posições e mantém os próximos valores
       setData(loadedData.slice(4, 14)) // Mantém os itens de 5 a 14, ou seja, de índice 4 a 13
+      setVariableMainInUse(Number(data[3]))
     } else {
       setData(Array(10).fill(''))
     }
@@ -125,11 +128,7 @@ export default function VariableMain({
           className=" text-center text-white w-10 bg-sky-500 border rounded-md"
           type="text"
           readOnly
-          value={
-            data[3] && data[3].match(/^0+/)
-              ? data[3].replace(/^0+/, '')
-              : data[3] || variableMainInUse.toString()
-          }
+          value={variableMainInUse.toString()}
         />
       </div>
     </div>

@@ -2,7 +2,7 @@ interface LoadingModalProps {
   onStop: () => void
 }
 
-export default function LoadingModal({ onStop }: LoadingModalProps) {
+export default function LoadingModal({ onStop }: LoadingModalProps): JSX.Element | null {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
       <div className="bg-white flex flex-col items-center justify-center p-6 rounded-md shadow-md">
