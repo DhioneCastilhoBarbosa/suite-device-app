@@ -7,8 +7,6 @@ interface LoadingDataProps {
 
 export default function LoadingData({ visible, title }: LoadingDataProps): JSX.Element | null {
   const { mode }: any = Device()
-  console.log('Mode:', mode.state)
-
   if (!visible || mode.state) return null
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">

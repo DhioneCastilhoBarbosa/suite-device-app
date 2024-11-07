@@ -31,7 +31,6 @@ export default function VariableControl({
   }
 
   useEffect(() => {
-    console.log('imformation controler:', informations)
     if (informations) {
       const loadedData = informations.split(',').map((item) => item.trim())
       setData(loadedData.slice(14, 22))
@@ -49,7 +48,7 @@ export default function VariableControl({
 
   useEffect(() => {
     handleChangeVariableMain()
-    console.log('data:', data)
+
     if (data.length === 0) {
       setVariableControlerInUse(0) // Se data estiver vazio, setar para 0
     } else {

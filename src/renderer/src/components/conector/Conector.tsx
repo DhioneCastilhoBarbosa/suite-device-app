@@ -34,6 +34,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
 
   const handleClickConect = async () => {
     portDevice(valorSelecionado)
+    console.log('Porta Device:', valorSelecionado)
     setIsConnected(!isConnected)
     PortStatus(isConnected)
     setConected(true)
@@ -71,10 +72,11 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     setIsConnected(!isConnected)
     PortStatus(isConnected)
     SetPortOpen({ state: false })
+
     setConected(false)
-    console.log('Device Name', device.name)
+    //console.log('Device Name', device.name)
     if (OfflineMode === false) {
-      ClosePort()
+      //ClosePort()
       device.name === 'terminal'
         ? ClosePort()
         : device.name === 'teclado-sdi12'
@@ -91,7 +93,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       const ports = await SerialPort.list()
       const portNames = ports.map((port) => port.path)
       setAvailablePorts(portNames)
-      console.log(isConnected)
+      //console.log(isConnected)
     } catch (error: any) {
       //console.error('Erro ao listar portas seriais:', error.message)
     }
@@ -132,7 +134,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       listSerialPorts()
       const intervalId = setInterval(() => {
         listSerialPorts()
-        console.log('Atualizei as portas', PortOpen.state)
+        //console.log('Atualizei as portas', PortOpen.state)
       }, 2000)
 
       return () => clearInterval(intervalId)

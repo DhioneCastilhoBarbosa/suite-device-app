@@ -1,8 +1,7 @@
-import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
 import { Device } from '@renderer/Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
-import { IdModBus, WriteModbus, readModbusData } from '@renderer/utils/modbusRTU'
+import NoDeviceFoundModbus from '@renderer/components/modal/noDeviceFoundModbus'
 import { useEffect, useState } from 'react'
 
 type Props = {
@@ -10,19 +9,29 @@ type Props = {
   clear: boolean | undefined
   onClearReset: (newValue: boolean) => void
   changeInformations: (value: string) => void
+  isloading: boolean | undefined
 }
 
-export default function Settings({ informations, clear, onClearReset, changeInformations }: Props) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
+export default function Settings({
+  informations,
+  clear,
+  onClearReset,
+  changeInformations,
+  isloading
+}: Props) {
+  const [isLoading, setIsLoading] = useState(true)
+  const [titleLoading, setTitleLoading] = useState('Aguardando dispositivo')
   const [inputValueSDI12, setInputValueSDI12] = useState<string>('0')
   const [inputValueDisplay, setInputValueDisplay] = useState<string>('30')
   const [inputValueData, setInputValueData] = useState<string>('60')
   const [data, setData] = useState<string[]>([])
 
   useEffect(() => {
+    isloading ? setIsLoading(true) : setIsLoading(false)
+  }, [isloading])
+
+  useEffect(() => {
     if (informations) {
-      console.log('informations', informations)
       setData(informations.split(',').map((item) => item.trim()))
       setInputValueSDI12[data[1]]
     } else {

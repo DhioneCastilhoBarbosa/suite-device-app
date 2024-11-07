@@ -71,7 +71,7 @@ class SerialManagerRS232 {
         this.port.removeAllListeners('data');
 
         // Se o comando for !A%, usar uma abordagem diferente
-        if (command.startsWith('!A%') || command.startsWith('!QUIT%')){
+        if (command.startsWith('!A%') ){ //|| command.startsWith('!QUIT%')
           this.port.on('data', (data: Buffer) => {
             const chunk = data.toString().trim();
 
@@ -105,6 +105,27 @@ class SerialManagerRS232 {
               }
 
               console.log(`Comando ${command} enviado com sucesso`);
+            });
+          });
+        }else if (command.startsWith('!QUIT%')) {
+          // Limpando o buffer antes de enviar o comando
+          this.port.flush((err) => {
+            if (err) {
+              console.error(`Erro ao limpar buffer da porta: ${err.message}`);
+              return reject(err);
+            }
+
+            console.log('Buffer da porta serial limpo com sucesso.');
+
+            // Escrevendo o comando para a porta
+            this.port.write(command, (err) => {
+              if (err) {
+                console.log(`Erro ao enviar comando: ${err}`);
+                return reject(err);
+              }
+
+              console.log(`Comando ${command} enviado com sucesso`);
+              resolve('Comando enviado sem aguardar resposta'); // Resolver sem aguardar resposta
             });
           });
         }
@@ -141,6 +162,7 @@ class SerialManagerRS232 {
               }
 
               console.log(`Comando ${command} enviado com sucesso`);
+
             });
           });
         }else {

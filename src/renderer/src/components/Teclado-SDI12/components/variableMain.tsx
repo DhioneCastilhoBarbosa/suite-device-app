@@ -30,11 +30,9 @@ export default function VariableMain({
     const formattedData = data.map((item) => item.toString().padEnd(11, ' '))
     const newData = `${variableMainInUse.toString().padStart(2, '0')},${formattedData.join()}`
     changeVariableMain(newData)
-    console.log('varible in use:', variableMainInUse.toString())
   }
 
   useEffect(() => {
-    console.log('imformation main:', informations)
     if (informations) {
       const loadedData = informations.split(',').map((item) => item.trim())
       // Ignora as quatro primeiras posições e mantém os próximos valores
@@ -54,7 +52,7 @@ export default function VariableMain({
 
   useEffect(() => {
     handleChangeVariableMain()
-    console.log('data:', data)
+
     if (data.length === 0) {
       setVariableMainInUse(0) // Se data estiver vazio, setar para 0
     } else {

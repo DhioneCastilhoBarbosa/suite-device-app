@@ -11,6 +11,8 @@ import VariableControl from './components/variableControl'
 import ButtonSet from './components/buttonSet'
 import SerialManagerRS232 from '@renderer/utils/serial'
 import { useEffect, useState } from 'react'
+import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
+import { Device } from '@renderer/Context/DeviceContext'
 
 interface TecladoSDI12Props {
   isConect: boolean
@@ -31,9 +33,22 @@ export function OpenPortRS232({ portName, bauld }: SerialProps) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function ClosePortRS232() {
-  serialManagerRS232.sendCommandRS232('!QUIT%').then(() => serialManagerRS232.closePortRS232)
-  //serialManagerRS232.closePortRS232()
+export async function ClosePortRS232() {
+  try {
+    console.log('Enviando comando QUIT...')
+
+    // Envia o comando 'QUIT'
+    await serialManagerRS232.sendCommandRS232('!QUIT%')
+
+    // Aguarda 5 segundos
+    await new Promise<void>((resolve) => setTimeout(resolve, 2000))
+
+    // Fecha a porta
+    serialManagerRS232.closePortRS232()
+    console.log('Porta fechada com sucesso')
+  } catch (error) {
+    console.error('Erro ao tentar fechar a porta:', error)
+  }
 }
 
 const arrayInit = [
@@ -72,12 +87,42 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
   const [changeVariablesMain, setChangeVariablesMain] = useState<string>('')
   const [changeVariablesControl, setChangeVariablesControl] = useState<string>('')
   const [SendNewConfiguration, setSendNewConfiguration] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
+  const { mode, PortOpen }: any = Device()
 
+  const closeNoDeviceFoundModal = () => {
+    setDeviceFound(null)
+    serialManagerRS232.closePortRS232()
+  }
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleComandConect() {
-    serialManagerRS232
-      .sendCommandRS232('!A%')
-      .then((response) => console.log('Resposta:', response.toString()))
+    // Defina o tempo limite em milissegundos
+    const TIMEOUT = 5000 // 5 segundos, por exemplo
+
+    // Função para definir o timeout
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout')), TIMEOUT)
+    })
+
+    // Combine o timeout com a resposta do serialManagerRS232
+    Promise.race([serialManagerRS232.sendCommandRS232('!A%'), timeoutPromise])
+      .then((response) => {
+        if (response.toString() === 'B') {
+          setIsLoading(false)
+        } else {
+          setIsLoading(true)
+        }
+      })
+      .catch((error) => {
+        if (error.message === 'Timeout') {
+          setIsLoading(false)
+          setDeviceFound(false)
+        } else {
+          console.error(error)
+          setIsLoading(true)
+        }
+      })
   }
 
   function handleDownInformation(comand: string): void {
@@ -105,8 +150,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
   }
 
   function handleSaveInformation(): void {
-    console.log('File: ', ResponseDonwInformation)
-    const blob = new Blob([ResponseDonwInformation], { type: 'text/plain;charset=utf-8' })
+    const blob = new Blob([SendNewConfiguration], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'TecladoSDI12.txt')
   }
 
@@ -137,18 +181,14 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
   }
 
   useEffect(() => {
-    console.log('setting informations', changeInformations)
-    console.log('Variables Main', changeVariablesMain)
-    console.log('Variables Controler', changeVariablesControl)
-
     const newvalue = changeInformations + changeVariablesMain + changeVariablesControl
 
-    console.log('SendNewValue', addSpacesToEmptyValues(newvalue))
     setSendNewConfiguration(addSpacesToEmptyValues(newvalue))
   }, [changeInformations, changeVariablesMain, changeVariablesControl])
 
   useEffect(() => {
-    if (props.isConect) {
+    if (props.isConect && !mode.state) {
+      setIsLoading(true)
       const timer = setTimeout(() => {
         handleComandConect()
       }, 1000) // 1000 milissegundos = 1 segundos
@@ -185,6 +225,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
               clear={ClearInformations}
               onClearReset={handleClearInformation}
               changeInformations={handleChangeInformations}
+              isloading={isLoading}
             />
             <VariableMain
               informations={ResponseDonwInformation}
@@ -208,6 +249,9 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
           </div>
         }
       </div>
+      {deviceFound !== null && !deviceFound && (
+        <NoDeviceFoundModbus onClose={closeNoDeviceFoundModal} />
+      )}
     </ContainerDevice>
   ) : (
     <ContainerDevice>

@@ -46,7 +46,6 @@ export default function ButtonSet({
   }
 
   useEffect(() => {
-    console.log(fileContent)
     handleFileInformations(fileContent)
   }, [fileContent])
 
