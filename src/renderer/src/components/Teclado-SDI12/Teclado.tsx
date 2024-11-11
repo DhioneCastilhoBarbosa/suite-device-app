@@ -1,6 +1,6 @@
 import { Drop } from '@phosphor-icons/react'
 import { CardInformation } from '../cardInfomation/CardInformation'
-import ImgBorbulha from '../../assets/LinnimDdCAP.svg'
+import ImgTeclado from '../../assets/TecladoSDI12.svg'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 
 import HeaderDevice from '../headerDevice/HeaderDevice'
@@ -259,35 +259,37 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
         <Drop size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto" />
+      <ImageDevice image={ImgTeclado} link="https://dualbase.com.br/produto" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
         <CardInformation title="VISÃO GERAL">
           <p>
-            O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico o que o
-            deixa muito robusto sem perder as qualidades metrológicas.
+            Dispositivo que permite a entrada manual de dados e a comunicação com um datalogger
+            utilizando protocolo de comunicação serial SDI-12.
           </p>
         </CardInformation>
 
         <CardInformation title="CARACTERÍSTICAS">
-          <p>Corpo em aço inox 316L.</p>
-          <p>Elemento do sensor capacitivo cerâmico com compensação de temperatura.</p>
-          <p>Cabo em poliuretano com filtro contra radiação UV com Kevlar (opcional).</p>
-          <p>Tipo de medição disponível: absoluto ou diferencial.</p>
+          <p>Caixa de proteção IP65.</p>
+          <p>Display 12 Digitos 2 linhas.</p>
+          <p>Entrada de dados via teclado de membrana.</p>
         </CardInformation>
 
         <CardInformation title="ESPECIFICAÇÃO">
-          <p>Faixa de medição: 0 a 20 mca (metro de coluna d'água).</p>
-          <p>Resolução: 0,001 mca (1 mm)</p>
-          <p>Faixa de temperatura compensada: -20º a +80ºC</p>
+          <p>
+            Possuir membrana de 16 teclas produzido com base nas recomendações NBR 13173 de agosto
+            de 2012.
+          </p>
           <p>Faixa de temperatura de operação: -40º a +80ºC</p>
-          <p>Incerteza máxima associada: ± 0,1% F.E. @ -10º a +60ºC</p>
-          <p>Grau de proteção: IP68</p>
-          <p>Alimentação: 8 a 28 Vcc</p>
-          <p>Consumo: 5 mA máx</p>
-          <p>Sinal de saída digital: RS-485</p>
-          <p>Sinal de saída (opcional): SDI-12</p>
-          <p>Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI</p>
+          <p>Grau de proteção: IP65</p>
+          <p>Alimentação: 10 a 16 Vcc</p>
+          <p>Sinal de saída digital: SDI-12</p>
+          <p>Comunicação de configuração: RS232/USB</p>
+          <p>Display LCD alfanumérico com 02 linhas de 12 dígitos cada linha e 16 segmentos.</p>
+          <p>
+            Configurável a partir de aplicativo externo compatível com sistema operacional Windows
+            10.
+          </p>
         </CardInformation>
       </div>
     </ContainerDevice>
