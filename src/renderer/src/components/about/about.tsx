@@ -30,7 +30,7 @@ export default function About({ visible, onClose }: LoadingDataProps) {
           </p>
           <div className="flex gap-2">
             <p>Versão atual:</p>
-            <p className="font-bold">v.1.1.8</p>
+            <p className="font-bold">v.1.2.0</p>
           </div>
 
           <Footer />

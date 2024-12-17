@@ -1,4 +1,4 @@
-import { Drop } from '@phosphor-icons/react'
+import { Drop, Rss } from '@phosphor-icons/react'
 import { CardInformation } from '../cardInfomation/CardInformation'
 import ImgTeclado from '../../assets/TecladoSDI12.svg'
 import { ImageDevice } from '../imageDevice/ImageDevice'
@@ -14,7 +14,7 @@ import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '@renderer/Context/DeviceContext'
 import { saveAs } from 'file-saver'
 
-interface TecladoSDI12Props {
+interface TSatDBProps {
   isConect: boolean
   portCom?: string
   PortStatus?: boolean
@@ -78,9 +78,15 @@ const arrayInit = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default function TecladoSDI12(props: TecladoSDI12Props) {
+export default function TSatDB(props: TSatDBProps) {
   const [, setMenuName] = useState('config')
   const [colorConfig, setColorConfig] = useState(true)
+  const [colorStatus, setColorStatus] = useState(false)
+  const [colorGps, setColorGps] = useState(false)
+  const [colorTerminal, setColorTerminal] = useState(false)
+  const [colorTeste, setColorTeste] = useState(false)
+  const [colorApontamento, setColorApontamento] = useState(false)
+
   const [ResponseDonwInformation, setResponseDownInformation] = useState<string>(arrayInit.join())
   const [ClearInformations, setClearInformations] = useState(false)
   const [changeInformations, setChangeInformations] = useState<string>('')
@@ -168,8 +174,57 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   function handleMenu(menu) {
-    if (menu === 'config') {
-      setColorConfig(true)
+    switch (menu) {
+      case 'config':
+        setColorConfig(true)
+        setColorStatus(false)
+        setColorGps(false)
+        setColorTerminal(false)
+        setColorTeste(false)
+        setColorApontamento(false)
+        break
+      case 'status':
+        setColorConfig(false)
+        setColorStatus(true)
+        setColorGps(false)
+        setColorTerminal(false)
+        setColorTeste(false)
+        setColorApontamento(false)
+        break
+      case 'gps':
+        setColorConfig(false)
+        setColorStatus(false)
+        setColorGps(true)
+        setColorTerminal(false)
+        setColorTeste(false)
+        setColorApontamento(false)
+        break
+      case 'terminal':
+        setColorConfig(false)
+        setColorStatus(false)
+        setColorGps(false)
+        setColorTerminal(true)
+        setColorTeste(false)
+        setColorApontamento(false)
+        break
+      case 'teste':
+        setColorConfig(false)
+        setColorStatus(false)
+        setColorGps(false)
+        setColorTerminal(false)
+        setColorTeste(true)
+        setColorApontamento(false)
+        break
+      case 'apontamento':
+        setColorConfig(false)
+        setColorStatus(false)
+        setColorGps(false)
+        setColorTerminal(false)
+        setColorTeste(false)
+        setColorApontamento(true)
+        break
+      default:
+        break
     }
 
     setMenuName(menu)
@@ -201,8 +256,8 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'Teclado-SDI12'}>
-        <Drop size={30} />
+      <HeaderDevice DeviceName={'TSatDB'}>
+        <Rss size={30} />
       </HeaderDevice>
 
       <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-4 rounded-lg text-zinc-500 text-sm w-full max-w-4xl  ">
@@ -210,11 +265,56 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
           <div className="flex gap-4">
             <button
               className={`border-b-2 border-transparent ${
+                colorStatus ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('status')}
+            >
+              Status
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
+                colorGps ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('gps')}
+            >
+              GPS
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
                 colorConfig ? 'text-sky-500' : ''
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configurações
+              Configuração
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
+                colorTerminal ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('terminal')}
+            >
+              Terminal
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
+                colorTeste ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('teste')}
+            >
+              Teste de Transmissão
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
+                colorApontamento ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('apontamento')}
+            >
+              Apontamento de Antena
             </button>
           </div>
         </header>
@@ -256,17 +356,18 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'Teclado-SDI12'}>
-        <Drop size={30} />
+      <HeaderDevice DeviceName={'TSatDB'}>
+        <Rss size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgTeclado} link="https://dualbase.com.br/produto" />
+      <ImageDevice image={ImgTeclado} link="https://dualbase.com.br/produto/tsatdb/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
         <CardInformation title="VISÃO GERAL">
           <p>
-            Dispositivo que permite a entrada manual de dados e a comunicação com um datalogger
-            utilizando protocolo de comunicação serial SDI-12.
+            O TSatDB oferece ótimo desempenho na transmissão de dados via satélites GOES (V2.0 CS2)
+            e METEOSAT. Ideal para uso em PCDs. Possui baixo consumo de energia em stand-by e é de
+            fácil integração com dataloggers.
           </p>
         </CardInformation>
 
