@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '@renderer/Context/DeviceContext'
 import { saveAs } from 'file-saver'
+import Status from './components/status'
 
 interface TSatDBProps {
   isConect: boolean
@@ -51,129 +52,21 @@ export async function ClosePortRS232() {
   }
 }
 
-const arrayInit = [
-  '!0', // 2 caracteres
-  '030', // 3 caracteres
-  '0060', // 4 caracteres
-  '00', // 2 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '           ', // 10 caracteres
-  '0%' // 2 caracteres
-]
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function TSatDB(props: TSatDBProps) {
-  const [, setMenuName] = useState('config')
-  const [colorConfig, setColorConfig] = useState(true)
-  const [colorStatus, setColorStatus] = useState(false)
+  const [MenuName, setMenuName] = useState('status')
+  const [colorConfig, setColorConfig] = useState(false)
+  const [colorStatus, setColorStatus] = useState(true)
   const [colorGps, setColorGps] = useState(false)
   const [colorTerminal, setColorTerminal] = useState(false)
   const [colorTeste, setColorTeste] = useState(false)
   const [colorApontamento, setColorApontamento] = useState(false)
 
-  const [ResponseDonwInformation, setResponseDownInformation] = useState<string>(arrayInit.join())
-  const [ClearInformations, setClearInformations] = useState(false)
-  const [changeInformations, setChangeInformations] = useState<string>('')
-  const [changeVariablesMain, setChangeVariablesMain] = useState<string>('')
-  const [changeVariablesControl, setChangeVariablesControl] = useState<string>('')
-  const [SendNewConfiguration, setSendNewConfiguration] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const { mode, PortOpen }: any = Device()
 
-  const closeNoDeviceFoundModal = () => {
-    setDeviceFound(null)
-    serialManagerRS232.closePortRS232()
-  }
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  function handleComandConect() {
-    // Defina o tempo limite em milissegundos
-    const TIMEOUT = 5000 // 5 segundos, por exemplo
-
-    // Função para definir o timeout
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout')), TIMEOUT)
-    })
-
-    // Combine o timeout com a resposta do serialManagerRS232
-    Promise.race([serialManagerRS232.sendCommandRS232('!A%'), timeoutPromise])
-      .then((response) => {
-        if (response.toString() === 'B') {
-          setIsLoading(false)
-        } else {
-          setIsLoading(true)
-        }
-      })
-      .catch((error) => {
-        if (error.message === 'Timeout') {
-          setIsLoading(false)
-          setDeviceFound(false)
-        } else {
-          console.error(error)
-          setIsLoading(true)
-        }
-      })
-  }
-
-  function handleDownInformation(comand: string): void {
-    setResponseDownInformation(''),
-      serialManagerRS232
-        .sendCommandRS232(comand)
-        .then((response) => setResponseDownInformation(response))
-    console.log(ResponseDonwInformation)
-  }
-
-  function handleSendInformation(): void {
-    serialManagerRS232.sendCommandRS232(SendNewConfiguration)
-  }
-
-  function handleClearInformation(comand: boolean): void {
-    if (comand) {
-      setClearInformations(true)
-    } else {
-      setClearInformations(false)
-    }
-  }
-
-  function handleFileInformation(comand: string): void {
-    setResponseDownInformation(comand)
-  }
-
-  function handleSaveInformation(): void {
-    const blob = new Blob([SendNewConfiguration], { type: 'text/plain;charset=utf-8' })
-    saveAs(blob, 'TecladoSDI12.txt')
-  }
-
-  function handleChangeInformations(comand: string): void {
-    setChangeInformations(comand)
-  }
-
-  function handleChangeVariablesMain(comand: string): void {
-    setChangeVariablesMain(comand)
-  }
-
-  function handleChangeVariablesControler(comand: string): void {
-    setChangeVariablesControl(comand)
-  }
-
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  function handleMenu(menu) {
+  function handleMenu(menu): void {
     switch (menu) {
       case 'config':
         setColorConfig(true)
@@ -230,30 +123,7 @@ export default function TSatDB(props: TSatDBProps) {
     setMenuName(menu)
   }
 
-  function addSpacesToEmptyValues(input: string): string {
-    // Substitui cada vírgula vazia (,,) por uma vírgula com espaço (, )
-    return input.replace(/,(?=,)/g, ',            ')
-  }
-
-  useEffect(() => {
-    const newvalue = changeInformations + changeVariablesMain + changeVariablesControl
-
-    setSendNewConfiguration(addSpacesToEmptyValues(newvalue))
-  }, [changeInformations, changeVariablesMain, changeVariablesControl])
-
-  useEffect(() => {
-    if (props.isConect && !mode.state) {
-      setIsLoading(true)
-      const timer = setTimeout(() => {
-        handleComandConect()
-      }, 1000) // 1000 milissegundos = 1 segundos
-
-      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-      return () => clearTimeout(timer)
-    }
-    return undefined
-  }, [props.isConect])
-
+  function closeNoDeviceFoundModal(): void {}
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
       <HeaderDevice DeviceName={'TSatDB'}>
@@ -320,33 +190,20 @@ export default function TSatDB(props: TSatDBProps) {
         </header>
 
         {
-          <div className="h-[70vh] overflow-y-auto mt-2">
-            <Settings
-              informations={ResponseDonwInformation}
-              clear={ClearInformations}
-              onClearReset={handleClearInformation}
-              changeInformations={handleChangeInformations}
-              isloading={isLoading}
-            />
-            <VariableMain
-              informations={ResponseDonwInformation}
-              clear={ClearInformations}
-              onClearReset={handleClearInformation}
-              changeVariableMain={handleChangeVariablesMain}
-            />
-            <VariableControl
-              informations={ResponseDonwInformation}
-              clear={ClearInformations}
-              onClearReset={handleClearInformation}
-              changeVariableMain={handleChangeVariablesControler}
-            />
-            <ButtonSet
-              handleDownInformation={handleDownInformation}
-              handleClearInformation={handleClearInformation}
-              handleFileInformations={handleFileInformation}
-              handleSaveInformation={handleSaveInformation}
-              handleSendInformation={handleSendInformation}
-            />
+          <div className="h-[70vh] overflow-y-auto mr-8 ml-8 flex flex-col justify-center ">
+            {MenuName === 'status' ? (
+              <Status />
+            ) : MenuName === 'gps' ? (
+              <div>GPS</div>
+            ) : MenuName === 'config' ? (
+              <div>Configuracao</div>
+            ) : MenuName === 'terminal' ? (
+              <div>Terminal</div>
+            ) : MenuName === 'teste' ? (
+              <div>teste</div>
+            ) : (
+              MenuName === 'apontamento' && <div>apontamento</div>
+            )}
           </div>
         }
       </div>

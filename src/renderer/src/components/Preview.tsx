@@ -3,7 +3,7 @@ import LinnimDbCap from './LinnimDB-Cap/LinnimDbCap'
 import TecladoSDI12 from './Teclado-SDI12/Teclado'
 import { Terminal } from './Terminal/Terminal'
 import { Device } from '@renderer/Context/DeviceContext'
-import TSatDB from './TSatDB/Teclado'
+import TSatDB from './TSatDB/TSatDB'
 
 export default function Preview() {
   const { device, port, PortOpen }: any = Device()
