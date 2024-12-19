@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function Status() {
   return (
-    <div className="flex flex-row gap-6 flex-wrap items-end justify-center ">
+    <div className="flex flex-row gap-6 flex-wrap items-end justify-center mt-20">
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Número de Serie</label>
+        <label className="text-md mb-1">Número de Serie</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -12,7 +12,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Versão do Hardware</label>
+        <label className="text-md mb-1">Versão do Hardware</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -21,7 +21,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Versão do Firmware</label>
+        <label className="text-md mb-1">Versão do Firmware</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -30,7 +30,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Timer</label>
+        <label className="text-md mb-1">Timer</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -39,7 +39,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Habilitar Transmissão</label>
+        <label className="text-md mb-1">Habilitar Transmissão</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -48,7 +48,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-md ">Próxima Transmissão Temporizada</label>
+        <label className="text-md mb-1">Próxima Transmissão Temporizada</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -57,7 +57,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Próxima Transmissão Aleatória</label>
+        <label className="text-sm mb-1">Próxima Transmissão Aleatória</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -66,7 +66,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Fail Safe</label>
+        <label className="text-sm mb-1">Fail Safe</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -75,7 +75,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Tensão de Alimentação</label>
+        <label className="text-sm mb-1">Tensão de Alimentação</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -84,7 +84,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Temperatura</label>
+        <label className="text-sm mb-1">Temperatura</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -93,7 +93,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Contagem do Buffer Módulo Temporizado</label>
+        <label className="text-sm mb-1">Contagem do Buffer Módulo Temporizado</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -102,7 +102,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Contagem do Buffer Módulo Aleatório</label>
+        <label className="text-sm mb-1">Contagem do Buffer Módulo Aleatório</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
@@ -111,7 +111,7 @@ export default function Status() {
       </div>
 
       <div className="flex flex-col w-40 ">
-        <label className="text-sm ">Status da Próxima Transmissão</label>
+        <label className="text-sm mb-1">Status da Próxima Transmissão</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"

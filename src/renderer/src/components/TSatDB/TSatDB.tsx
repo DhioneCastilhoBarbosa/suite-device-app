@@ -14,6 +14,7 @@ import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '@renderer/Context/DeviceContext'
 import { saveAs } from 'file-saver'
 import Status from './components/status'
+import Gps from './components/gps'
 
 interface TSatDBProps {
   isConect: boolean
@@ -190,13 +191,13 @@ export default function TSatDB(props: TSatDBProps) {
         </header>
 
         {
-          <div className="h-[70vh] overflow-y-auto mr-8 ml-8 flex flex-col justify-center ">
+          <div className="h-[70vh] overflow-y-auto mr-8 ml-8 ">
             {MenuName === 'status' ? (
               <Status />
             ) : MenuName === 'gps' ? (
-              <div>GPS</div>
+              <Gps />
             ) : MenuName === 'config' ? (
-              <div>Configuracao</div>
+              <Settings />
             ) : MenuName === 'terminal' ? (
               <div>Terminal</div>
             ) : MenuName === 'teste' ? (
