@@ -1,20 +1,19 @@
-import { Drop, Rss } from '@phosphor-icons/react'
+import { Rss } from '@phosphor-icons/react'
 import { CardInformation } from '../cardInfomation/CardInformation'
 import ImgTeclado from '../../assets/TecladoSDI12.svg'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
-import VariableMain from './components/variableMain'
-import VariableControl from './components/variableControl'
-import ButtonSet from './components/buttonSet'
 import SerialManagerRS232 from '@renderer/utils/serial'
-import { useEffect, useState } from 'react'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '@renderer/Context/DeviceContext'
 import { saveAs } from 'file-saver'
 import Status from './components/status'
 import Gps from './components/gps'
+import { useState } from 'react'
+import { Terminal } from './components/terminal'
+import { TransmissionTest } from './components/transmitionTest'
 
 interface TSatDBProps {
   isConect: boolean
@@ -199,9 +198,9 @@ export default function TSatDB(props: TSatDBProps) {
             ) : MenuName === 'config' ? (
               <Settings />
             ) : MenuName === 'terminal' ? (
-              <div>Terminal</div>
+              <Terminal />
             ) : MenuName === 'teste' ? (
-              <div>teste</div>
+              <TransmissionTest />
             ) : (
               MenuName === 'apontamento' && <div>apontamento</div>
             )}

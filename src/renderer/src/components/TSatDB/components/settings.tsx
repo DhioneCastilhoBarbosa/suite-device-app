@@ -54,9 +54,9 @@ export default function Settings() {
             <div className="flex flex-col gap-2">
               <label> ID da plataforma</label>
               <input
-                className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
+                className="border border-gray-500 rounded-md p-2 text-center h-7 w-52"
                 type="text"
-                value={'ahju456789v0'}
+                value={'ahju456789v0002567'}
               />
             </div>
 
@@ -78,9 +78,9 @@ export default function Settings() {
                   id=""
                   className="border border-gray-500 rounded-md h-7 text-center  w-28"
                 >
-                  <option value="100">100 bps</option>
-                  <option value="300">300 bps</option>
-                  <option value="1200">1200 bps</option>
+                  <option value="100">100</option>
+                  <option value="300">300</option>
+                  <option value="1200">1200</option>
                 </select>
                 <label>bps</label>
               </div>
@@ -131,7 +131,6 @@ export default function Settings() {
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
                 </select>
-                <label>bps</label>
               </div>
             </div>
 
@@ -147,7 +146,6 @@ export default function Settings() {
                   <option value="ASCII">ASCII</option>
                   <option value="PSEUD">PSEUD</option>
                 </select>
-                <label>bps</label>
               </div>
             </div>
 
@@ -163,24 +161,14 @@ export default function Settings() {
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
                 </select>
-                <label>bps</label>
               </div>
             </div>
           </div>
         </div>
 
         <div className=" w-full flex flex-col">
-          <label className="w-full  mb-1 font-semibold">Transmissão Aleatoria</label>
-          <div className="flex flex-col gap-4 border-[1px] border-sky-500 p-2 rounded-md p-5">
-            <div className="flex flex-col gap-2">
-              <label> ID da plataforma</label>
-              <input
-                className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
-                type="text"
-                value={'ahju456789v0'}
-              />
-            </div>
-
+          <label className=" w-full mb-1 font-semibold">Transmissão Aleatoria</label>
+          <div className=" h-full flex flex-col gap-4 border-[1px] border-sky-500 p-2 rounded-md p-5 ">
             <div className="flex flex-col gap-2">
               <label> Número do canal da transmissão</label>
               <input
@@ -199,9 +187,9 @@ export default function Settings() {
                   id=""
                   className="border border-gray-500 rounded-md h-7 text-center  w-28"
                 >
-                  <option value="100">100 bps</option>
-                  <option value="300">300 bps</option>
-                  <option value="1200">1200 bps</option>
+                  <option value="100">100</option>
+                  <option value="300">300</option>
+                  <option value="1200">1200</option>
                 </select>
                 <label>bps</label>
               </div>
@@ -213,47 +201,30 @@ export default function Settings() {
                 <input
                   className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
                   type="text"
-                  value={'00:01:00:00'}
+                  value={'2'}
                 />
-                <label> dd:hh:mm:ss</label>
+                <label>minutos</label>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Primeiro horário de transmissão</label>
+              <label> Porcentagem da transmissão</label>
               <div className="flex flex-row gap-2 items-center">
                 <input
                   className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
-                  type="text"
-                  value={'00:01:00'}
+                  type="number"
+                  value={'50'}
                 />
-                <label> hh:mm:ss</label>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Tamanho da janela de transmissão</label>
+              <label> Repetiçao da transmissão</label>
               <input
                 className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
                 type="number"
-                value={5}
+                value={2}
               />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label> Centralização de mensagem em trasmissões</label>
-
-              <div className="flex flex-row gap-2 items-center">
-                <select
-                  name=""
-                  id=""
-                  className="border border-gray-500 rounded-md h-7 text-center  w-28"
-                >
-                  <option value="Sim">Sim</option>
-                  <option value="Não">Não</option>
-                </select>
-                <label>bps</label>
-              </div>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -268,12 +239,11 @@ export default function Settings() {
                   <option value="ASCII">ASCII</option>
                   <option value="PSEUD">PSEUD</option>
                 </select>
-                <label>bps</label>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Mensagem de buffer vazio</label>
+              <label> Contagem de Mensagem</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -284,8 +254,16 @@ export default function Settings() {
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
                 </select>
-                <label>bps</label>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2 ">
+              <label> Substituição de caractere proíbido(IRC)</label>
+              <input
+                className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
+                type="text"
+                value={'?'}
+              />
             </div>
           </div>
         </div>
