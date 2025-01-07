@@ -9,7 +9,6 @@ import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import Measure from './components/measure'
 import UpdateModubus from '../updateModbus/updateModbus'
-import Footer from '../Footer'
 
 interface LinnimDbCapProps {
   isConect: boolean
@@ -17,13 +16,13 @@ interface LinnimDbCapProps {
   PortStatus?: boolean
 }
 
-export default function LinnimDbCap(props: LinnimDbCapProps) {
+export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
   const [menuName, setMenuName] = useState('info')
   const [colorInfo, setColorInfo] = useState(true)
   const [colorConfig, setColorConfig] = useState(false)
   const [colorUpdate, setColorUpdate] = useState(false)
 
-  function handleMenu(menu) {
+  function handleMenu(menu): void {
     if (menu === 'info') {
       setColorInfo(true)
       setColorConfig(false)

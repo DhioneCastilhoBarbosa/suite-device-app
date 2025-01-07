@@ -61,6 +61,28 @@ class SerialManagerRS232 {
       })
     })
   }*/
+
+
+    sendCommandTSatDB(command: string): Promise<void> {
+      return new Promise((resolve, reject) => {
+          if (!this.port) {
+              return reject(new Error('Porta serial não está aberta.'));
+          }
+
+          // Adiciona os sufixos \r\n ao comando
+          const formattedCommand = `${command}\r\n`;
+
+          // Envia o comando pela porta serial
+          this.port.write(formattedCommand, (err) => {
+              if (err) {
+                  return reject(new Error(`Erro ao enviar comando: ${err.message}`));
+              }
+              resolve();
+          });
+      });
+  }
+  // Método para enviar comandos pela porta serial
+
     sendCommandRS232(command: string): Promise<string> {
       return new Promise((resolve, reject) => {
         if (!this.port) {
@@ -194,6 +216,42 @@ class SerialManagerRS232 {
       })
     })
   }
+
+  receiveDataTSatDB(): Promise<string> {
+    return new Promise((resolve, reject) => {
+        if (!this.port) {
+            reject(new Error('Porta serial não está aberta.'));
+            return;
+        }
+
+        let response = '';
+        const timeoutDuration = 500; // Tempo de espera para finalizar a captura
+        let timeout: NodeJS.Timeout;
+
+        const onData = (data: Buffer) => {
+            response += data.toString();
+
+            // Reinicia o timeout sempre que novos dados chegam
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                this.port.removeListener('data', onData);
+                this.port.removeListener('error', onError);
+                resolve(response.trim());
+            }, timeoutDuration);
+        };
+
+        const onError = (err: Error) => {
+            clearTimeout(timeout);
+            this.port.removeListener('data', onData);
+            this.port.removeListener('error', onError);
+            reject(err);
+        };
+
+        this.port.on('data', onData);
+        this.port.once('error', onError);
+    });
+}
+
 
   // Método para fechar a porta serial
   closePortRS232(): void {

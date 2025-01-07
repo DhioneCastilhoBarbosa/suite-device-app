@@ -1,13 +1,17 @@
 import Button from '@renderer/components/button/Button'
-import LoadingData from '@renderer/components/loading/loadingData'
-import { FolderOpen, FloppyDisk, Broom, DownloadSimple, UploadSimple } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
-import { selectFile } from '@renderer/utils/fileUtils'
+
+import {
+  FolderOpen,
+  FloppyDisk,
+  DownloadSimple,
+  UploadSimple,
+  ArrowCounterClockwise
+} from '@phosphor-icons/react'
 
 interface SendProps {
-  handleDownInformation: (newValue: string) => void
-  handleClearInformation: (newValue: boolean) => void
-  handleFileInformations: (newValue: string) => void
+  handleDownInformation: () => void
+  handleRetornSettingsFactory: () => void
+  handleFileInformations: () => void
   handleSaveInformation: () => void
   handleSendInformation: () => void
 }
@@ -15,44 +19,44 @@ interface SendProps {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default function ButtonSet({
   handleDownInformation,
-  handleClearInformation,
+  handleRetornSettingsFactory,
   handleFileInformations,
   handleSaveInformation,
   handleSendInformation
 }: SendProps) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  const [fileContent, setFileContent] = useState('')
 
-  function handleDown() {
-    handleDownInformation('!POLL%')
+  function handleDown(): void {
+    handleDownInformation()
   }
-  function handleClear() {
-    handleClearInformation(true)
+  function handleRetornFactory(): void {
+    handleRetornSettingsFactory()
   }
 
-  function handleSaveToFile() {
+  function handleSaveToFile(): void {
     handleSaveInformation()
   }
 
-  function handleSend() {
+  function handleSend(): void {
     handleSendInformation()
   }
 
-  const handleSelectFile = () => {
-    const handleFileContentLoad = (content: string) => {
-      setFileContent(content)
-    }
-    selectFile(handleFileContentLoad, 'txt')
+  function handleSelectFile(): void {
+    handleFileInformations()
   }
-
-  useEffect(() => {
-    handleFileInformations(fileContent)
-  }, [fileContent])
-
   return (
     <>
-      <div className="flex items-start justify-between  mt-8 mb-2 border-b-[1px] border-sky-500 mr-8 ml-8 "></div>
-      <div className="flex flex-row justify-center gap-2 items-end mr-4 ml-4 mb-8 mt-8">
+      <div className="flex items-start justify-between  mb-2 border-b-[1px] border-sky-500  "></div>
+      <div className="flex flex-row justify-center gap-2 items-end  mb-8 ">
+        <Button
+          filled={false}
+          size={'medium'}
+          className="text-[12px] p-6"
+          onClick={handleRetornFactory}
+        >
+          <ArrowCounterClockwise size={24} />
+          Restaurar
+        </Button>
         <Button
           filled={false}
           size={'medium'}
@@ -71,10 +75,7 @@ export default function ButtonSet({
           <FloppyDisk size={24} />
           Salvar
         </Button>
-        <Button filled={false} size={'medium'} className="text-[12px] p-6" onClick={handleClear}>
-          <Broom size={24} />
-          Limpar
-        </Button>
+
         <Button filled={false} size={'medium'} onClick={handleDown} className="text-[12px] p-6">
           <DownloadSimple size={24} />
           Baixar informação

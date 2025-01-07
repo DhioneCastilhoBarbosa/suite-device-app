@@ -6,6 +6,7 @@ import { CloseModBus, cancelConnection, connectClient } from '@renderer/utils/mo
 import Loading from '../loading/loading'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { ClosePortRS232, OpenPortRS232 } from '../Teclado-SDI12/Teclado'
+import { ClosePortTSatDB, OpenPortTSatDB } from '../TSatDB/TSatDB'
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
@@ -51,6 +52,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       } else if (device.name === 'teclado-sdi12') {
         OpenPortRS232({ portName: valorSelecionado, bauld: 9600 })
         SetPortOpen({ state: true })
+      } else if (device.name === 'TSatDB') {
+        OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
+        SetPortOpen({ state: true })
       } else {
         setIsLoading(true)
         let result: boolean = await connectClient(ModBusProps)
@@ -81,7 +85,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
         ? ClosePort()
         : device.name === 'teclado-sdi12'
           ? ClosePortRS232()
-          : CloseModBus()
+          : device.name === 'TSatDB'
+            ? ClosePortTSatDB()
+            : CloseModBus()
     } else {
       setMode({ state: false })
     }

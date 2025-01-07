@@ -1,13 +1,60 @@
+import { useEffect, useState } from 'react'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default function Status() {
+type Props = {
+  receiverVER: string | undefined
+  receiverRST: string | undefined
+  receiverTIME: string | undefined
+  receiverTEMP: string | undefined
+  // clear: boolean | undefined
+  // onClearReset: (newValue: boolean) => void
+  // changeVariableMain: (value: string) => void
+}
+
+export default function Status({
+  receiverVER,
+  receiverRST,
+  receiverTIME,
+  receiverTEMP
+}: Props): JSX.Element {
+  const [dataVer, setDataVer] = useState<string[]>([])
+  const [dataRst, setDataRst] = useState<string[]>([])
+  const [dataTime, setDataTime] = useState<string[]>([])
+  const [dataTemp, setDataTemp] = useState<string[]>([])
+
+  //console.log(receiverVER)
+
+  useEffect(() => {
+    if (receiverVER) {
+      const loadedDataVER = receiverVER.split('\r\n').map((item) => item.trim())
+      setDataVer(loadedDataVER)
+    }
+
+    if (receiverRST) {
+      const loadedDataRST = receiverRST.split('\r\n').map((item) => item.trim())
+      setDataRst(loadedDataRST)
+    }
+
+    if (receiverTIME) {
+      const loadedDataTIME = receiverTIME.split('\r\n').map((item) => item.trim())
+      setDataTime(loadedDataTIME)
+    }
+    if (receiverTEMP) {
+      const loadedDataTIME = receiverTEMP.split('\r\n').map((item) => item.trim())
+      setDataTemp(loadedDataTIME)
+    }
+  }, [receiverVER, receiverRST, receiverTIME, receiverTEMP])
+
+  //console.log(dataVer[1].replace('Serial Number:', ''))
   return (
-    <div className="flex flex-row gap-6 flex-wrap items-end justify-center mt-20">
+    <div className="flex flex-row gap-6 flex-wrap items-end justify-center mt-16 border border-sky-500 rounded-md py-4">
       <div className="flex flex-col w-40 ">
         <label className="text-md mb-1">Número de Serie</label>
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'1236755'}
+          value={dataVer[1] ? dataVer[1].replace('Serial Number:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -16,7 +63,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'1.00'}
+          value={dataVer[2] ? dataVer[2].replace('Hardware Version:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -25,7 +73,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'11.15 2024/09/12'}
+          value={dataVer[3] ? dataVer[3].replace('Firmware Version:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -34,7 +83,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'2024/12/02 23:31:15'}
+          value={dataTime[1] ? dataTime[1].replace('Time=', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -43,7 +93,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'Enabled'}
+          value={dataRst[1] ? dataRst[1].replace('Transmitter:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -52,7 +103,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'2024/12/02 01:31:15'}
+          value={dataRst[6] ? dataRst[6].replace('Next Timed Tx:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -61,7 +113,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'N/A'}
+          value={dataRst[9] ? dataRst[9].replace('Next Random Tx:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -70,7 +123,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'Ok'}
+          value={dataRst[10] ? dataRst[10].replace('Failsafe:', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -79,7 +133,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'12.4'}
+          value={dataRst[11] ? dataRst[11].replace('Supply voltage: ', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -88,7 +143,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'30.7 C'}
+          value={dataTemp[1] ? dataTemp[1].replace('Temp = ', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -97,7 +153,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'0 bytes'}
+          value={dataRst[5] ? dataRst[5].replace('Timed Message Length: ', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -106,7 +163,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'0 bytes'}
+          value={dataRst[7] ? dataRst[7].replace('Random Message Length: ', '') : 'N/A'}
+          readOnly
         />
       </div>
 
@@ -115,7 +173,8 @@ export default function Status() {
         <input
           className="border border-sky-500 rounded-md p-2 text-center h-7"
           type="text"
-          value={'00:00'}
+          value={dataRst[4] ? dataRst[4].replace('Time To Next Tx: ', '') : 'N/A'}
+          readOnly
         />
       </div>
 
