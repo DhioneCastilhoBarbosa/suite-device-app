@@ -5,7 +5,8 @@ import {
   FloppyDisk,
   DownloadSimple,
   UploadSimple,
-  ArrowCounterClockwise
+  ArrowCounterClockwise,
+  Broom
 } from '@phosphor-icons/react'
 
 interface SendProps {
@@ -14,6 +15,7 @@ interface SendProps {
   handleFileInformations: () => void
   handleSaveInformation: () => void
   handleSendInformation: () => void
+  ClearFailSafe: () => void
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -22,10 +24,14 @@ export default function ButtonSet({
   handleRetornSettingsFactory,
   handleFileInformations,
   handleSaveInformation,
-  handleSendInformation
+  handleSendInformation,
+  ClearFailSafe
 }: SendProps) {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 
+  function handleClearFailSafe(): void {
+    ClearFailSafe()
+  }
   function handleDown(): void {
     handleDownInformation()
   }
@@ -48,6 +54,15 @@ export default function ButtonSet({
     <>
       <div className="flex items-start justify-between  mb-2 border-b-[1px] border-sky-500  "></div>
       <div className="flex flex-row justify-center gap-2 items-end  mb-8 ">
+        <Button
+          filled={false}
+          size={'medium'}
+          className="text-[12px] p-6"
+          onClick={handleClearFailSafe}
+        >
+          <Broom size={24} />
+          Limpar Failsafe
+        </Button>
         <Button
           filled={false}
           size={'medium'}

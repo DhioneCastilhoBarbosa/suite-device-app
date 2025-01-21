@@ -12,21 +12,28 @@ type Props = {
 export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props): JSX.Element {
   const [dataTerminal, setDataTerminal] = useState<string[]>([])
   const [inputValue, setInputValue] = useState<string>('')
-  const textareaRef: React.MutableRefObject<any> = useRef(null)
-  const handleInputChange = (event) => {
+  const textareaRef: React.MutableRefObject<HTMLTextAreaElement | null> = useRef(null)
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setInputValue(event.target.value)
   }
 
-  const handleSendComand = () => {
+  const handleSendComand = (): void => {
     handleSendComandTerminal(inputValue)
     setInputValue('')
   }
 
-  const handleClear = () => {
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Enter') {
+      //console.log('Enter')
+      handleSendComand()
+    }
+  }
+
+  const handleClear = (): void => {
     setDataTerminal([])
   }
 
-  const handleSaveToFile = () => {
+  const handleSaveToFile = (): void => {
     const headerFile = 'Dados gerado do Trasmissor TSatDB - '
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
@@ -73,6 +80,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
           placeholder="Digite o comando"
           value={inputValue}
           onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
         />
         <Button size={'large'} className="h-10" filled onClick={handleSendComand}>
           Enviar

@@ -91,6 +91,11 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
   }
 
   const handleInputChange = (id: string, value: string): void => {
+    const regex = /^-?\d*\.?\d*$/
+    if (!regex.test(value)) {
+      return
+    }
+
     switch (id) {
       case 'Latitude':
         setLatitude(value)
@@ -114,6 +119,10 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
   }
 
   useEffect(() => {
+    calculateAzimuthAndElevation()
+  }, [Longitude, Latitude])
+
+  useEffect(() => {
     if (dataPos[2]) {
       const loadedData = dataPos[2] ? dataPos[2].replace('Lat:', '') : '0.0'
       setLatitude(loadedData)
@@ -122,6 +131,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
       const loadedData = dataPos[3] ? dataPos[3].replace('Long:', '') : '0.0'
       setLongitude(loadedData)
     }
+    calculateAzimuthAndElevation()
   }, [dataGps, dataPos])
 
   useEffect(() => {
@@ -209,14 +219,14 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
           >
             Atualizar coordenada
           </Button>
-          <Button
+          {/*<Button
             filled={false}
             size={'medium'}
             className="text-[12px]"
             onClick={calculateAzimuthAndElevation}
           >
             Calcular
-          </Button>
+          </Button>*/}
         </div>
       </div>
     </div>

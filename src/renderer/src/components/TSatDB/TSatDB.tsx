@@ -513,6 +513,7 @@ export default function TSatDB(props: TSatDBProps) {
 
       return (): void => clearTimeout(timer)
     }
+    return undefined
   }, [props.isConect])
 
   return props.isConect ? (
@@ -553,6 +554,15 @@ export default function TSatDB(props: TSatDBProps) {
 
             <button
               className={`border-b-2 border-transparent ${
+                colorApontamento ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('apontamento')}
+            >
+              Apontamento de Antena
+            </button>
+
+            <button
+              className={`border-b-2 border-transparent ${
                 colorTerminal ? 'text-sky-500' : ''
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('terminal')}
@@ -560,34 +570,26 @@ export default function TSatDB(props: TSatDBProps) {
               Terminal
             </button>
 
-            <button
+            {/*<button
               className={`border-b-2 border-transparent ${
                 colorTeste ? 'text-sky-500' : ''
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('teste')}
             >
               Teste de Transmissão
-            </button>
-
-            <button
-              className={`border-b-2 border-transparent ${
-                colorApontamento ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('apontamento')}
-            >
-              Apontamento de Antena
-            </button>
+            </button>*/}
           </div>
         </header>
 
         {
-          <div className="h-[510px] overflow-y-auto mr-8 ml-8  ">
+          <div className="h-[550px] overflow-y-auto mr-8 ml-8  ">
             {MenuName === 'status' ? (
               <Status
                 receiverVER={dataReceivedComandVER}
                 receiverRST={dataReceivedComandRST}
                 receiverTIME={dataReceivedComandTIME}
                 receiverTEMP={dataReceivedComandTEMP}
+                refreshInformation={executeListCommand}
               />
             ) : MenuName === 'gps' ? (
               <Gps
@@ -604,6 +606,7 @@ export default function TSatDB(props: TSatDBProps) {
                 handleSendSettings={handleSendSetings}
                 handlesRecoverSettingsFactory={handlesSettingsFactory}
                 handleFileInformations={handleFileInformations}
+                handleClearFailSafe={() => handleSendComandTerminal('CLRFS')}
               />
             ) : MenuName === 'terminal' ? (
               <Terminal

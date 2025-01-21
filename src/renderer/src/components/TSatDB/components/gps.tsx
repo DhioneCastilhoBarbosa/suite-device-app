@@ -1,3 +1,5 @@
+import { ArrowsClockwise } from '@phosphor-icons/react'
+import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
 
 type Props = {
@@ -5,6 +7,7 @@ type Props = {
   receiverPOS: string | undefined
   receiverGPS: string | undefined
   handleUpdateGPS: () => void
+
   // clear: boolean | undefined
   // onClearReset: (newValue: boolean) => void
   // changeVariableMain: (value: string) => void
@@ -119,15 +122,21 @@ export default function Gps({
 
         <div className="flex flex-col w-40 "></div>
         <div className="flex flex-col w-40 "></div>
-        <div className="flex flex-col w-full ml-14 mr-14  mb-4">
+        <div className="flex flex-col w-full ml-14 mr-14">
           <label className="font-bold bg-sky-500 text-white p-1 rounded-t-sm">Log:</label>
           <textarea
             name=""
             id=""
             value={receiverGPS}
             readOnly
-            className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm h-64"
+            className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm h-60"
           ></textarea>
+        </div>
+        <div className="flex flex-row justify-end w-full ml-14 mr-14">
+          <Button onClick={handleUpdateGPS}>
+            <ArrowsClockwise size={24} />
+            Atualizar
+          </Button>
         </div>
       </div>
     </div>

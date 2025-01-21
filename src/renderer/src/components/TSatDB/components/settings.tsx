@@ -10,6 +10,7 @@ type Props = {
   handleSendSettings: (settings: string[]) => void
   handlesRecoverSettingsFactory: () => void
   handleFileInformations: (newValue: string) => void
+  handleClearFailSafe: () => void
   // clear: boolean | undefined
   // onClearReset: (newValue: boolean) => void
   // changeVariableMain: (value: string) => void
@@ -21,7 +22,8 @@ export default function Settings({
   handleUpdateSettings,
   handleSendSettings,
   handlesRecoverSettingsFactory,
-  handleFileInformations
+  handleFileInformations,
+  handleClearFailSafe
 }: Props): JSX.Element {
   const [dataSettings, setDataSettings] = useState<string[]>([])
   const [dataSaveSettings, setDataSaveSettings] = useState<string[]>([])
@@ -143,6 +145,10 @@ export default function Settings({
   function handleUpdate(): void {
     handleUpdateSettings()
     loadVariables(receiverSettings ?? '', receiverTxPowerLevel ?? '')
+  }
+
+  function handleFailSafe(): void {
+    handleClearFailSafe()
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -607,6 +613,7 @@ export default function Settings({
         handleSaveInformation={handleSaveToFile}
         handleRetornSettingsFactory={handlesRecoverSettingsFactory}
         handleFileInformations={handleSelectFile}
+        ClearFailSafe={handleFailSafe}
       />
     </div>
   )
