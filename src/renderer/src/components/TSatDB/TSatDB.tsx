@@ -15,6 +15,8 @@ import { Terminal } from './components/terminal'
 import { TransmissionTest } from './components/transmitionTest'
 import LoadingData from '../loading/loadingData'
 import { AntenaPointing } from './components/antennapointing'
+import { RFAdvanced } from './components/RFAdvanced'
+import { set } from 'zod'
 
 interface TSatDBProps {
   isConect: boolean
@@ -52,7 +54,7 @@ export default function TSatDB(props: TSatDBProps) {
   const [colorStatus, setColorStatus] = useState(true)
   const [colorGps, setColorGps] = useState(false)
   const [colorTerminal, setColorTerminal] = useState(false)
-  const [colorTeste, setColorTeste] = useState(false)
+  const [colorRF, setColorRF] = useState(false)
   const [colorApontamento, setColorApontamento] = useState(false)
 
   // variaveis de dados recebidos da porta serial ao enviar um determinado comanda
@@ -68,6 +70,8 @@ export default function TSatDB(props: TSatDBProps) {
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
     'Baixando informações do dispositivo!'
   )
+
+  const [UpdateFlagDataGPS, setUpdateFlagDataGPS] = useState<boolean>(false)
   //FIM
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
@@ -80,7 +84,7 @@ export default function TSatDB(props: TSatDBProps) {
         setColorStatus(false)
         setColorGps(false)
         setColorTerminal(false)
-        setColorTeste(false)
+        setColorRF(false)
         setColorApontamento(false)
         break
       case 'status':
@@ -88,7 +92,7 @@ export default function TSatDB(props: TSatDBProps) {
         setColorStatus(true)
         setColorGps(false)
         setColorTerminal(false)
-        setColorTeste(false)
+        setColorRF(false)
         setColorApontamento(false)
         break
       case 'gps':
@@ -96,7 +100,7 @@ export default function TSatDB(props: TSatDBProps) {
         setColorStatus(false)
         setColorGps(true)
         setColorTerminal(false)
-        setColorTeste(false)
+        setColorRF(false)
         setColorApontamento(false)
         break
       case 'terminal':
@@ -104,15 +108,15 @@ export default function TSatDB(props: TSatDBProps) {
         setColorStatus(false)
         setColorGps(false)
         setColorTerminal(true)
-        setColorTeste(false)
+        setColorRF(false)
         setColorApontamento(false)
         break
-      case 'teste':
+      case 'rf':
         setColorConfig(false)
         setColorStatus(false)
         setColorGps(false)
         setColorTerminal(false)
-        setColorTeste(true)
+        setColorRF(true)
         setColorApontamento(false)
         break
       case 'apontamento':
@@ -120,7 +124,7 @@ export default function TSatDB(props: TSatDBProps) {
         setColorStatus(false)
         setColorGps(false)
         setColorTerminal(false)
-        setColorTeste(false)
+        setColorRF(false)
         setColorApontamento(true)
         break
       default:
@@ -134,12 +138,34 @@ export default function TSatDB(props: TSatDBProps) {
     setDeviceFound(null)
   }
 
-  async function handleComandSend(comand: string): Promise<string> {
+  /*async function handleComandSend(comand: string): Promise<string> {
     serialManagerTsatDB.sendCommandTSatDB(comand)
     let response = ''
     response = await serialManagerTsatDB.receiveDataTSatDB()
-    //console.log(`Resposta do comando ${comand}:`, response)
+    console.log(`Resposta do comando ${comand}:`, response)
     return response
+  }*/
+
+  async function handleComandSend(comand: string): Promise<string> {
+    serialManagerTsatDB.sendCommandTSatDB(comand)
+
+    const timeoutPromise = new Promise<string>((_, reject) =>
+      setTimeout(() => {
+        reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
+      }, 20000)
+    )
+
+    try {
+      const response = await Promise.race([serialManagerTsatDB.receiveDataTSatDB(), timeoutPromise])
+
+      console.log(`Resposta do comando ${comand}:`, response)
+      return response
+    } catch (error) {
+      console.error(`Erro ao receber resposta do comando ${comand}:`, error)
+      setIsLoading(false)
+      setDeviceFound(false)
+      throw error
+    }
   }
 
   function handleSendComandTerminal(comand: string): void {
@@ -160,7 +186,7 @@ export default function TSatDB(props: TSatDBProps) {
     }
   }
 
-  function handleSettingsComand(): void {
+  /*function handleSettingsComand(): void {
     if (props.isConect && !mode.state) {
       setMessageIsLoading('Baixando informações do dispositivo!')
       setIsLoading(true)
@@ -188,6 +214,44 @@ export default function TSatDB(props: TSatDBProps) {
         }, 1000)
       })
     }
+  }*/
+
+  function handleSettingsComandTx(): void {
+    if (props.isConect && !mode.state) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      setDataReceivedComandPowerTx('')
+
+      handleComandSend('techmode alpha').then(() => {
+        setTimeout(() => {
+          handleComandSend('PWRLVL').then((response) => {
+            setDataReceivedComandPowerTx(response)
+            setTimeout(() => {
+              handleComandSend('usermode').then(() => {
+                setTimeout(() => {
+                  handleComandSend('save').then(() => {
+                    setIsLoading(false)
+                  })
+                }, 1000)
+              })
+            }, 1000)
+          })
+        }, 1000)
+      })
+    }
+  }
+
+  function handleSettingsComand(): void {
+    if (props.isConect && !mode.state) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      setDataReceivedComandRCFG('')
+
+      handleComandSend('rcfg').then((response) => {
+        setDataReceivedComandRCFG(response)
+        setIsLoading(false)
+      })
+    }
   }
 
   function handleComandUdateGPS(): void {
@@ -200,6 +264,7 @@ export default function TSatDB(props: TSatDBProps) {
             setTimeout(() => {
               handleComandSend('RST').then((response) => {
                 setDataReceivedComandRST(response)
+                setIsLoading(false)
               })
             }, 1000)
           })
@@ -243,7 +308,7 @@ export default function TSatDB(props: TSatDBProps) {
     }
   }
 
-  function handleSendSetings(settings: string[]): void {
+  /*function handleSendSetings(settings: string[]): void {
     const time = 200
     if (props.isConect && !mode.state) {
       setIsLoading(true)
@@ -382,6 +447,126 @@ export default function TSatDB(props: TSatDBProps) {
         }, time)
       })
     }
+  }*/
+
+  function handleSendTxSettings(settings: string[]): void {
+    const time = 200
+    if (props.isConect && !mode.state) {
+      setIsLoading(true)
+      setMessageIsLoading('Enviando configurações iniciais para o dispositivo!')
+
+      handleComandSend(settings[3]).then(() => {
+        setTimeout(() => {
+          handleComandSend('pwrlvl=' + settings[0] + ',' + settings[1] + ',' + settings[2]).then(
+            () => {
+              setTimeout(() => {
+                handleComandSend('usermode').then(() => {
+                  setTimeout(() => {
+                    handleComandSend('save').then(() => {
+                      setIsLoading(false)
+                    })
+                  }, time)
+                })
+              }, time)
+            }
+          )
+        }, time)
+      })
+    }
+  }
+
+  function handleSendSetings(settings: string[]): void {
+    const time = 200
+    if (props.isConect && !mode.state) {
+      setIsLoading(true)
+      setMessageIsLoading('Enviando informações para o dispositivo!')
+
+      handleComandSend('NESID=' + settings[3]).then(() => {
+        setTimeout(() => {
+          handleComandSend('TCH=' + settings[4]).then(() => {
+            setTimeout(() => {
+              handleComandSend('TBR=' + settings[5]).then(() => {
+                setTimeout(() => {
+                  handleComandSend('TIN=' + settings[6]).then(() => {
+                    setTimeout(() => {
+                      handleComandSend('FTT=' + settings[7]).then(() => {
+                        setTimeout(() => {
+                          handleComandSend('TWL=' + settings[8]).then(() => {
+                            setTimeout(() => {
+                              handleComandSend('CMSG=' + settings[9]).then(() => {
+                                setTimeout(() => {
+                                  handleComandSend('EBM=' + settings[10]).then(() => {
+                                    setTimeout(() => {
+                                      handleComandSend('TPR=' + settings[11]).then(() => {
+                                        setTimeout(() => {
+                                          handleComandSend('TDF=' + settings[12]).then(() => {
+                                            setTimeout(() => {
+                                              handleComandSend('RCH=' + settings[13]).then(() => {
+                                                setTimeout(() => {
+                                                  handleComandSend('RBR=' + settings[14]).then(
+                                                    () => {
+                                                      setTimeout(() => {
+                                                        handleComandSend(
+                                                          'RIN=' + settings[15]
+                                                        ).then(() => {
+                                                          setTimeout(() => {
+                                                            handleComandSend(
+                                                              'RPC=' + settings[16]
+                                                            ).then(() => {
+                                                              setTimeout(() => {
+                                                                handleComandSend(
+                                                                  'RRC=' + settings[17]
+                                                                ).then(() => {
+                                                                  setTimeout(() => {
+                                                                    handleComandSend(
+                                                                      'RDF=' + settings[18]
+                                                                    ).then(() => {
+                                                                      setTimeout(() => {
+                                                                        handleComandSend(
+                                                                          'RMC=' + settings[19]
+                                                                        ).then(() => {
+                                                                          setTimeout(() => {
+                                                                            handleComandSend(
+                                                                              'IRC=' + settings[20]
+                                                                            ).then(() => {
+                                                                              setIsLoading(false)
+                                                                            })
+                                                                          }, time)
+                                                                        })
+                                                                      }, time)
+                                                                    })
+                                                                  }, time)
+                                                                })
+                                                              }, time)
+                                                            })
+                                                          }, time)
+                                                        })
+                                                      }, time)
+                                                    }
+                                                  )
+                                                }, time)
+                                              })
+                                            }, time)
+                                          })
+                                        }, time)
+                                      })
+                                    }, time)
+                                  })
+                                }, time)
+                              })
+                            }, time)
+                          })
+                        }, time)
+                      })
+                    }, time)
+                  })
+                }, time)
+              })
+            }, time)
+          })
+        }, time)
+      })
+    }
   }
 
   function handleFileInformations(fileContent: string): void {
@@ -417,7 +602,7 @@ export default function TSatDB(props: TSatDBProps) {
     }
   }
 
-  function handleTestTransmission(id: string, channel: string, message: string): void {
+  /* function handleTestTransmission(id: string, channel: string, message: string): void {
     const time = 200
     if (props.isConect && !mode.state) {
       setIsLoading(true)
@@ -466,6 +651,18 @@ export default function TSatDB(props: TSatDBProps) {
         }, time)
       })
     }
+  }*/
+
+  function handleClickUpdateGPS(): void {
+    setMessageIsLoading('Baixando informações do dispositivo!')
+    setIsLoading(true)
+    handleComandUdateGPS()
+    console.log('Atualizando informações do GPS')
+  }
+  function handleClickUpdateStatus(): void {
+    setMessageIsLoading('Baixando informações do dispositivo!')
+    setIsLoading(true)
+    executeListCommand()
   }
 
   useEffect(() => {
@@ -570,14 +767,16 @@ export default function TSatDB(props: TSatDBProps) {
               Terminal
             </button>
 
-            {/*<button
-              className={`border-b-2 border-transparent ${
-                colorTeste ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('teste')}
-            >
-              Teste de Transmissão
-            </button>*/}
+            {
+              <button
+                className={`border-b-2 border-transparent ${
+                  colorRF ? 'text-sky-500' : ''
+                } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+                onClick={() => handleMenu('rf')}
+              >
+                RF Avançado
+              </button>
+            }
           </div>
         </header>
 
@@ -589,7 +788,7 @@ export default function TSatDB(props: TSatDBProps) {
                 receiverRST={dataReceivedComandRST}
                 receiverTIME={dataReceivedComandTIME}
                 receiverTEMP={dataReceivedComandTEMP}
-                refreshInformation={executeListCommand}
+                refreshInformation={handleClickUpdateStatus}
               />
             ) : MenuName === 'gps' ? (
               <Gps
@@ -597,6 +796,7 @@ export default function TSatDB(props: TSatDBProps) {
                 receiverPOS={dataReceivedComandPOS}
                 receiverRST={dataReceivedComandRST}
                 handleUpdateGPS={handleComandUdateGPS}
+                handleClickUpdateGPS={handleClickUpdateGPS}
               />
             ) : MenuName === 'config' ? (
               <Settings
@@ -613,8 +813,12 @@ export default function TSatDB(props: TSatDBProps) {
                 receiverTerminal={dataReceivedComandTerminal}
                 handleSendComandTerminal={handleSendComandTerminal}
               />
-            ) : MenuName === 'teste' ? (
-              <TransmissionTest handleTestTransmissions={handleTestTransmission} />
+            ) : MenuName === 'rf' ? (
+              <RFAdvanced
+                receiverTxPowerLevel={dataReceivedComandPowerTX}
+                handleSendSettings={handleSendTxSettings}
+                handleUpdateSettings={handleSettingsComandTx}
+              />
             ) : (
               MenuName === 'apontamento' && (
                 <AntenaPointing
@@ -630,6 +834,7 @@ export default function TSatDB(props: TSatDBProps) {
       {deviceFound !== null && !deviceFound && (
         <NoDeviceFoundModbus onClose={closeNoDeviceFoundModal} />
       )}
+
       <LoadingData visible={isLoading} title={messageIsLoading} />
     </ContainerDevice>
   ) : (

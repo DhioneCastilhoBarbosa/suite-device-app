@@ -2,6 +2,7 @@ import Button from '@renderer/components/button/Button'
 import Antenna from './../../../assets/antenna.png'
 import AntennaUP from './../../../assets/antennaUP.png'
 import { useEffect, useState } from 'react'
+import satellite from '../../../assets/satellite.svg'
 
 type Props = {
   handlePositiom: () => void
@@ -161,6 +162,13 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
         </label>
       </div>
       <div className="flex flex-col w-full gap-2 border-[1px] border-sky-500 pt-8 items-start rounded-b-md">
+        <div className="flex flex-row  items-center justify-end w-full">
+          <div className="flex flex-row  items-center gap-2 mr-6 border-[1px] border-sky-500 rounded-md p-1">
+            <img src={satellite} alt="satellite" />
+            <span className="font-semibold">-</span>
+            <span className="font-semibold">GOES-16 EAST 75W</span>
+          </div>
+        </div>
         <div className="flex flex-row justify-around items-center w-full">
           <div className="flex flex-row gap-1 justify-center items-center">
             <img src={Antenna} alt="" className="w-64" />

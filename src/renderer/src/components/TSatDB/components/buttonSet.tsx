@@ -53,11 +53,11 @@ export default function ButtonSet({
   return (
     <>
       <div className="flex items-start justify-between  mb-2 border-b-[1px] border-sky-500  "></div>
-      <div className="flex flex-row justify-center gap-2 items-end  mb-8 ">
+      <div className="flex flex-row justify-center gap-1 items-center  mb-8 ">
         <Button
           filled={false}
           size={'medium'}
-          className="text-[12px] p-6"
+          className="text-[11px] px-0 py-6"
           onClick={handleClearFailSafe}
         >
           <Broom size={24} />
@@ -66,7 +66,7 @@ export default function ButtonSet({
         <Button
           filled={false}
           size={'medium'}
-          className="text-[12px] p-6"
+          className="text-[11px] px-0 py-6"
           onClick={handleRetornFactory}
         >
           <ArrowCounterClockwise size={24} />
@@ -75,27 +75,37 @@ export default function ButtonSet({
         <Button
           filled={false}
           size={'medium'}
-          className="text-[12px] p-6"
+          className="text-[11px] px-0 py-6"
           onClick={handleSelectFile}
         >
-          <FolderOpen size={36} />
-          Selecionar o Arquivo
+          <FolderOpen size={24} />
+          Selecionar Arquivo
         </Button>
         <Button
           filled={false}
           size={'medium'}
-          className="text-[12px] p-6"
+          className="text-[11px] px-0 py-6"
           onClick={handleSaveToFile}
         >
           <FloppyDisk size={24} />
           Salvar
         </Button>
 
-        <Button filled={false} size={'medium'} onClick={handleDown} className="text-[12px] p-6">
+        <Button
+          filled={false}
+          size={'medium'}
+          onClick={handleDown}
+          className="text-[11px] px-1 py-6"
+        >
           <DownloadSimple size={24} />
           Baixar informação
         </Button>
-        <Button filled={false} size={'medium'} className="text-[12px] p-6" onClick={handleSend}>
+        <Button
+          filled={false}
+          size={'medium'}
+          className="text-[11px] px-1 py-6"
+          onClick={handleSend}
+        >
           <UploadSimple size={24} />
           Enviar configuração
         </Button>

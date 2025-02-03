@@ -7,6 +7,7 @@ type Props = {
   receiverPOS: string | undefined
   receiverGPS: string | undefined
   handleUpdateGPS: () => void
+  handleClickUpdateGPS: () => void
 
   // clear: boolean | undefined
   // onClearReset: (newValue: boolean) => void
@@ -17,7 +18,8 @@ export default function Gps({
   receiverGPS,
   receiverPOS,
   receiverRST,
-  handleUpdateGPS
+  handleUpdateGPS,
+  handleClickUpdateGPS
 }: Props): JSX.Element {
   const [dataGps, setDataGps] = useState<string[]>([])
   const [dataPos, setDataPos] = useState<string[]>([])
@@ -133,7 +135,7 @@ export default function Gps({
           ></textarea>
         </div>
         <div className="flex flex-row justify-end w-full ml-14 mr-14">
-          <Button onClick={handleUpdateGPS}>
+          <Button onClick={handleClickUpdateGPS}>
             <ArrowsClockwise size={24} />
             Atualizar
           </Button>
