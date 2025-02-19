@@ -31,7 +31,7 @@ Para construir o aplicativo, siga as etapas abaixo:
 2. **Executar o projeto em modo de desenvolvimento**
    Use o comando abaixo para iniciar o aplicativo em modo de desenvolvimento:
    ```bash
-   npm start
+   npm run dev
    ```
 
 3. **Compilar o aplicativo para produção**

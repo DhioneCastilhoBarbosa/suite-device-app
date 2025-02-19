@@ -1,7 +1,6 @@
 import { DeviceProvider } from '@renderer/Context/DeviceContext'
 import Menu from './Menu'
 import Preview from './Preview'
-import Footer from './Footer'
 
 export default function Main() {
   return (

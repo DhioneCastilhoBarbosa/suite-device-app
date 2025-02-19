@@ -22,7 +22,7 @@ export function RFAdvanced({
   const [isPasswordInvalid, setIsPasswordInvalid] = useState(false)
 
   const handleInputChange = (id: string, value: string): void => {
-    console.log(value)
+    //console.log(value)
     switch (id) {
       case 'TX100BPS':
         setTX100BPS(value)
@@ -60,7 +60,7 @@ export function RFAdvanced({
     }
   }
 
-  const validate = () => {
+  const validate = (): void => {
     if (Password !== 'techmode alpha') {
       setIsPasswordInvalid(true)
     } else {
@@ -99,7 +99,7 @@ export function RFAdvanced({
   }, [receiverTxPowerLevel])
 
   return (
-    <div className=" w-full flex flex-col mt-28">
+    <div className=" w-full flex flex-col mt-28 mb-8">
       <label className="bg-sky-500 text-white w-full text-center font-bold text-xl rounded-t-md">
         Nivel de Potencia RF
       </label>
@@ -189,7 +189,7 @@ export function RFAdvanced({
           </div>
         </div>
       </div>
-      <div className="flex flex-row justify-end mt-2 gap-2">
+      <div className="flex flex-row justify-end mt-4 gap-2">
         <Button filled={false} size={'medium'} onClick={handleUpdateSettings}>
           <ArrowsClockwise size={24} />
           Atualizar

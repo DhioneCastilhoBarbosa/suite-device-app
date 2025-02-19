@@ -111,7 +111,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
 
   const handleUpdateCoordinates = (): void => {
     if (gpsFixed) {
-      console.log('No GPS fix waiting for GPS fix')
+      //console.log('No GPS fix waiting for GPS fix')
       setIsVisible(true)
     } else {
       handlePositiom()
@@ -139,7 +139,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
     if (receiverPOS) {
       const loadedDataRST = receiverPOS.split('\r\n').map((item) => item.trim())
       if (loadedDataRST.includes('No GPS fix')) {
-        console.log('No GPS fix')
+        //console.log('No GPS fix')
         setGpsFixed(true)
         setIsVisible(true)
       } else {
@@ -155,7 +155,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
   }, [receiverGPS, receiverPOS])
 
   return (
-    <div className=" flex flex-col w-full justify-center items-center mt-4">
+    <div className=" flex flex-col w-full justify-center items-center mt-4 mb-4">
       <div className=" flex w-full ">
         <label className="bg-sky-500 text-white w-full text-center font-bold text-xl rounded-t-md">
           Apontamento da antena

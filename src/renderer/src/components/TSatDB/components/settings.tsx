@@ -53,7 +53,7 @@ export default function Settings({
     const handleFileContentLoad = (content: string): void => {
       //setFileContent(content)
       handleFileInformations(content)
-      console.log('fileContent', content)
+      //console.log('fileContent', content)
     }
     selectFile(handleFileContentLoad, 'txt')
   }
@@ -121,7 +121,7 @@ export default function Settings({
 
   function handleUpdate(): void {
     handleUpdateSettings()
-    loadVariables(receiverSettings ?? '', receiverTxPowerLevel ?? '')
+    loadVariables(receiverSettings ?? '')
   }
 
   function handleFailSafe(): void {
@@ -152,9 +152,6 @@ export default function Settings({
 
   function handleSendSetting(): void {
     const settingsArray = [
-      //TX100BPS,
-      //TX300BPS,
-      // TX1200BPS,
       NESID,
       TCH,
       TBR,
@@ -180,7 +177,6 @@ export default function Settings({
   function handleSaveVaribles(): void {
     const delimiter = '\r\n'
     const settingsArray = [
-      //'PWRLVL=' + TX100BPS + ';' + TX300BPS + ';' + TX1200BPS + delimiter,
       'NESID=' + NESID + delimiter,
       'TCH=' + TCH + delimiter,
       'TBR=' + TBR + delimiter,
@@ -211,20 +207,11 @@ export default function Settings({
     saveAs(blob, 'Configuracao-TSatDB.txt')
   }
 
-  function loadVariables(settings: string, TxPower: string): void {
+  function loadVariables(settings: string): void {
     if (settings) {
       const loadedDataSettings = settings.split('\r\n').map((item) => item.trim())
       //console.log(loadedDataSettings)
       setDataSettings(loadedDataSettings)
-    }
-    if (TxPower) {
-      const loadedDataTxPowerLevel = TxPower.split('\r\n').map((item) => item.trim())
-      const DataTxPowerLevel = loadedDataTxPowerLevel[1].split(',').map((item) => item.trim())
-      //setDataTxPowerLevel(DataTxPowerLevel)
-
-      //setTX100BPS(DataTxPowerLevel[0] ? DataTxPowerLevel[0].replace('PWRLVL=', '') : '37.00')
-      //setTX300BPS(DataTxPowerLevel[1] ? DataTxPowerLevel[1] : '37.00')
-      //setTX1200BPS(DataTxPowerLevel[2] ? DataTxPowerLevel[2].replace('>', '') : '37.00')
     }
   }
 
@@ -250,7 +237,7 @@ export default function Settings({
   }
 
   useEffect(() => {
-    loadVariables(receiverSettings ?? '', receiverTxPowerLevel ?? '')
+    loadVariables(receiverSettings ?? '')
   }, [receiverSettings, receiverTxPowerLevel])
 
   useEffect(() => {
@@ -259,14 +246,14 @@ export default function Settings({
 
   useEffect(() => {
     handleSaveVaribles()
-  }, [NESID])
+  }, [NESID, TCH, TBR, TIN, FTT, TWL, CMSG, EBM, TPR, TDF, RCH, RBR, RIN, RPC, RRC, RDF, RMC, IRC])
 
   useEffect(() => {
     handleUpdateSettings()
   }, [])
 
   return (
-    <div className="flex flex-col gap-6 mt-10 w-full pr-2">
+    <div className="flex flex-col gap-6 mt-6 w-full pr-2 h-auto ">
       <div className="flex gap-8 border-[1px] border-sky-500 rounded-md p-5">
         <div className="flex flex-col gap-2">
           <label className="text-gray-700 font-bold"> ID da plataforma</label>

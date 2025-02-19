@@ -53,7 +53,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
     }
   }, [dataTerminal])
   return (
-    <div className="flex flex-col w-full mt-10">
+    <div className="flex flex-col w-full mt-10 mb-4">
       <div className="flex flex-row gap-2 mt-6 mx-8 justify-end">
         <Button size={'small'} onClick={handleClear}>
           Limpar
