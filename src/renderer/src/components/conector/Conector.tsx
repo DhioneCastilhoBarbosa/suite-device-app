@@ -55,6 +55,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       } else if (device.name === 'TSatDB') {
         OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
         SetPortOpen({ state: true })
+      } else if (device.name === 'PluviDB-Iot') {
+        OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
+        SetPortOpen({ state: true })
       } else {
         setIsLoading(true)
         let result: boolean = await connectClient(ModBusProps)
@@ -87,7 +90,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
           ? ClosePortRS232()
           : device.name === 'TSatDB'
             ? ClosePortTSatDB()
-            : CloseModBus()
+            : device.name === 'PluviDB-Iot'
+              ? ClosePortTSatDB()
+              : CloseModBus()
     } else {
       setMode({ state: false })
     }
@@ -102,14 +107,6 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
       //console.log(isConnected)
     } catch (error: any) {
       //console.error('Erro ao listar portas seriais:', error.message)
-    }
-  }
-
-  const verifyPortStatus = async () => {
-    if (!PortOpen.state) {
-      // console.log('Esta conectado')
-    } else {
-      // console.log('Não esta conectado')
     }
   }
 

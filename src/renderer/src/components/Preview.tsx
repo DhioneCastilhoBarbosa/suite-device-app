@@ -4,6 +4,7 @@ import TecladoSDI12 from './Teclado-SDI12/Teclado'
 import { Terminal } from './Terminal/Terminal'
 import { Device } from '@renderer/Context/DeviceContext'
 import TSatDB from './TSatDB/TSatDB'
+import PluviDBIot from './PluviDB-Iot/PluviDBIot'
 
 export default function Preview() {
   const { device, port, PortOpen }: any = Device()
@@ -23,6 +24,9 @@ export default function Preview() {
   }
   if (device.name === 'TSatDB') {
     return <TSatDB isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
+  }
+  if (device.name === 'PluviDB-Iot') {
+    return <PluviDBIot isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
   } else {
     return undefined
   }

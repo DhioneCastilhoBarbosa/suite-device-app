@@ -103,6 +103,20 @@ export default function Menu() {
                 TSatDB
               </button>
             </li>
+            <li>
+              <button
+                className={twMerge(
+                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
+                  device.name === 'PluviDB-Iot'
+                    ? 'bg-white text-[#1E9EF4]'
+                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
+                )}
+                onClick={() => newDevice('PluviDB-Iot')}
+                disabled={PortOpen.state}
+              >
+                PluviDB-Iot
+              </button>
+            </li>
           </ul>
         </div>
       </div>
