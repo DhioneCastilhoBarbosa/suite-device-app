@@ -7,6 +7,7 @@ import Loading from '../loading/loading'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { ClosePortRS232, OpenPortRS232 } from '../Teclado-SDI12/Teclado'
 import { ClosePortTSatDB, OpenPortTSatDB } from '../TSatDB/TSatDB'
+import { ClosePortPluviIoT, OpenPortPluviIoT } from '../PluviDB-Iot/PluviDBIot'
 
 export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [availablePorts, setAvailablePorts] = useState<string[]>([])
@@ -56,7 +57,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
         OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
         SetPortOpen({ state: true })
       } else if (device.name === 'PluviDB-Iot') {
-        OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
+        OpenPortPluviIoT({ portName: valorSelecionado, bauld: 115200 })
         SetPortOpen({ state: true })
       } else {
         setIsLoading(true)
@@ -91,7 +92,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
           : device.name === 'TSatDB'
             ? ClosePortTSatDB()
             : device.name === 'PluviDB-Iot'
-              ? ClosePortTSatDB()
+              ? ClosePortPluviIoT()
               : CloseModBus()
     } else {
       setMode({ state: false })

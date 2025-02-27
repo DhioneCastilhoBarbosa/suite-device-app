@@ -114,7 +114,7 @@ export default function Menu() {
                 onClick={() => newDevice('PluviDB-Iot')}
                 disabled={PortOpen.state}
               >
-                PluviDB-Iot
+                PluviDB-IoT
               </button>
             </li>
           </ul>

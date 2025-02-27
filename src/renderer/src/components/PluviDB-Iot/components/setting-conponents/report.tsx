@@ -1,4 +1,4 @@
-import { UploadSimple } from '@phosphor-icons/react'
+import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useState } from 'react'
 
@@ -43,7 +43,11 @@ export function Report(): JSX.Element {
           </li>
         ))}
       </ul>
-      <div className="flex justify-end mt-6 border-t-[1px] border-gray-200 pt-4">
+      <div className="flex justify-end mt-6 border-t-[1px] border-gray-200 pt-4 gap-4">
+        <Button>
+          <ArrowsClockwise size={24} />
+          Atualizar
+        </Button>
         <Button>
           <UploadSimple size={24} />
           Enviar

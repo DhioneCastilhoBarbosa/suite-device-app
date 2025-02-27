@@ -1,4 +1,4 @@
-import { UploadSimple } from '@phosphor-icons/react'
+import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useState } from 'react'
 
@@ -84,7 +84,11 @@ export function Conection(): JSX.Element {
         <InputField id="senha" label="Senha" value={formData.senha} onChange={handleInputChange} />
         <InputField id="pin" label="PIN" value={formData.pin} onChange={handleInputChange} />
       </div>
-      <div className="flex justify-end mt-10 border-t-[1px] border-gray-200 pt-4 w-full">
+      <div className="flex justify-end mt-10 border-t-[1px] border-gray-200 pt-4 w-full gap-4">
+        <Button>
+          <ArrowsClockwise size={24} />
+          Atualizar
+        </Button>
         <Button>
           <UploadSimple size={24} />
           Enviar

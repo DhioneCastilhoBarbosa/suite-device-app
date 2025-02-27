@@ -1,26 +1,58 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type Props = {
-  receiverTxPowerLevel: string | undefined
-  handleSendSettings: (settings: string[]) => void
-  handleUpdateSettings: () => void
+  receivedDataInst: string | undefined
+  //handleSendSettings?: (settings: string[]) => void
+  handleUpdateInst: () => void
 }
 
-export function InstantData(): JSX.Element {
+export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.Element {
   const [selected, setSelected] = useState('5')
-  const data = [
+  const [data, setData] = useState([
     { id: 1, name: 'Chuva P1 intantânea(mm):', value: '0.00' },
     { id: 2, name: 'Chuva P1 diária(mm):', value: '0.00' },
     { id: 3, name: 'Chuva P1 mensal(mm):', value: '0.00' },
     { id: 4, name: 'Chuva P1 anual(mm):', value: '0.00' },
-    { id: 5, name: 'Chuva P2 intantânea(mm):', value: '0.00' },
-    { id: 6, name: 'Chuva P2 diária(mm):', value: '0.00' },
-    { id: 7, name: 'Chuva P2 mensal(mm):', value: '0.00' },
-    { id: 8, name: 'Chuva P2 anual(mm):', value: '0.00' },
-    { id: 9, name: 'Bateria(V):', value: '3.56' },
-    { id: 10, name: 'Sinal(dBm):', value: '-93' },
-    { id: 11, name: 'Contador de inicialização:', value: '5' }
-  ]
+    { id: 5, name: 'Chuva P1 Total(mm):', value: '0.00' },
+    { id: 6, name: 'Chuva P2 intantânea(mm):', value: '0.00' },
+    { id: 7, name: 'Chuva P2 diária(mm):', value: '0.00' },
+    { id: 8, name: 'Chuva P2 mensal(mm):', value: '0.00' },
+    { id: 9, name: 'Chuva P2 anual(mm):', value: '0.00' },
+    { id: 10, name: 'Chuva P2 Total(mm):', value: '0.00' },
+    { id: 11, name: 'Bateria(V):', value: '0.0' },
+    { id: 12, name: 'Sinal(dBm):', value: '-120' },
+    { id: 13, name: 'Contador de inicialização:', value: '0' }
+  ])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleUpdateInst()
+    }, 500) // Aguarda 500ms antes de executar a função
+    return () => clearTimeout(timeout)
+  }, [])
+
+  useEffect(() => {
+    const match = receivedDataInst ? receivedDataInst.match(/inst=([\d.;-]+)!/) : null
+    const valuesArray = match ? match[1].split(';') : []
+    //console.log('valuesArray:', valuesArray.length)
+    setData((prevData) =>
+      prevData.map((item, index) => ({
+        ...item,
+        value: valuesArray[index] ?? item.value
+      }))
+    )
+  }, [receivedDataInst])
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => {
+        handleUpdateInst()
+      },
+      Number(selected) * 1000
+    )
+    return () => clearInterval(interval)
+  }, [selected])
+
   return (
     <div className="my-4">
       <div className="overflow-x-auto">
@@ -57,7 +89,7 @@ export function InstantData(): JSX.Element {
           </tbody>
           <tfoot>
             <tr className="bg-gray-200 text-gray-700 text-sm leading-normal rounded-b-lg ">
-              <td className="py-3 px-6 text-left rounded-bl-lg" colSpan="3"></td>
+              <td className="py-3 px-6 text-left rounded-bl-lg" colSpan={3}></td>
             </tr>
           </tfoot>
         </table>

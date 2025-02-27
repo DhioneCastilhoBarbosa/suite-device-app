@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { Report } from './setting-conponents/report'
 import { ChangePassword } from './setting-conponents/changePassword'
 import { Conection } from './setting-conponents/conection'
+import { ReadingPorts } from './setting-conponents/readingPorts'
+import { Transmition } from './setting-conponents/transmition'
+import { General } from './setting-conponents/general'
 
 type Props = {
   receiverSettings?: string | undefined
@@ -58,17 +61,17 @@ export default function Settings(): JSX.Element {
         {
           <div className=" h-auto overflow-y-auto mr-8 ml-8 flex flex-col justify-center">
             {selected === 'Geral' ? (
-              <div>geral</div>
+              <General />
             ) : selected === 'Conexão' ? (
               <Conection />
             ) : selected === 'Transmissão' ? (
-              <div>Transmissão</div>
+              <Transmition />
             ) : selected === 'Relatorio' ? (
               <Report />
             ) : selected === 'Senha' ? (
               <ChangePassword />
             ) : (
-              selected === 'Portas de leituras' && <div>Portas de leituras</div>
+              selected === 'Portas de leituras' && <ReadingPorts />
             )}
           </div>
         }

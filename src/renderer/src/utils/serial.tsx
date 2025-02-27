@@ -38,29 +38,37 @@ class SerialManagerRS232 {
   }
 
   // Método para enviar comandos pela porta serial
-  /*sendCommandRS232(command: string): Promise<string> {
+  sendCommandPluviIot(command: string): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!this.port) {
         reject(new Error('Porta serial não está aberta.'))
         return
       }
 
-      this.port.write(command, (err) => {
-        if (err) {
-          console.log(`Erro ao enviar comando: ${err}`)
-          reject(err)
-        } else {
-          console.log(`Comando ${command} enviado com sucesso`)
+      const formattedCommand = `${command}\r` // Adiciona <CR> ao final do comando
 
-          //const parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
-          this.port.setMaxListeners(30)
-          this.port.once('data', (data) => {
-            resolve(data)
-          })
+      this.port.write(formattedCommand, (err) => {
+        if (err) {
+          console.log(`Erro ao enviar comando: ${err.message}`)
+          reject(err)
+          return
         }
+
+        console.log(`Comando enviado: ${formattedCommand}`)
+
+        const parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+        this.port.setMaxListeners(30)
+
+        parser.once('data', (data) => {
+          resolve(data.toString().trim())
+        })
       })
     })
-  }*/
+  }
+
+
+
+
 
 
     sendCommandTSatDB(command: string): Promise<void> {
@@ -252,6 +260,64 @@ class SerialManagerRS232 {
     });
 }
 
+
+
+receiveDataPluvi(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!this.port) {
+        reject(new Error('Porta serial não está aberta.'));
+        return;
+    }
+
+    let response = '';
+    const timeoutDuration = 200; // Tempo de espera para finalizar a captura
+    let timeout: NodeJS.Timeout;
+
+    const onData = (data: Buffer) => {
+        response += data.toString();
+
+        // Reinicia o timeout sempre que novos dados chegam
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            this.port.removeListener('data', onData);
+            this.port.removeListener('error', onError);
+            resolve(response.trim());
+        }, timeoutDuration);
+    };
+
+    const onError = (err: Error) => {
+        clearTimeout(timeout);
+        this.port.removeListener('data', onData);
+        this.port.removeListener('error', onError);
+        reject(err);
+    };
+
+    this.port.on('data', onData);
+    this.port.once('error', onError);
+});
+}
+
+/*
+  receiveDataPluvi(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!this.port) {
+      reject(new Error('Porta serial não está aberta.'))
+      return
+    }
+
+    this.port.once('data', (data) => {
+      const receivedData = data.toString().trim() // Remove CR e LF
+      console.log(`Dados recebidos: ${receivedData}`)
+      resolve(receivedData) // Retorna a string recebida
+    })
+
+    this.port.once('error', (err) => {
+      console.error(`Erro ao receber dados: ${err.message}`)
+      reject(err)
+    })
+  })
+}
+*/
 
   // Método para fechar a porta serial
   closePortRS232(): void {

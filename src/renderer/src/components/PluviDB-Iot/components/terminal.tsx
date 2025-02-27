@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 
 type Props = {
-  receiverTerminal?: string | undefined
-  handleSendComandTerminal?: (valuer: string) => void
+  receiverTerminal: string | undefined
+  handleSendComandTerminal: (valuer: string) => void
 }
 export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props): JSX.Element {
   const [dataTerminal, setDataTerminal] = useState<string[]>([])
@@ -15,7 +15,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSendComand = (): void => {
-    // handleSendComandTerminal(inputValue)
+    handleSendComandTerminal(inputValue)
     setInputValue('')
   }
 
@@ -31,15 +31,16 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = 'Dados gerado do Trasmissor TSatDB - '
+    const headerFile = 'Dados gerado do Pluvi-IoT - '
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
-    saveAs(blob, 'Terminal-TSatDB.txt')
+    saveAs(blob, 'Terminal-Pluvi-IoT.txt')
   }
 
   useEffect(() => {
-    const receiver = receiverTerminal ? receiverTerminal.replace(/[>]/g, '') : ''
+    //const receiver = receiverTerminal ? receiverTerminal.replace(/[!]/g, '') : ''
+    const receiver = receiverTerminal ? receiverTerminal : ''
 
     setDataTerminal((prevData) => (receiverTerminal ? [...prevData, receiver] : prevData))
   }, [receiverTerminal])
@@ -64,9 +65,9 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
           ref={textareaRef}
           name=""
           id=""
-          value={dataTerminal.join('').replace(/,/g, '')}
+          value={dataTerminal.join('\n')}
           readOnly
-          className="w-full mx-8 mt-2 border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm"
+          className="w-full mx-8 mt-2 border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm p-2"
         ></textarea>
       </div>
 
