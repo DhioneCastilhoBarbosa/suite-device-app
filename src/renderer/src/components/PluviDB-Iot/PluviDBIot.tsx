@@ -12,8 +12,9 @@ import Status from './components/status'
 
 import { Terminal } from './components/terminal'
 import LoadingData from '../loading/loadingData'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { InstantData } from './components/intantData'
+import PasswordModal from './components/Login'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -54,12 +55,33 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [dataReceivedComandTerminal, setDataReceivedComandTerminal] = useState<string>('')
   const [dataReceivedComandInst, setDataReceivedComandInst] = useState<string>('')
   const [dataReceivedComandStatus, setDataReceivedComandStatus] = useState<string>('')
+  const [dataReceivedComandReport, setDataReceivedComandReport] = useState<string>('')
+  const [dataReceivedComandConection, setDataReceivedComandConection] = useState<string>('')
+  const [dataReceivedComandGeneralName, setDataReceivedComandGeneralName] = useState<string>('')
+  const [dataReceivedComandGeneralGeolocation, setDataReceivedComandGeneralGeolocation] =
+    useState<string>('')
+  const [dataReceivedComandGeneralTimeZone, setDataReceivedComandGeneralTimeZone] =
+    useState<string>('')
+
+  const [dataReceivedComandGeneralTime, setDataReceivedComandGeneralTime] = useState<string>('')
+
+  const [dataReceivedComandPortP1, setDataReceivedComandPortP1] = useState<string>('')
+  const [dataReceivedComandPortP2, setDataReceivedComandPortP2] = useState<string>('')
+  const [dataReceivedComandPortSdi, setDataReceivedComandPortSdi] = useState<string>('')
+  const [dataReceivedComandTimerFixed, setDataReceivedComandTimerFixed] = useState<string>('')
+  const [dataReceivedComandTimerDynamic, setDataReceivedComandTimerDynamic] = useState<string>('')
+  const [dataReceivedComandProtocol, setDataReceivedComandProtocol] = useState<string>('')
+  const [dataReceivedComandProtocolMQTT, setDataReceivedComandProtocolMQTT] = useState<string>('')
+  const [dataReceivedComandProtocolFTP, setDataReceivedComandProtocolFTP] = useState<string>('')
+
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
     'Baixando informações do dispositivo!'
   )
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
+  const [isModalPassWordOpen, setIsModalPassWordOpen] = useState(true)
+  const [enabledAccess, setEnabledAccess] = useState(false)
   const { mode }: any = Device()
 
   function handleMenu(menu): void {
@@ -105,8 +127,8 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
     const timeoutPromise = new Promise<string>((_, reject) =>
       setTimeout(() => {
-        reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
-      }, 20000)
+        reject(new Error('Tempo limite excedido (10s) para resposta do comando'))
+      }, 10000)
     )
 
     try {
@@ -115,7 +137,14 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         timeoutPromise
       ])
 
-      console.log(`Resposta do comando ${comand}:`, response)
+      //console.log(`Resposta do comando ${comand}:`, response)
+
+      // Verifica se a resposta indica erro de login e desativa o acesso
+      if (response === 'Error: Unlogged.') {
+        setEnabledAccess(false)
+        setIsModalPassWordOpen(true)
+      }
+
       return response
     } catch (error) {
       console.error(`Erro ao receber resposta do comando ${comand}:`, error)
@@ -126,7 +155,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   }
 
   function handleSendComandTerminal(comand: string): void {
-    if (props.isConect && !mode.state) {
+    if (props.isConect && !mode.state && enabledAccess) {
       handleComandSend(comand).then((response) => {
         setDataReceivedComandTerminal(response)
       })
@@ -134,7 +163,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   }
 
   function handleUpdateInst(): void {
-    if (props.isConect && !mode.state) {
+    if (props.isConect && !mode.state && enabledAccess) {
       handleComandSend('ps=inst?').then((response) => {
         setDataReceivedComandInst(response)
       })
@@ -142,12 +171,307 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   }
 
   function handleUpdateStatus(): void {
-    if (props.isConect && !mode.state) {
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
       handleComandSend('ps=status?').then((response) => {
         setDataReceivedComandStatus(response)
+        setIsLoading(false)
       })
     }
   }
+
+  function handleUpdateReport(): void {
+    if (props.isConect && !mode.state && enabledAccess) {
+      setDataReceivedComandReport('')
+      handleComandSend('rel=cfg?').then((response) => {
+        setDataReceivedComandReport(response)
+      })
+    }
+  }
+
+  function handleUpdateConection(): void {
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      setDataReceivedComandConection('')
+      handleComandSend('conex=cfg?').then((response) => {
+        setDataReceivedComandConection(response)
+        setIsLoading(false)
+      })
+    }
+  }
+  function handleUpdateGeneral(): void {
+    const time = 200
+    setDataReceivedComandGeneralName('')
+    setDataReceivedComandGeneralGeolocation('')
+    setDataReceivedComandGeneralTimeZone('')
+    setDataReceivedComandGeneralTime('')
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      handleComandSend('nd=cfg?').then((response) => {
+        setDataReceivedComandGeneralName(response)
+        setTimeout(() => {
+          handleComandSend('gl=cfg?').then((response) => {
+            setDataReceivedComandGeneralGeolocation(response)
+            setTimeout(() => {
+              handleComandSend('tz=cfg?').then((response) => {
+                setDataReceivedComandGeneralTimeZone(response)
+                setTimeout(() => {
+                  handleComandSend('dt=cfg?').then((response) => {
+                    setDataReceivedComandGeneralTime(response)
+                    setIsLoading(false)
+                  })
+                }, time)
+              })
+            }, time)
+          })
+        }, time) // Adjust the timeout duration as needed
+      })
+    }
+  }
+
+  function handleUpdatePorts(): void {
+    const time = 200
+    setDataReceivedComandPortP1('')
+    setDataReceivedComandPortP2('')
+    setDataReceivedComandPortSdi('')
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      handleComandSend('p1=cfg?').then((response) => {
+        setDataReceivedComandPortP1(response)
+        setTimeout(() => {
+          handleComandSend('p2=cfg?').then((response) => {
+            setDataReceivedComandPortP2(response)
+            setTimeout(() => {
+              handleComandSend('sdi=cfg?').then((response) => {
+                setDataReceivedComandPortSdi(response)
+                setIsLoading(false)
+              })
+            }, time)
+          })
+        }, time) // Adjust the timeout duration as needed
+      })
+    }
+  }
+
+  function handleUpdateTransmition(): void {
+    const time = 200
+    setDataReceivedComandTimerFixed('')
+    setDataReceivedComandTimerDynamic('')
+    setDataReceivedComandProtocol('')
+    setDataReceivedComandProtocolMQTT('')
+    setDataReceivedComandProtocolFTP('')
+
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Baixando informações do dispositivo!')
+      setIsLoading(true)
+      handleComandSend('tf=cfg?').then((response) => {
+        setDataReceivedComandTimerFixed(response)
+        setTimeout(() => {
+          handleComandSend('td=cfg?').then((response) => {
+            setDataReceivedComandTimerDynamic(response)
+            setTimeout(() => {
+              handleComandSend('prot=cfg?').then((response) => {
+                setDataReceivedComandProtocol(response)
+                setTimeout(() => {
+                  handleComandSend('mqtt=cfg?').then((response) => {
+                    setDataReceivedComandProtocolMQTT(response)
+                    setTimeout(() => {
+                      handleComandSend('ftp=cfg?').then((response) => {
+                        setDataReceivedComandProtocolFTP(response)
+                        setIsLoading(false)
+                      })
+                    }, time)
+                  })
+                }, time)
+              })
+            }, time)
+          })
+        }, time) // Adjust the timeout duration as needed
+      })
+    }
+  }
+
+  function handleSendReport(list: string[]): void {
+    //console.log('Lista de valores:', list)
+    const mapKeys = ['p1', 'p2', 'gl', 'bt', 'sig', 'sdi', 'moti']
+    const formattedString =
+      'rel=' + mapKeys.map((key, index) => `${key}>${list[index]}`).join(';') + '!'
+    //console.log(formattedString)
+
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(formattedString).then((response) => {
+        console.log('Resposta do alterar relatorio:', response)
+        //setDataReceivedComandReport(response)
+        setIsLoading(false)
+      })
+    }
+  }
+
+  function handleSendPorts(list: string[]): void {
+    //console.log('Lista de valores:', list)
+    const time = 500
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(`p1=${list[0]}!`).then(() => {
+        //console.log('Resposta do alterar Nome:', response)
+        setTimeout(() => {
+          handleComandSend(`p2=${list[1]}!`).then(() => {
+            //console.log('Resposta do alterar Nome:', response)
+            setTimeout(() => {
+              handleComandSend(`sdi=${list[2]}!`).then(() => {
+                // console.log('Resposta do alterar Nome:', response)
+                setTimeout(() => {
+                  setIsLoading(false)
+                  handleUpdatePorts()
+                }, time)
+              })
+            }, time)
+          })
+        })
+      })
+    }
+  }
+
+  function handleSendTransmition(list: string[]): void {
+    //console.log('Lista de valores:', list)
+    const time = 200
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(`tf=${list[0]}!`).then((response) => {
+        console.log('Resposta do alterar Nome:', response)
+        setTimeout(() => {
+          handleComandSend(`td=${list[1]}!`).then((response) => {
+            console.log('Resposta do alterar Nome:', response)
+            setTimeout(() => {
+              handleComandSend(`prot=${list[2]}!`).then((response) => {
+                console.log('Resposta do alterar Nome:', response)
+                setTimeout(() => {
+                  handleComandSend(`mqtt=${list[3]}!`).then((response) => {
+                    console.log('Resposta do alterar Nome:', response)
+                    setTimeout(() => {
+                      handleComandSend(`ftp=${list[4]}!`).then((response) => {
+                        console.log('Resposta do alterar Nome:', response)
+                        setIsLoading(false)
+                      })
+                    }, time)
+                  })
+                }, time)
+              })
+            }, time)
+          })
+        })
+      })
+    }
+  }
+
+  function handleSendConection(list: string[]): void {
+    // Verifica se a lista tem ao menos 5 elementos
+    if (list.length < 5) {
+      console.error('A lista precisa ter pelo menos 5 elementos.')
+      return
+    }
+
+    // Formata a string no padrão desejado
+    const formattedString = `conex=${list.slice(0, 5).join(';')}!`
+
+    //console.log('String formatada:', formattedString) // Para debug
+
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(formattedString).then((response) => {
+        console.log('Resposta de conexão:', response)
+        setIsLoading(false)
+        // setDataReceivedComandReport(response);
+      })
+    }
+  }
+
+  function handleChangeNewPassword(password: string): void {
+    //console.log('Nova Senha:', `lg=${password}!`)
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(`lg=${password}!`).then((response) => {
+        console.log('Resposta do alterar senha:', response)
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 500)
+      })
+    }
+  }
+
+  function handleSendGeneral(list: string[]): void {
+    //console.log('Nova Senha:', `lg=${password}!`)
+    const time = 500
+    if (props.isConect && !mode.state && enabledAccess) {
+      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setIsLoading(true)
+      handleComandSend(`nd=${list[0]}!`).then(() => {
+        //console.log('Resposta do alterar Nome:', response)
+        setTimeout(() => {
+          handleComandSend(`gl=${list[1]}!`).then(() => {
+            // console.log('Resposta do alterar Geolocalizacão:', response)
+            setTimeout(() => {
+              handleComandSend(`tz=${list[2]}!`).then(() => {
+                //console.log('Resposta do alterar TimeZone:', response)
+                setTimeout(() => {
+                  console.log('Data e Hora:', `dt=${list[3]}!`)
+                  handleComandSend(`dt=${list[3]}!`).then(() => {
+                    //console.log('Resposta do alterar Time:', response)
+                    setIsLoading(false)
+                  })
+                }, time)
+              })
+            }, time)
+          })
+        }, time)
+      })
+    }
+  }
+
+  const handlePasswordValidation = async (password: string): Promise<boolean> => {
+    if (props.isConect && !mode.state) {
+      try {
+        const response = await handleComandSend(`lg=${password}?`)
+        //console.log('Resposta da validação de senha:', response)
+
+        const acessoLiberado = response === 'lg=1!'
+        setEnabledAccess(acessoLiberado) // Atualiza o estado global`
+
+        return acessoLiberado
+      } catch {
+        setEnabledAccess(false) // Garante que fica false em caso de erro
+        return false
+      }
+    }
+    return false // Retorna false caso a validação não ocorra
+  }
+
+  useEffect(() => {
+    if (props.isConect && !mode.state) {
+      setIsModalPassWordOpen(true)
+    } else {
+      setIsModalPassWordOpen(false)
+      setEnabledAccess(false)
+    }
+  }, [mode.state, props.isConect])
+
+  useEffect(() => {
+    if (enabledAccess) {
+      handleUpdateStatus()
+    }
+  }, [enabledAccess])
+
+  console.log('Device mode:', props.isConect, isModalPassWordOpen)
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
@@ -204,7 +528,33 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 receivedDataStatus={dataReceivedComandStatus}
               />
             ) : MenuName === 'config' ? (
-              <Settings />
+              <Settings
+                handleUpdateSettingsReport={handleUpdateReport}
+                receiverSettingsReport={dataReceivedComandReport}
+                handleSendSettingsReport={handleSendReport}
+                handleSendChargePassword={handleChangeNewPassword}
+                handleUpdateSettingsConection={handleUpdateConection}
+                receiverSettingsConection={dataReceivedComandConection}
+                handleSendSettingsConection={handleSendConection}
+                handleSendSettingsGeneral={handleSendGeneral}
+                handleUpdateSettingsGeneral={handleUpdateGeneral}
+                receiverGeneralName={dataReceivedComandGeneralName}
+                receiverGeneralGeolocation={dataReceivedComandGeneralGeolocation}
+                receiverGeneralTimeZone={dataReceivedComandGeneralTimeZone}
+                receiverGeneralTime={dataReceivedComandGeneralTime}
+                handleSendSettingsPorts={handleSendPorts}
+                handleUpdateSettingsPorts={handleUpdatePorts}
+                receiverSettingsPortP1={dataReceivedComandPortP1}
+                receiverSettingsPortP2={dataReceivedComandPortP2}
+                receiverSettingsPortSdi={dataReceivedComandPortSdi}
+                handleSendSettingsTransmition={handleSendTransmition}
+                handleUpdateSettingsTransmition={handleUpdateTransmition}
+                receivedTimerFixed={dataReceivedComandTimerFixed}
+                receivedTimerdynamic={dataReceivedComandTimerDynamic}
+                receivedProtocol={dataReceivedComandProtocol}
+                receivedProtocolDataMQTT={dataReceivedComandProtocolMQTT}
+                receivedProtocolDataFTP={dataReceivedComandProtocolFTP}
+              />
             ) : MenuName === 'terminal' ? (
               <Terminal
                 receiverTerminal={dataReceivedComandTerminal}
@@ -226,6 +576,13 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       )}
 
       <LoadingData visible={isLoading} title={messageIsLoading} />
+
+      {isModalPassWordOpen && (
+        <PasswordModal
+          onClose={() => setIsModalPassWordOpen(false)}
+          onValidatePassword={handlePasswordValidation}
+        />
+      )}
     </ContainerDevice>
   ) : (
     <ContainerDevice>

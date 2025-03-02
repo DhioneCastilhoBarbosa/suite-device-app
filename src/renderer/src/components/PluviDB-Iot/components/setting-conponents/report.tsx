@@ -1,27 +1,85 @@
 import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-export function Report(): JSX.Element {
+type Props = {
+  handleUpdateSettingsReport: () => void
+  handleSendSettingsReport?: (settings: string[]) => void
+  receivedSettingsReport: string | undefined
+}
+
+export function Report({
+  handleUpdateSettingsReport,
+  receivedSettingsReport,
+  handleSendSettingsReport
+}: Props): JSX.Element {
+  const [ArraySelected, setArraySelected] = useState<string[]>([
+    'off',
+    'off',
+    'off',
+    'off',
+    'off',
+    'off',
+    'off'
+  ])
   const options = [
     'Pulso1',
     'Pulso2',
     'Geolocalização',
     'Bateria',
     'Sinal',
-    'Motivo da transmissão',
-    'SDI-12'
+    'SDI-12',
+    'Motivo da transmissão'
   ]
-  const [switches, setSwitches] = useState(
-    options.reduce((acc, option) => ({ ...acc, [option]: false }), {})
+  const [switches, setSwitches] = useState<Record<string, boolean>>(
+    options.reduce(
+      (acc, option, index) => {
+        acc[option] = ArraySelected[index] === 'on'
+        return acc
+      },
+      {} as Record<string, boolean>
+    )
   )
-  const toggleSwitch = (option: string) => {
-    setSwitches((prev) => ({
-      ...prev,
-      [option]: !prev[option]
-    }))
-    console.log(`Switch ${option} está: ${!switches[option] ? 'Ligado' : 'Desligado'}`)
+
+  const toggleSwitch = (option: string): void => {
+    setSwitches((prev) => {
+      const newSwitches = { ...prev, [option]: !prev[option] }
+      setArraySelected(options.map((opt) => (newSwitches[opt] ? 'on' : 'off')))
+      return newSwitches
+    })
+    //console.log(`Switch ${option} está: ${!switches[option] ? 'Ligado' : 'Desligado'}`)
   }
+
+  useEffect(() => {
+    const cleanReceivedSettingsReport = receivedSettingsReport?.replace('rel=', '').replace('!', '')
+    const valuesArray = cleanReceivedSettingsReport
+      ? cleanReceivedSettingsReport.split(';').map((item) => item.split('>')[1])
+      : []
+    // console.log('Array de valores:', valuesArray)
+    setArraySelected(valuesArray)
+  }, [receivedSettingsReport])
+
+  // Atualiza switches quando ArraySelected muda
+  useEffect(() => {
+    setSwitches(() =>
+      options.reduce(
+        (acc, option, index) => {
+          acc[option] = ArraySelected[index] === 'on'
+          return acc
+        },
+        {} as Record<string, boolean>
+      )
+    )
+    //console.log('ArraySelected mudou:', ArraySelected)
+  }, [ArraySelected])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleUpdateSettingsReport()
+    }, 500) // Aguarda 500ms antes de executar a função
+    return () => clearTimeout(timeout)
+  }, [])
+
   return (
     <div className="mt-2 flex flex-col gap-2">
       <ul className="space-y-2">
@@ -44,11 +102,11 @@ export function Report(): JSX.Element {
         ))}
       </ul>
       <div className="flex justify-end mt-6 border-t-[1px] border-gray-200 pt-4 gap-4">
-        <Button>
+        <Button onClick={() => handleUpdateSettingsReport()}>
           <ArrowsClockwise size={24} />
           Atualizar
         </Button>
-        <Button>
+        <Button onClick={() => handleSendSettingsReport && handleSendSettingsReport(ArraySelected)}>
           <UploadSimple size={24} />
           Enviar
         </Button>

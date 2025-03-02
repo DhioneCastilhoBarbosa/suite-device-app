@@ -1,5 +1,5 @@
 import { Broadcast, CellTower, Faders, File, Gear, Key } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Report } from './setting-conponents/report'
 import { ChangePassword } from './setting-conponents/changePassword'
 import { Conection } from './setting-conponents/conection'
@@ -8,17 +8,76 @@ import { Transmition } from './setting-conponents/transmition'
 import { General } from './setting-conponents/general'
 
 type Props = {
-  receiverSettings?: string | undefined
-  receiverTxPowerLevel?: string | undefined
-  handleUpdateSettings?: () => void
-  handleSendSettings?: (settings: string[]) => void
-  handlesRecoverSettingsFactory?: () => void
+  receiverSettingsReport: string | undefined
+  receiverSettingsConection: string | undefined
+  receiverGeneralName: string | undefined
+  receiverGeneralGeolocation: string | undefined
+  receiverGeneralTimeZone: string | undefined
+  receiverGeneralTime: string | undefined
+  receiverSettingsPortP1: string | undefined
+  receiverSettingsPortP2: string | undefined
+  receiverSettingsPortSdi: string | undefined
+  receivedTimerFixed: string | undefined
+  receivedTimerdynamic: string | undefined
+  receivedProtocol: string | undefined
+  receivedProtocolDataMQTT: string | undefined
+  receivedProtocolDataFTP: string | undefined
+  handleUpdateSettingsPorts: () => void
+  handleUpdateSettingsGeneral: () => void
+  handleUpdateSettingsReport: () => void
+  handleUpdateSettingsConection: () => void
+  handleUpdateSettingsTransmition: () => void
+  handleSendSettingsTransmition: (settings: string[]) => void
+  handleSendChargePassword: (settings: string) => void
+  handleSendSettingsGeneral: (settings: string[]) => void
+  handleSendSettingsPorts: (settings: string[]) => void
+  handleSendSettingsReport: (settings: string[]) => void
+  handleSendSettingsConection: (settings: string[]) => void
   handleFileInformations?: (newValue: string) => void
-  handleClearFailSafe?: () => void
 }
 
-export default function Settings(): JSX.Element {
+export default function Settings({
+  handleUpdateSettingsReport,
+  handleUpdateSettingsConection,
+  handleUpdateSettingsGeneral,
+  handleSendSettingsPorts,
+  receiverSettingsReport,
+  receiverSettingsConection,
+  receiverGeneralName,
+  receiverGeneralGeolocation,
+  receiverGeneralTimeZone,
+  receiverGeneralTime,
+  receiverSettingsPortP1,
+  receiverSettingsPortP2,
+  receiverSettingsPortSdi,
+  receivedProtocol,
+  handleSendSettingsReport,
+  handleSendSettingsConection,
+  handleSendSettingsGeneral,
+  handleSendChargePassword,
+  handleUpdateSettingsPorts,
+  handleSendSettingsTransmition,
+  receivedTimerFixed,
+  receivedTimerdynamic,
+  receivedProtocolDataMQTT,
+  receivedProtocolDataFTP,
+  handleUpdateSettingsTransmition
+}: Props): JSX.Element {
   const [selected, setSelected] = useState('Geral')
+  const [ArraySelectedReport, setArraySelectedReport] = useState<string | undefined>()
+  const [ArraySelectedConection, setArraySelectedConection] = useState<string | undefined>()
+  const [GeneralName, setGeneralName] = useState<string | undefined>()
+  const [GeneralGeolocation, setGeneralGeolocation] = useState<string | undefined>()
+  const [GeneralTimeZone, setGeneralTimeZone] = useState<string | undefined>()
+  const [GeneralTime, setGeneralTime] = useState<string | undefined>()
+  const [PortP1, setPortP1] = useState<string | undefined>()
+  const [PortP2, setPortP2] = useState<string | undefined>()
+  const [PortSdi, setPortSdi] = useState<string | undefined>()
+  const [TimerFixed, setTimerFixed] = useState<string | undefined>()
+  const [TimerDynamic, setTimerDynamic] = useState<string | undefined>()
+  const [Protocol, setProtocol] = useState<string | undefined>()
+  const [ProtocolDataMQTT, setProtocolDataMQTT] = useState<string | undefined>()
+  const [ProtocolDataFTP, setProtocolDataFTP] = useState<string | undefined>()
 
   const menuItems = [
     { name: 'Geral', icon: <Gear size={20} />, key: 'Geral' },
@@ -33,6 +92,109 @@ export default function Settings(): JSX.Element {
     setSelected(key)
     console.log('Opção selecionada:', key)
   }
+
+  function handleUpdateGeneral(): void {
+    setGeneralName('')
+    handleUpdateSettingsGeneral()
+  }
+
+  function handleUpdateConection(): void {
+    setArraySelectedConection('')
+    handleUpdateSettingsConection()
+  }
+  function handleUpdateReport(): void {
+    setArraySelectedReport('')
+    handleUpdateSettingsReport()
+  }
+
+  function handleUpdatePorts(): void {
+    setPortP1('')
+    setPortP2('')
+    setPortSdi('')
+    setProtocol('')
+    handleUpdateSettingsPorts()
+  }
+
+  function handleUpdateTransmition(): void {
+    setTimerFixed('')
+    setTimerDynamic('')
+    setProtocol('')
+    setProtocolDataMQTT('')
+    setProtocolDataFTP('')
+    handleUpdateSettingsTransmition()
+  }
+
+  useEffect(() => {
+    if (receiverSettingsReport) {
+      setArraySelectedReport(receiverSettingsReport ?? undefined)
+    }
+  }, [receiverSettingsReport])
+
+  useEffect(() => {
+    if (receiverGeneralName) {
+      setGeneralName(receiverGeneralName)
+    }
+  }, [receiverGeneralName])
+
+  useEffect(() => {
+    if (receiverGeneralGeolocation) {
+      setGeneralGeolocation(receiverGeneralGeolocation)
+    }
+  }, [receiverGeneralGeolocation])
+
+  useEffect(() => {
+    if (receiverGeneralTimeZone) {
+      setGeneralTimeZone(receiverGeneralTimeZone)
+    }
+  }, [receiverGeneralTimeZone])
+
+  useEffect(() => {
+    if (receiverGeneralTime) {
+      setGeneralTime(receiverGeneralTime)
+    }
+  }, [receiverGeneralTime])
+
+  useEffect(() => {
+    if (receiverSettingsConection) {
+      setArraySelectedConection(receiverSettingsConection ?? undefined)
+    }
+  }, [receiverSettingsConection])
+
+  useEffect(() => {
+    if (receiverSettingsPortP1) {
+      setPortP1(receiverSettingsPortP1 ?? undefined)
+    }
+    if (receiverSettingsPortP2) {
+      setPortP2(receiverSettingsPortP2 ?? undefined)
+    }
+    if (receiverSettingsPortSdi) {
+      setPortSdi(receiverSettingsPortSdi ?? undefined)
+    }
+  }, [receiverSettingsPortP1, receiverSettingsPortP2, receiverSettingsPortSdi])
+
+  useEffect(() => {
+    if (receivedTimerFixed) {
+      setTimerFixed(receivedTimerFixed ?? undefined)
+    }
+    if (receivedTimerdynamic) {
+      setTimerDynamic(receivedTimerdynamic ?? undefined)
+    }
+    if (receivedProtocol) {
+      setProtocol(receivedProtocol ?? undefined)
+    }
+    if (receivedProtocolDataMQTT) {
+      setProtocolDataMQTT(receivedProtocolDataMQTT ?? undefined)
+    }
+    if (receivedProtocolDataFTP) {
+      setProtocolDataFTP(receivedProtocolDataFTP ?? undefined)
+    }
+  }, [
+    receivedTimerFixed,
+    receivedTimerdynamic,
+    receivedProtocol,
+    receivedProtocolDataMQTT,
+    receivedProtocolDataFTP
+  ])
 
   return (
     <div className="flex flex-row gap-2 h-auto">
@@ -61,17 +223,48 @@ export default function Settings(): JSX.Element {
         {
           <div className=" h-auto overflow-y-auto mr-8 ml-8 flex flex-col justify-center">
             {selected === 'Geral' ? (
-              <General />
+              <General
+                handleSendSettingsGeneral={handleSendSettingsGeneral}
+                handleUpdateSettingsGeneral={handleUpdateGeneral}
+                receivedDeviceName={GeneralName}
+                receivedGeolocation={GeneralGeolocation}
+                receivedTimeZone={GeneralTimeZone}
+                receivedTime={GeneralTime}
+              />
             ) : selected === 'Conexão' ? (
-              <Conection />
+              <Conection
+                handleUpdateSettingsConection={handleUpdateConection}
+                receivedSettingsConection={ArraySelectedConection}
+                handleSendSettingsConection={handleSendSettingsConection}
+              />
             ) : selected === 'Transmissão' ? (
-              <Transmition />
+              <Transmition
+                handleSendSettingsTransmition={handleSendSettingsTransmition}
+                handleUpdateSettingsTransmition={handleUpdateTransmition}
+                receivedTimerFixed={TimerFixed}
+                receivedTimerdynamic={TimerDynamic}
+                receivedProtocolInUse={Protocol}
+                receivedDataProtocolMQTT={ProtocolDataMQTT}
+                receivedDataProtocolFTP={ProtocolDataFTP}
+              />
             ) : selected === 'Relatorio' ? (
-              <Report />
+              <Report
+                handleUpdateSettingsReport={handleUpdateReport}
+                receivedSettingsReport={ArraySelectedReport}
+                handleSendSettingsReport={handleSendSettingsReport}
+              />
             ) : selected === 'Senha' ? (
-              <ChangePassword />
+              <ChangePassword handleSendChargePassword={handleSendChargePassword} />
             ) : (
-              selected === 'Portas de leituras' && <ReadingPorts />
+              selected === 'Portas de leituras' && (
+                <ReadingPorts
+                  handleSendSettingsPort={handleSendSettingsPorts}
+                  handleUpdateSettingsPort={handleUpdatePorts}
+                  receivedPortP1={PortP1}
+                  receivedPortP2={PortP2}
+                  receivedPortSdi={PortSdi}
+                />
+              )
             )}
           </div>
         }

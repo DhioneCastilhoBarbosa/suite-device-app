@@ -52,7 +52,7 @@ function TimeStamp() {
   return `${day}/${month}/${year}-${hours}:${minutes}:${seconds}:${milliseconds}`
 }
 
-export function Terminal(props: TerminalProps) {
+export function Terminal(props: TerminalProps): JSX.Element {
   const [inputValue, setInputValue] = useState('')
   const [textValue, setTextValue] = useState('')
   const [valorSelecionado, setValorSelecionado] = useState('')
