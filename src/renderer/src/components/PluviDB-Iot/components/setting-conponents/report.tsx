@@ -47,7 +47,6 @@ export function Report({
       setArraySelected(options.map((opt) => (newSwitches[opt] ? 'on' : 'off')))
       return newSwitches
     })
-    //console.log(`Switch ${option} está: ${!switches[option] ? 'Ligado' : 'Desligado'}`)
   }
 
   useEffect(() => {
@@ -56,7 +55,14 @@ export function Report({
       ? cleanReceivedSettingsReport.split(';').map((item) => item.split('>')[1])
       : []
     // console.log('Array de valores:', valuesArray)
-    setArraySelected(valuesArray)
+
+    // Verifica se os arrays são diferentes antes de atualizar o estado
+    if (
+      valuesArray.length !== ArraySelected.length ||
+      !valuesArray.every((value, index) => value === ArraySelected[index])
+    ) {
+      setArraySelected(valuesArray)
+    }
   }, [receivedSettingsReport])
 
   // Atualiza switches quando ArraySelected muda

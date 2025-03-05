@@ -140,6 +140,7 @@ if (!handleSquirrelEvent()) {
       title: 'Application Update',
       message: process.platform === 'darwin' ? releaseNotes : releaseName,
       detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+      //detail: 'Uma nova versão foi baixada. Reinicie o aplicativo para aplicar as atualizações.'
     }
 
     dialog.showMessageBox(dialogOpts)

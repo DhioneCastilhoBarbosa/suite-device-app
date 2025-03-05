@@ -203,16 +203,16 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
         </div>
         {isConnected ? (
           <button
-            className="bg-green-500 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-green-400 cursor-pointer"
+            className="bg-red-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-red-500 cursor-pointer"
             onClick={handleClickDisconect}
             disabled={buttonAbility}
           >
-            Conectado
+            Desconectar
           </button>
         ) : (
           <button
-            className={`bg-zinc-600 w-full rounded-lg p-1 outline-none mt-3 text-white ${
-              buttonAbility ? 'cursor-not-allowed' : ' hover:bg-zinc-500 cursor-pointer'
+            className={`bg-green-500 w-full rounded-lg p-1 outline-none mt-3 text-white ${
+              buttonAbility ? 'cursor-not-allowed' : ' hover:bg-green-400 cursor-pointer'
             } `}
             onClick={handleClickConect}
             disabled={buttonAbility}

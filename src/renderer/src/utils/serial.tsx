@@ -54,7 +54,7 @@ class SerialManagerRS232 {
           return
         }
 
-        console.log(`Comando enviado: ${formattedCommand}`)
+        //console.log(`Comando enviado: ${formattedCommand}`)
 
         const parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
         this.port.setMaxListeners(30)

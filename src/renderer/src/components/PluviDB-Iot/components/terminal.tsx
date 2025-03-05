@@ -15,6 +15,8 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSendComand = (): void => {
+    const txMessage = `TX: ${inputValue}\r` // Adiciona o prefixo TX para a mensagem enviada
+    setDataTerminal((prevData) => [...prevData, txMessage]) // Adiciona a mensagem de envio
     handleSendComandTerminal(inputValue)
     setInputValue('')
   }
@@ -39,10 +41,10 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   useEffect(() => {
-    //const receiver = receiverTerminal ? receiverTerminal.replace(/[!]/g, '') : ''
-    const receiver = receiverTerminal ? receiverTerminal : ''
-
-    setDataTerminal((prevData) => (receiverTerminal ? [...prevData, receiver] : prevData))
+    if (receiverTerminal) {
+      const rxMessage = `RX: ${receiverTerminal}\r` // Adiciona o prefixo RX para a mensagem recebida
+      setDataTerminal((prevData) => [...prevData, rxMessage]) // Adiciona a mensagem de recebimento
+    }
   }, [receiverTerminal])
 
   useEffect(() => {

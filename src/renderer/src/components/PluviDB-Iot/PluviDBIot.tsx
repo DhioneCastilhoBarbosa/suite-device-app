@@ -15,6 +15,7 @@ import LoadingData from '../loading/loadingData'
 import { useEffect, useState } from 'react'
 import { InstantData } from './components/intantData'
 import PasswordModal from './components/Login'
+import { ModalErroUnloagged } from '../modal/modalUnlogged'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -70,9 +71,14 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [dataReceivedComandPortSdi, setDataReceivedComandPortSdi] = useState<string>('')
   const [dataReceivedComandTimerFixed, setDataReceivedComandTimerFixed] = useState<string>('')
   const [dataReceivedComandTimerDynamic, setDataReceivedComandTimerDynamic] = useState<string>('')
+  const [dataReceivedComandTimerMaintenance, setDataReceivedComandTimerMaintenance] =
+    useState<string>('')
+  const [dataReceivedComandHeritage, setDataReceivedComandHeritage] = useState<string>('')
+  const [dataReceivedComandRepeatSync, setDataReceivedComandRepeatSync] = useState<string>('')
   const [dataReceivedComandProtocol, setDataReceivedComandProtocol] = useState<string>('')
   const [dataReceivedComandProtocolMQTT, setDataReceivedComandProtocolMQTT] = useState<string>('')
   const [dataReceivedComandProtocolFTP, setDataReceivedComandProtocolFTP] = useState<string>('')
+  const [PasswordSaved, setPasswordSaved] = useState<string>('')
 
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
     'Baixando informações do dispositivo!'
@@ -82,6 +88,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const [isModalPassWordOpen, setIsModalPassWordOpen] = useState(true)
   const [enabledAccess, setEnabledAccess] = useState(false)
+  const [showModalErroUnloagged, setShowModalErroUnloagged] = useState(false)
   const { mode }: any = Device()
 
   function handleMenu(menu): void {
@@ -137,12 +144,16 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         timeoutPromise
       ])
 
-      //console.log(`Resposta do comando ${comand}:`, response)
+      console.log(`Resposta do comando ${comand}:`, response)
 
       // Verifica se a resposta indica erro de login e desativa o acesso
       if (response === 'Error: Unlogged.') {
-        setEnabledAccess(false)
-        setIsModalPassWordOpen(true)
+        //setEnabledAccess(false)
+        setTimeout(() => {
+          revalidateAutentication(comand)
+        }, 500)
+
+        //setIsModalPassWordOpen(true)
       }
 
       return response
@@ -154,7 +165,26 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     }
   }
 
+  function revalidateAutentication(lastComand: string): void {
+    if (props.isConect && !mode.state) {
+      handleComandSend(`lg=${PasswordSaved}?`).then((response) => {
+        //console.log('Recebeu erro: unlogged e revalidou:', response)
+        if (response === 'lg=1!') {
+          /*setTimeout(() => {
+            handleComandSend(lastComand).then((response) => {
+              console.log('Ultimo comando enviado:', lastComand)
+              console.log('Resposta do ultimo comando:', response)
+            })
+          }, 500)*/
+          setShowModalErroUnloagged(true)
+          setEnabledAccess(true)
+        }
+      })
+    }
+  }
+
   function handleSendComandTerminal(comand: string): void {
+    setDataReceivedComandTerminal('')
     if (props.isConect && !mode.state && enabledAccess) {
       handleComandSend(comand).then((response) => {
         setDataReceivedComandTerminal(response)
@@ -207,6 +237,8 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandGeneralGeolocation('')
     setDataReceivedComandGeneralTimeZone('')
     setDataReceivedComandGeneralTime('')
+    setDataReceivedComandHeritage('')
+    setDataReceivedComandRepeatSync('')
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Baixando informações do dispositivo!')
       setIsLoading(true)
@@ -221,7 +253,17 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 setTimeout(() => {
                   handleComandSend('dt=cfg?').then((response) => {
                     setDataReceivedComandGeneralTime(response)
-                    setIsLoading(false)
+                    setTimeout(() => {
+                      handleComandSend('patrimonio=cfg?').then((response) => {
+                        setDataReceivedComandHeritage(response)
+                        setTimeout(() => {
+                          handleComandSend('resinc=cfg?').then((response) => {
+                            setDataReceivedComandRepeatSync(response)
+                            setIsLoading(false)
+                          })
+                        }, time)
+                      })
+                    }, time)
                   })
                 }, time)
               })
@@ -264,6 +306,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandProtocol('')
     setDataReceivedComandProtocolMQTT('')
     setDataReceivedComandProtocolFTP('')
+    setDataReceivedComandTimerMaintenance('')
 
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Baixando informações do dispositivo!')
@@ -282,7 +325,12 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                     setTimeout(() => {
                       handleComandSend('ftp=cfg?').then((response) => {
                         setDataReceivedComandProtocolFTP(response)
-                        setIsLoading(false)
+                        setTimeout(() => {
+                          handleComandSend('tm=cfg?').then((response) => {
+                            setDataReceivedComandTimerMaintenance(response)
+                            setIsLoading(false)
+                          })
+                        }, time)
                       })
                     }, time)
                   })
@@ -305,8 +353,8 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Enviando configurações para o dispositivo!')
       setIsLoading(true)
-      handleComandSend(formattedString).then((response) => {
-        console.log('Resposta do alterar relatorio:', response)
+      handleComandSend(formattedString).then(() => {
+        //console.log('Resposta do alterar relatorio:', response)
         //setDataReceivedComandReport(response)
         setIsLoading(false)
       })
@@ -345,21 +393,26 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Enviando configurações para o dispositivo!')
       setIsLoading(true)
-      handleComandSend(`tf=${list[0]}!`).then((response) => {
-        console.log('Resposta do alterar Nome:', response)
+      handleComandSend(`tf=${list[0]}!`).then(() => {
+        //console.log('Resposta do alterar Nome:', response)
         setTimeout(() => {
-          handleComandSend(`td=${list[1]}!`).then((response) => {
-            console.log('Resposta do alterar Nome:', response)
+          handleComandSend(`td=${list[1]}!`).then(() => {
+            //console.log('Resposta do alterar Nome:', response)
             setTimeout(() => {
-              handleComandSend(`prot=${list[2]}!`).then((response) => {
-                console.log('Resposta do alterar Nome:', response)
+              handleComandSend(`prot=${list[2]}!`).then(() => {
+                //console.log('Resposta do alterar Nome:', response)
                 setTimeout(() => {
-                  handleComandSend(`mqtt=${list[3]}!`).then((response) => {
-                    console.log('Resposta do alterar Nome:', response)
+                  handleComandSend(`mqtt=${list[3]}!`).then(() => {
+                    //console.log('Resposta do alterar Nome:', response)
                     setTimeout(() => {
-                      handleComandSend(`ftp=${list[4]}!`).then((response) => {
-                        console.log('Resposta do alterar Nome:', response)
-                        setIsLoading(false)
+                      handleComandSend(`ftp=${list[4]}!`).then(() => {
+                        //console.log('Resposta do alterar Nome:', response)
+                        setTimeout(() => {
+                          handleComandSend(`tm=${list[5]}!`).then(() => {
+                            //console.log('Resposta do alterar timer manutencao:', response)
+                            setIsLoading(false)
+                          })
+                        }, time)
                       })
                     }, time)
                   })
@@ -374,10 +427,6 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
   function handleSendConection(list: string[]): void {
     // Verifica se a lista tem ao menos 5 elementos
-    if (list.length < 5) {
-      console.error('A lista precisa ter pelo menos 5 elementos.')
-      return
-    }
 
     // Formata a string no padrão desejado
     const formattedString = `conex=${list.slice(0, 5).join(';')}!`
@@ -400,8 +449,8 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Enviando configurações para o dispositivo!')
       setIsLoading(true)
-      handleComandSend(`lg=${password}!`).then((response) => {
-        console.log('Resposta do alterar senha:', response)
+      handleComandSend(`lg=${password}!`).then(() => {
+        //console.log('Resposta do alterar senha:', response)
         setTimeout(() => {
           setIsLoading(false)
         }, 500)
@@ -416,18 +465,18 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       setMessageIsLoading('Enviando configurações para o dispositivo!')
       setIsLoading(true)
       handleComandSend(`nd=${list[0]}!`).then(() => {
-        //console.log('Resposta do alterar Nome:', response)
         setTimeout(() => {
           handleComandSend(`gl=${list[1]}!`).then(() => {
-            // console.log('Resposta do alterar Geolocalizacão:', response)
             setTimeout(() => {
               handleComandSend(`tz=${list[2]}!`).then(() => {
-                //console.log('Resposta do alterar TimeZone:', response)
                 setTimeout(() => {
-                  console.log('Data e Hora:', `dt=${list[3]}!`)
-                  handleComandSend(`dt=${list[3]}!`).then(() => {
-                    //console.log('Resposta do alterar Time:', response)
-                    setIsLoading(false)
+                  handleComandSend(`patrimonio=${list[4]}!`).then(() => {
+                    setTimeout(() => {
+                      handleComandSend(`resinc=${list[5]}!`).then((response) => {
+                        console.log('Resposta do resinc:', response)
+                        setIsLoading(false)
+                      })
+                    }, time)
                   })
                 }, time)
               })
@@ -446,7 +495,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
         const acessoLiberado = response === 'lg=1!'
         setEnabledAccess(acessoLiberado) // Atualiza o estado global`
-
+        setPasswordSaved(password) // Salva a senha para futuras
         return acessoLiberado
       } catch {
         setEnabledAccess(false) // Garante que fica false em caso de erro
@@ -454,6 +503,10 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       }
     }
     return false // Retorna false caso a validação não ocorra
+  }
+
+  const handleCloseModalErroUnlogged = (): void => {
+    setShowModalErroUnloagged(false)
   }
 
   useEffect(() => {
@@ -471,7 +524,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     }
   }, [enabledAccess])
 
-  console.log('Device mode:', props.isConect, isModalPassWordOpen)
+  //console.log('Device mode:', props.isConect, isModalPassWordOpen)
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
@@ -554,6 +607,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 receivedProtocol={dataReceivedComandProtocol}
                 receivedProtocolDataMQTT={dataReceivedComandProtocolMQTT}
                 receivedProtocolDataFTP={dataReceivedComandProtocolFTP}
+                receivedTimerMaintenance={dataReceivedComandTimerMaintenance}
+                receiverHeritage={dataReceivedComandHeritage}
+                receivedRepeatSync={dataReceivedComandRepeatSync}
               />
             ) : MenuName === 'terminal' ? (
               <Terminal
@@ -583,6 +639,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
           onValidatePassword={handlePasswordValidation}
         />
       )}
+      <ModalErroUnloagged show={showModalErroUnloagged} onClose={handleCloseModalErroUnlogged} />
     </ContainerDevice>
   ) : (
     <ContainerDevice>
@@ -594,48 +651,42 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
         <CardInformation title="VISÃO GERAL">
-          <p>O PluviDB-IoT conta com um core de processamento ARM Cortex</p>
           <p>
-            Possui simultaneamente conexão via 4G – LTE-M Cat-M1e NB-IoT versão 2 (NB2) compatível
-            com 3GPP LTE release 14. Possui também recepção de GPS e tudo isso com extremo baixo
-            consumo de energia.
+            O PluviDB-IoT é um telepluviometro, sendo um medidor de chuva com tecnologia embarcada.
+          </p>
+          <p>
+            Possui simultaneamente com conexão via 4G – LTE-M CAT-M1 e NB-IoT versão 2 (NB2)
+            compatível com 3GPP LTE release 14.
           </p>
           <p>
             Empregando as melhores técnicas de redução de consumo energético, o PluviDB-IoT funciona
-            com bateria não recarregável de Lítio primária que é superior a 5 anos.
+            com bateria não recarregável de Lítio primária que pode alcançar autonomia maior que 5
+            anos.
           </p>
 
-          <p>Acompanha Certicado de Calibração rastreado a RBC conforme IEC 17025.</p>
+          <p>Acompanha Certificado de Calibração rastreado a RBC conforme IEC 17025.</p>
           <p>Homologação ANATEL: 08591-24-11455</p>
         </CardInformation>
 
         <CardInformation title="CARACTERÍSTICAS">
-          <p>Princípio de báscula instável</p>
-          <p>Construído integralmente com materiais inoxidáveis</p>
-          <p>Com dispositivo regulador de vazão</p>
+          <p>Princípio de báscula instável, construído integralmente com materiais inoxidáveis</p>
+          <p>Com dispositivo regulador de vazão, sistema de nivelamento com nível de bolha</p>
           <p>Corpo em alumínio, aço inox e pintura epóxi</p>
-          <p>Sistema de nivelamento com nível de bolha</p>
           <p>
             Bordas internas em formato de ângulo reto e borda externa com formato de ângulo oblíquo,
-            que minimizam efeitos de turbulência do vento.
+            que minimizam efeitos de turbulência do vento. Atende requisitos WMO.
           </p>
-          <p>ARM Cortex M33</p>
-          <p>Memória Flash de 64Mb para armazenamento de dados</p>
           <p>2 portas de medição de pulso</p>
-          <p>1 porta SDI-12 v1.3</p>
-          <p>Conector USB-C </p>
-          <p>Congurável com conexão sem o / Bluetooth</p>
-          <p>Frequências LTE de 700 a 2200 Mhz </p>
+          <p>ARM Cortex M33, Memória Flash de 64Mb para armazenamento de dados</p>
+          <p>Configurável via / Bluetooth (BLE) e USB-C - (Windows/Linux/Android)</p>
+          <p>Frequências LTE de 700 a 2200 Mhz</p>
           <p>
             Cat-M1: B1, B2, B3, B4, B5, B8, B12, B13, B14, B17, B18, B19, B20, B25, B26, B28, B66
           </p>
           <p>NB1/NB2: B1, B2, B3, B4, B5, B8, B12, B13, B17, B19, B20, B25, B26, B28, B66 </p>
           <p>Funções eDRX e PSM power saving.</p>
           <p>Protocolos: MQTT, HTTP, NTP, FTP entre outros</p>
-          <p>Bateria interna de lítio primária Li-SOCl2 – D - 3,6V – 19Ah</p>
-          <p>Com opção de expansão de bateria</p>
-          <p>Atende requisitos WMO</p>
-          <p>Aplicativo Android</p>
+          <p>Bateria interna de lítio primária Li-SOCl2 – 2D/3,6V</p>
         </CardInformation>
 
         <CardInformation title="ESPECIFICAÇÃO">

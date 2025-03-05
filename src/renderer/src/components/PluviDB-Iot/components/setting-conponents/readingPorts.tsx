@@ -17,8 +17,8 @@ export function ReadingPorts({
   receivedPortP2,
   receivedPortSdi
 }: Props): JSX.Element {
-  const [selectedPort1, setSelectedPort1] = useState('Anual')
-  const [selectedPort2, setSelectedPort2] = useState('Anual')
+  const [selectedPort1, setSelectedPort1] = useState('ano')
+  const [selectedPort2, setSelectedPort2] = useState('ano')
   const [NamePort1, setNamePort1] = useState('')
   const [NamePort2, setNamePort2] = useState('')
   const [ResolutionPort1, setResolutionPort1] = useState('')
@@ -74,129 +74,175 @@ export function ReadingPorts({
   }, [receivedPortP1, receivedPortP2, receivedPortSdi])
 
   return (
-    <div className="flex flex-col gap-2 p-2 mt-4 mb-4">
-      <div className="flex-1 rounded-md border-[1px] border-gray-200 ">
-        <span className="w-full bg-gray-300  block pl-2">Pulso 1</span>
-        <div className="flex flex-col">
-          <div className="flex flex-row justify-start items-center gap-3 m-2 h-14">
-            <span>Nome da Porta:</span>
-            <input
-              type="text"
-              value={NamePort1}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
-              onChange={(e) => setNamePort1(e.target.value)}
-              disabled
-            />
+    <div className="flex flex-col gap-2 p-2 mt-4 mb-4 items-stretch">
+      <div className="w-full rounded-md border-[1px] border-gray-200">
+        <span className="w-full bg-gray-300 block pl-2">Pulso 1</span>
+        <div className="flex flex-row items-center justify-center">
+          <div className="flex flex-row justify-start items-center gap-3 p-2">
             <span>Reset:</span>
             <select
               value={selectedPort1}
               onChange={(e) => setSelectedPort1(e.target.value)}
-              className="mr-2 block  p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
+              className="mr-2 block p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
             >
               <option value="" disabled></option>
-              <option value="ANO">Anual</option>
-              <option value="MEN">Mensal</option>
-              <option value="NUN">Nunca</option>
+              <option value="ano">Anual</option>
+              <option value="men">Mensal</option>
+              <option value="nun">Nunca</option>
             </select>
           </div>
 
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-start items-center gap-3 p-2">
             <span>Resolução:</span>
             <input
-              step="0.100"
+              step="0.001"
               min="0"
               type="number"
               value={ResolutionPort1}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 w-24"
               onChange={(e) => {
-                let value = parseFloat(e.target.value)
+                const rawValue = e.target.value
 
-                // Garante que o valor mínimo é 0
-                if (isNaN(value) || value < 0) {
-                  value = 0
+                // Permite digitar números intermediários como "1." ou "1.3"
+                if (rawValue === '' || rawValue === '.' || rawValue === '0.') {
+                  setResolutionPort1(rawValue)
+                  return
                 }
 
-                // Formata para 3 casas decimais
-                setResolutionPort1(value.toFixed(3))
+                // Limita a entrada a um máximo de 4 caracteres (2 inteiros e 3 decimais)
+                if (!/^\d{0,2}(\.\d{0,3})?$/.test(rawValue)) return
+
+                setResolutionPort1(rawValue)
               }}
               onBlur={(e) => {
-                // Garante que o input sempre exibe 3 casas ao perder o foco
-                setResolutionPort1(parseFloat(e.target.value).toFixed(3))
+                const value = e.target.value
+
+                // Garante que o número tenha até 3 casas decimais
+                if (!isNaN(Number(value)) && value !== '') {
+                  let formattedValue = value
+
+                  // Verifica se o valor contém parte decimal
+                  if (formattedValue.indexOf('.') !== -1) {
+                    const parts = formattedValue.split('.')
+
+                    // Se a parte decimal tiver menos de 3 casas, completa com zeros
+                    if (parts[1].length < 3) {
+                      formattedValue = `${parts[0]}.${parts[1].padEnd(3, '0')}`
+                    }
+                  } else {
+                    // Se não houver parte decimal, adiciona ".000"
+                    formattedValue = `${formattedValue}.000`
+                  }
+
+                  // Verifica se o número já tem 2 casas decimais, caso contrário, mantém como está
+                  const [integer, decimal] = formattedValue.split('.')
+                  if (decimal && decimal.length === 2) {
+                    formattedValue = `${integer}.${decimal}` // Não altera, mantém as 2 casas decimais
+                  }
+
+                  setResolutionPort1(formattedValue)
+                } else {
+                  setResolutionPort1('0.000') // Caso o valor não seja válido
+                }
               }}
             />
           </div>
         </div>
       </div>
-      <div className="flex-1 rounded-md border-[1px] border-gray-200 ">
-        <span className="w-full bg-gray-300  block pl-2">Pulso 2</span>
-        <div className="flex flex-col">
-          <div className="flex flex-row justify-start items-center gap-3 m-2 h-14">
-            <span>Nome da Porta:</span>
-            <input
-              type="text"
-              value={NamePort2}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
-              onChange={(e) => setNamePort2(e.target.value)}
-              disabled
-            />
+
+      <div className="w-full rounded-md border-[1px] border-gray-200">
+        <span className="w-full bg-gray-300 block pl-2">Pulso 2</span>
+        <div className="flex flex-row items-center justify-center">
+          <div className="flex flex-row justify-start items-center gap-3 p-2">
             <span>Reset:</span>
             <select
               value={selectedPort2}
               onChange={(e) => setSelectedPort2(e.target.value)}
-              className="mr-2 block  p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
+              className="mr-2 block p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
             >
               <option value="" disabled></option>
-              <option value="ANO">Anual</option>
-              <option value="MEN">Mensal</option>
-              <option value="NUN">Nunca</option>
+              <option value="ano">Anual</option>
+              <option value="men">Mensal</option>
+              <option value="nun">Nunca</option>
             </select>
           </div>
 
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-start items-center gap-3 p-2">
             <span>Resolução:</span>
             <input
-              step="0.100"
+              step="0.001"
               min="0"
               type="number"
               value={ResolutionPort2}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 w-24"
               onChange={(e) => {
-                let value = parseFloat(e.target.value)
+                const rawValue = e.target.value
 
-                // Garante que o valor mínimo é 0
-                if (isNaN(value) || value < 0) {
-                  value = 0
+                // Permite digitar números intermediários como "1." ou "1.3"
+                if (rawValue === '' || rawValue === '.' || rawValue === '0.') {
+                  setResolutionPort2(rawValue)
+                  return
                 }
 
-                // Formata para 3 casas decimais
-                setResolutionPort2(value.toFixed(3))
+                // Limita a entrada a um máximo de 4 caracteres (2 inteiros e 3 decimais)
+                if (!/^\d{0,2}(\.\d{0,3})?$/.test(rawValue)) return
+
+                setResolutionPort2(rawValue)
               }}
               onBlur={(e) => {
-                // Garante que o input sempre exibe 3 casas ao perder o foco
-                setResolutionPort2(parseFloat(e.target.value).toFixed(3))
+                const value = e.target.value
+
+                // Garante que o número tenha até 3 casas decimais
+                if (!isNaN(Number(value)) && value !== '') {
+                  let formattedValue = value
+
+                  // Verifica se o valor contém parte decimal
+                  if (formattedValue.indexOf('.') !== -1) {
+                    const parts = formattedValue.split('.')
+
+                    // Se a parte decimal tiver menos de 3 casas, completa com zeros
+                    if (parts[1].length < 3) {
+                      formattedValue = `${parts[0]}.${parts[1].padEnd(3, '0')}`
+                    }
+                  } else {
+                    // Se não houver parte decimal, adiciona ".000"
+                    formattedValue = `${formattedValue}.000`
+                  }
+
+                  // Verifica se o número já tem 2 casas decimais, caso contrário, mantém como está
+                  const [integer, decimal] = formattedValue.split('.')
+                  if (decimal && decimal.length === 2) {
+                    formattedValue = `${integer}.${decimal}` // Não altera, mantém as 2 casas decimais
+                  }
+
+                  setResolutionPort2(formattedValue)
+                } else {
+                  setResolutionPort2('0.000') // Caso o valor não seja válido
+                }
               }}
             />
           </div>
         </div>
       </div>
-      <div className="flex-1 rounded-md border-[1px] border-gray-200 pb-2">
-        <span className="w-full bg-gray-300  block pl-2">SDI-12</span>
-        <div className="flex flex-col justify-center items-start gap-3 m-2">
+
+      <div className="w-full rounded-md border-[1px] border-gray-200 pb-2">
+        <span className="w-full bg-gray-300 block pl-2">SDI-12</span>
+        <div className="flex flex-col justify-center items-start gap-3 p-2">
           <div className="flex flex-row gap-3 justify-center items-center">
             <span>Endereço:</span>
             <input
               type="text"
               value={AddressSdi}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="flex-1 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
               onChange={(e) => setAddressSdi(e.target.value)}
             />
           </div>
           <div className="flex flex-row gap-3 justify-center items-center">
-            <span>Numero de campos:</span>
+            <span>Número de campos:</span>
             <input
               type="number"
               value={FieldsSdi}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="flex-1 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
               onChange={(e) => setFieldsSdi(e.target.value)}
             />
           </div>
@@ -211,6 +257,7 @@ export function ReadingPorts({
           </div>
         </div>
       </div>
+
       <div className="flex justify-end mt-4 border-t-[1px] border-gray-200 pt-4 gap-4">
         <Button onClick={handleUpdateSettingsPort}>
           <ArrowsClockwise size={24} />

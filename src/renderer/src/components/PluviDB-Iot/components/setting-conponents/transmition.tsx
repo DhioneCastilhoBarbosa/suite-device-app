@@ -7,16 +7,38 @@ type Props = {
   handleSendSettingsTransmition: (settings: string[]) => void
   receivedTimerFixed: string | undefined
   receivedTimerdynamic: string | undefined
+  receivedTimerMaintenance: string | undefined
   receivedProtocolInUse: string | undefined
   receivedDataProtocolMQTT: string | undefined
   receivedDataProtocolFTP: string | undefined
 }
+
+const timeOptions = [
+  { label: '0 minutos', value: '0' },
+  { label: '1 minuto', value: '1' },
+  { label: '2 minutos', value: '2' },
+  { label: '3 minutos', value: '3' },
+  { label: '4 minutos', value: '4' },
+  { label: '5 minutos', value: '5' },
+  { label: '10 minutos', value: '10' },
+  { label: '15 minutos', value: '15' },
+  { label: '30 minutos', value: '30' },
+  { label: '1 hora', value: '60' },
+  { label: '2 horas', value: '120' },
+  { label: '3 horas', value: '180' },
+  { label: '4 horas', value: '240' },
+  { label: '6 horas', value: '360' },
+  { label: '8 horas', value: '480' },
+  { label: '12 horas', value: '720' },
+  { label: '24 horas', value: '1440' }
+]
 
 export function Transmition({
   handleSendSettingsTransmition,
   handleUpdateSettingsTransmition,
   receivedTimerFixed,
   receivedTimerdynamic,
+  receivedTimerMaintenance,
   receivedProtocolInUse,
   receivedDataProtocolMQTT,
   receivedDataProtocolFTP
@@ -25,8 +47,9 @@ export function Transmition({
   const [isEnabledCertificate, setIsEnableCertificate] = useState(false)
   const [isEnabledModeTransfer, setIsEnableModeTransfer] = useState(false)
   const [selectedButton, setSelectedButton] = useState<string>('MQTT')
-  const [TimerFixed, setTimerFixed] = useState('')
-  const [TimerDynamic, setTimerDynamic] = useState('')
+  const [TimerFixed, setTimerFixed] = useState(timeOptions[1].value)
+  const [TimerDynamic, setTimerDynamic] = useState(timeOptions[2].value)
+  const [TimerMaintenance, setTimerMaintenance] = useState(timeOptions[0].value)
   const [Broker, setBroker] = useState('')
   const [Publish, setPublish] = useState('')
   const [Subscribe, setSubscribe] = useState('')
@@ -41,6 +64,7 @@ export function Transmition({
   const [PortServer, setPortServer] = useState('')
   const [SecurityServer, setSecurityServer] = useState('')
   const [ModeTransfer, setModeTransfer] = useState('')
+
   //const [Authentication, setAuthentication] = useState('')
 
   const handleButtonClick = (buttonType: string): void => {
@@ -59,17 +83,6 @@ export function Transmition({
 
   const toggleSwitchModeTransfer = (): void => {
     setIsEnableModeTransfer(!isEnabledModeTransfer)
-    if (isEnabledModeTransfer) {
-      setModeTransfer('atv')
-    } else {
-      setModeTransfer('psv')
-    }
-    /*console.log(
-      'Switch está:',
-      !isEnabledModeTransfer ? 'Ligado' : 'Desligado',
-      'Modo de transferência:',
-      ModeTransfer
-    )*/
   }
 
   function handleClickSend(): void {
@@ -77,11 +90,32 @@ export function Transmition({
       handleSendSettingsTransmition([
         TimerFixed,
         TimerDynamic,
-        selectedButton,
+        selectedButton.toLocaleLowerCase(),
         `${Broker};${Publish};${Subscribe};${Port};${User};${Password};${Security};${Number(isEnabledCertificate)}`,
-        `${AdressServer};${Directory};${UserServer};${PasswordServer};${PortServer};${SecurityServer};${ModeTransfer}`
+        `${AdressServer};${Directory};${UserServer};${PasswordServer};${PortServer};${SecurityServer};${ModeTransfer}`,
+        TimerMaintenance
       ])
   }
+
+  const handleClick = (): void => {
+    //console.log('Antes de alterar:', timeZone) // Log antes de alterar
+    if (isEnabledModeTransfer) {
+      setModeTransfer('atv')
+    } else {
+      setModeTransfer('psv')
+    }
+    toggleSwitchModeTransfer()
+    //console.log('Depois de alterar:', timeZone) // Log imediatamente após a tentativa de alteração
+  }
+
+  useEffect(() => {
+    if (isEnabledModeTransfer) {
+      setModeTransfer('atv')
+    } else {
+      setModeTransfer('psv')
+    }
+    //console.log('Timezone alterado:', timeZone)
+  }, [isEnabledModeTransfer]) // Isso será disparado sempre que isEnabled mudar
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -101,6 +135,11 @@ export function Transmition({
       //console.log('Timer dinâmico:', receivedTimerdynamic)
       const cleanString = receivedTimerdynamic?.replace('td=', '').replace('!', '')
       setTimerDynamic(cleanString)
+    }
+
+    if (receivedTimerMaintenance) {
+      const cleanString = receivedTimerMaintenance?.replace('tm=', '').replace('!', '')
+      setTimerMaintenance(cleanString)
     }
 
     if (receivedProtocolInUse) {
@@ -164,6 +203,7 @@ export function Transmition({
   }, [
     receivedTimerFixed,
     receivedTimerdynamic,
+    receivedTimerMaintenance,
     receivedProtocolInUse,
     receivedDataProtocolMQTT,
     receivedDataProtocolFTP
@@ -172,26 +212,54 @@ export function Transmition({
   return (
     <div className="flex flex-col">
       <div className="flex flex-col justify-center item-center w-2/3">
-        <div className="flex flex-row  justify-between items-center gap-3 m-2">
+        <div className="flex flex-row  justify-between items-center gap-3 m-2 w-2/3 ">
           <span>Timer fixo:</span>
-          <input
-            type="number"
+          <select
+            id="time-select"
             value={TimerFixed}
-            className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
             onChange={(e) => setTimerFixed(e.target.value)}
-          />
-          <span>Minutos</span>
+            className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
+          >
+            {timeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="flex flex-row justify-between items-center gap-3 m-2">
-          <span>Timer dinâmico:</span>
-          <input
-            type="number"
+        <div className="flex flex-row justify-between items-center gap-3 m-2 w-2/3">
+          <span>Timer com chuva:</span>
+
+          <select
+            id="time-select"
             value={TimerDynamic}
-            className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
             onChange={(e) => setTimerDynamic(e.target.value)}
-          />
-          <span>Minutos</span>
+            className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
+          >
+            {timeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-row justify-between items-center gap-3 m-2 w-2/3">
+          <span>Timer manutenção:</span>
+
+          <select
+            id="time-select"
+            value={TimerMaintenance}
+            onChange={(e) => setTimerMaintenance(e.target.value)}
+            className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
+          >
+            {timeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -343,7 +411,7 @@ export function Transmition({
           </div>
 
           <div className="flex flex-row justify-between items-center gap-3 m-2">
-            <span>Usuario:</span>
+            <span>Usuário:</span>
             <input
               type="text"
               value={UserServer}
@@ -419,7 +487,7 @@ export function Transmition({
           <div className="flex flex-row justify-between items-center gap-3 m-2">
             <span>Passivo/Ativo:</span>
             <button
-              onClick={toggleSwitchModeTransfer}
+              onClick={handleClick}
               className={`relative w-12 h-6 flex items-center rounded-full transition-colors ${
                 isEnabledModeTransfer ? 'bg-sky-500' : 'bg-gray-300'
               }`}

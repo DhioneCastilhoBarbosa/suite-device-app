@@ -8,18 +8,19 @@ type Props = {
 }
 
 export default function Status({ receivedDataStatus, handleUpdateStatus }: Props): JSX.Element {
-  const [arrayData, setArrayData] = useState(Array(19).fill('N/A'))
+  const [arrayData, setArrayData] = useState(Array(20).fill('N/A'))
   const data = [
     { id: 1, name: 'Nome:', value: arrayData[1] },
-    { id: 2, name: 'Data e hora:', value: arrayData[15] },
-    { id: 3, name: 'IP:', value: arrayData[17] },
-    { id: 4, name: 'ICCID:', value: arrayData[16] },
-    { id: 5, name: 'IMEI:', value: arrayData[8] },
-    { id: 6, name: 'Número de série:', value: arrayData[14] },
-    { id: 7, name: 'Versão do Firmware:', value: arrayData[9] },
-    { id: 8, name: 'Versão do hardware:', value: arrayData[10] },
-    { id: 9, name: 'Contador de boot:', value: arrayData[18] },
-    { id: 10, name: 'Start time:', value: arrayData[11] }
+    { id: 2, name: 'Patrimônio:', value: arrayData[19] },
+    { id: 3, name: 'Data e hora:', value: arrayData[15] },
+    { id: 4, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
+    { id: 5, name: 'ICCID:', value: arrayData[16] },
+    { id: 6, name: 'IMEI:', value: arrayData[8] },
+    { id: 7, name: 'Número de série:', value: arrayData[14] },
+    { id: 8, name: 'Versão do Firmware:', value: arrayData[9] },
+    { id: 9, name: 'Versão do hardware:', value: arrayData[10] },
+    { id: 10, name: 'Contador de boot:', value: arrayData[18] },
+    { id: 11, name: 'Start time:', value: arrayData[11] }
   ]
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
     // Extraímos apenas os valores após "="
     const extractedValues = valuesArray.map((item) => item.split('=')[1] || '')
 
-    console.log('extractedValues:', extractedValues)
+    //console.log('extractedValues:', extractedValues)
     setArrayData((prevData) =>
       prevData.map((_, index) => extractedValues[index] ?? prevData[index])
     )
@@ -59,7 +60,8 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
               <span>{`${arrayData[2]} dBm`} </span>
             </div>
           </div>
-          <div className="flex flex-row justify-center items-center w-full bg-sky-500 p-1  rounded-b-md">
+          <div className="flex flex-col justify-center items-center w-full bg-sky-500 p-1  rounded-b-md">
+            <span className=" font-light text-white">{arrayData[6]}</span>
             <span className=" font-light text-white">{arrayData[5]}</span>
           </div>
         </div>
@@ -76,7 +78,7 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
         <div className="flex flex-col justify-center  bg-white m-2 rounded-md border-4 border-white">
           <div className="flex flex-col justify-center items-center gap-2 p-2 border-2 border-sky-500 rounded-md h-full min-w-56 gap-2">
             <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500">
-              Tranmissão
+              Transmissão
             </span>
             <div className="flex flex-row justify-center items-center gap-2">
               <span>Protocolo utilizado:</span>
@@ -90,11 +92,11 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
           </div>
         </div>
       </div>
-      <div className="flex flex-col justify-evenly bg-white h-auto rounded-md mt-4 border-2 border-sky-500">
-        <div className="bg-sky-500 text-white p-2 ">
+      <div className="flex flex-col justify-evenly bg-white h-auto rounded-md mt-2 border-2 border-sky-500">
+        <div className="bg-sky-500 text-white p-1 ">
           <span className="font-bold">Relatório:</span>
         </div>
-        <div className="flex flex-row justify-between items-center my-4 mx-10">
+        <div className="flex flex-row justify-between items-center my-3 mx-10">
           <div className="flex flex-col justify-center items-start gap-2">
             <div className="flex flex-row gap-2">
               <span className="font-bold">Número de registros:</span>
@@ -105,38 +107,38 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
               <span>{arrayData[13]}</span>
             </div>
           </div>
-          <Button size={'medium'} className="bg-white text-sky-500 px-1 py-6">
+          <Button size={'medium'} className="bg-white text-sky-500 px-1 py-5">
             <DownloadSimple size={24} />
-            Baixar informação
+            Baixar relatórios
           </Button>
         </div>
       </div>
-      <div className="my-4">
+      <div className="my-2">
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
-                <th className="py-3 px-6 text-left">Informações do dispositivo</th>
-                <th className="py-3 px-6 text-left"></th>
+                <th className="py-2 px-4 text-left">Informações do dispositivo</th>
+                <th className="py-2 px-4 text-left"></th>
               </tr>
             </thead>
             <tbody className="text-gray-600 text-sm font-light">
               {data.map((item) => (
                 <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-3 px-6 text-left font-bold text-gray-500">{item.name}</td>
-                  <td className="py-3 px-6 text-left font-semibold text-gray-400">{item.value}</td>
+                  <td className="py-1 px-4 text-left font-bold text-gray-500">{item.name}</td>
+                  <td className="py-1 px-4 text-left font-semibold text-gray-400">{item.value}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="bg-gray-200 text-gray-700 text-sm leading-normal rounded-b-lg ">
-                <td className="py-3 px-6 text-left rounded-bl-lg" colSpan={3}></td>
+                <td className="py-2 px-4 text-left rounded-bl-lg" colSpan={3}></td>
               </tr>
             </tfoot>
           </table>
         </div>
       </div>
-      <div className="flex justify-end mt-1 border-t-[1px] border-gray-200 pt-4 w-full gap-4">
+      <div className="flex justify-end mt-1 border-t-[1px] border-gray-200 pt-2 w-full gap-4">
         <Button onClick={handleUpdateStatus}>
           <ArrowsClockwise size={24} />
           Atualizar

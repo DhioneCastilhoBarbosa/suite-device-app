@@ -8,6 +8,7 @@ type Props = {
 
 export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.Element {
   const [selected, setSelected] = useState('5')
+  const [date, setDate] = useState('00/00/00 00:00:00')
   const [data, setData] = useState([
     { id: 1, name: 'Chuva P1 intantânea(mm):', value: '0.00' },
     { id: 2, name: 'Chuva P1 diária(mm):', value: '0.00' },
@@ -32,8 +33,8 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
   }, [])
 
   useEffect(() => {
-    const match = receivedDataInst ? receivedDataInst.match(/inst=([\d.;-]+)!/) : null
-    const valuesArray = match ? match[1].split(';') : []
+    const matchInst = receivedDataInst ? receivedDataInst.match(/inst=([\d.;-]+)!/) : null
+    const valuesArray = matchInst ? matchInst[1].split(';') : []
     //console.log('valuesArray:', valuesArray.length)
     setData((prevData) =>
       prevData.map((item, index) => ({
@@ -41,6 +42,10 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
         value: valuesArray[index] ?? item.value
       }))
     )
+
+    const matchDate = receivedDataInst ? receivedDataInst.match(/dt=(.*)!/) : null
+    const dateArray = matchDate ? matchDate[1] : ''
+    setDate(dateArray)
   }, [receivedDataInst])
 
   useEffect(() => {
@@ -58,26 +63,24 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
           <thead>
-            <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
+            <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal ">
               <th className="py-3 px-6 text-left">Dados Instantâneos</th>
 
-              <th className=" flex justify-end items-center gap-1">
-                <label className=" mt-1.5 text-xs font-semibold text-gray-700">
-                  Tempo de atualização:
+              <th className=" flex  justify-end items-center gap-1">
+                <label className="mt-3  text-xs font-semibold text-gray-700">
+                  Tempo de atualização de scan 60 segundos
                 </label>
-                <select
-                  value={selected}
-                  onChange={(e) => setSelected(e.target.value)}
-                  className=" mt-1.5  mr-2 block  p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300"
-                >
-                  <option value="" disabled></option>
-                  <option value="5">5 segundos</option>
-                  <option value="10">10 segundos</option>
-                </select>
+                <span className="ml-2"></span>
               </th>
             </tr>
           </thead>
           <tbody className="text-gray-600 text-sm font-light">
+            <tr className=" border-b border-gray-200 hover:bg-gray-50">
+              <td className="py-3 px-6 text-left font-bold text-gray-500">Data/Hora:</td>
+              <td className=" flex justify-center items-end py-3 px-6 text-left font-semibold text-gray-400 text-md">
+                {date}
+              </td>
+            </tr>
             {data.map((item) => (
               <tr key={item.id} className=" border-b border-gray-200 hover:bg-gray-50">
                 <td className="py-3 px-6 text-left font-bold text-gray-500">{item.name}</td>

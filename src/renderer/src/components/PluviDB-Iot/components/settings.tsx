@@ -19,9 +19,12 @@ type Props = {
   receiverSettingsPortSdi: string | undefined
   receivedTimerFixed: string | undefined
   receivedTimerdynamic: string | undefined
+  receivedTimerMaintenance: string | undefined
   receivedProtocol: string | undefined
   receivedProtocolDataMQTT: string | undefined
   receivedProtocolDataFTP: string | undefined
+  receiverHeritage: string | undefined
+  receivedRepeatSync: string | undefined
   handleUpdateSettingsPorts: () => void
   handleUpdateSettingsGeneral: () => void
   handleUpdateSettingsReport: () => void
@@ -59,8 +62,12 @@ export default function Settings({
   handleSendSettingsTransmition,
   receivedTimerFixed,
   receivedTimerdynamic,
+  receivedTimerMaintenance,
   receivedProtocolDataMQTT,
   receivedProtocolDataFTP,
+  receiverHeritage,
+  receivedRepeatSync,
+
   handleUpdateSettingsTransmition
 }: Props): JSX.Element {
   const [selected, setSelected] = useState('Geral')
@@ -70,11 +77,14 @@ export default function Settings({
   const [GeneralGeolocation, setGeneralGeolocation] = useState<string | undefined>()
   const [GeneralTimeZone, setGeneralTimeZone] = useState<string | undefined>()
   const [GeneralTime, setGeneralTime] = useState<string | undefined>()
+  const [GeneralHeritage, setGeneralHeritage] = useState<string | undefined>()
+  const [GeneralRepeatSync, setGeneralRepeatSync] = useState<string | undefined>()
   const [PortP1, setPortP1] = useState<string | undefined>()
   const [PortP2, setPortP2] = useState<string | undefined>()
   const [PortSdi, setPortSdi] = useState<string | undefined>()
   const [TimerFixed, setTimerFixed] = useState<string | undefined>()
   const [TimerDynamic, setTimerDynamic] = useState<string | undefined>()
+  const [TimerMaintenance, setTimerMaintenance] = useState<string | undefined>()
   const [Protocol, setProtocol] = useState<string | undefined>()
   const [ProtocolDataMQTT, setProtocolDataMQTT] = useState<string | undefined>()
   const [ProtocolDataFTP, setProtocolDataFTP] = useState<string | undefined>()
@@ -83,7 +93,7 @@ export default function Settings({
     { name: 'Geral', icon: <Gear size={20} />, key: 'Geral' },
     { name: 'Conexão', icon: <CellTower size={20} />, key: 'Conexão' },
     { name: 'Transmissão', icon: <Broadcast size={20} />, key: 'Transmissão' },
-    { name: 'Relatorio', icon: <File size={20} />, key: 'Relatorio' },
+    { name: 'Relatório', icon: <File size={20} />, key: 'Relatório' },
     { name: 'Senha', icon: <Key size={20} />, key: 'Senha' },
     { name: 'Portas de leitura', icon: <Faders size={20} />, key: 'Portas de leituras' }
   ]
@@ -95,6 +105,11 @@ export default function Settings({
 
   function handleUpdateGeneral(): void {
     setGeneralName('')
+    setGeneralGeolocation('')
+    setGeneralTimeZone('')
+    setGeneralTime('')
+    setGeneralHeritage('')
+    setGeneralRepeatSync('')
     handleUpdateSettingsGeneral()
   }
 
@@ -188,12 +203,27 @@ export default function Settings({
     if (receivedProtocolDataFTP) {
       setProtocolDataFTP(receivedProtocolDataFTP ?? undefined)
     }
+
+    if (receivedTimerMaintenance) {
+      setTimerMaintenance(receivedTimerMaintenance ?? undefined)
+    }
+
+    if (receiverHeritage) {
+      setGeneralHeritage(receiverHeritage ?? undefined)
+    }
+
+    if (receivedRepeatSync) {
+      setGeneralRepeatSync(receivedRepeatSync ?? undefined)
+    }
   }, [
     receivedTimerFixed,
     receivedTimerdynamic,
     receivedProtocol,
     receivedProtocolDataMQTT,
-    receivedProtocolDataFTP
+    receivedProtocolDataFTP,
+    receivedTimerMaintenance,
+    receiverHeritage,
+    receivedRepeatSync
   ])
 
   return (
@@ -230,6 +260,8 @@ export default function Settings({
                 receivedGeolocation={GeneralGeolocation}
                 receivedTimeZone={GeneralTimeZone}
                 receivedTime={GeneralTime}
+                receivedHeritage={GeneralHeritage}
+                receivedRepeatSync={GeneralRepeatSync}
               />
             ) : selected === 'Conexão' ? (
               <Conection
@@ -246,8 +278,9 @@ export default function Settings({
                 receivedProtocolInUse={Protocol}
                 receivedDataProtocolMQTT={ProtocolDataMQTT}
                 receivedDataProtocolFTP={ProtocolDataFTP}
+                receivedTimerMaintenance={TimerMaintenance}
               />
-            ) : selected === 'Relatorio' ? (
+            ) : selected === 'Relatório' ? (
               <Report
                 handleUpdateSettingsReport={handleUpdateReport}
                 receivedSettingsReport={ArraySelectedReport}

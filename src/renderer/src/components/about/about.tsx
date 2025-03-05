@@ -25,12 +25,11 @@ export default function About({ visible, onClose }: LoadingDataProps) {
         <div className="flex flex-col items-center">
           <img src={logo} alt="" width={80} className="mb-4" />
           <p className="m-2">
-            O suite device é uma solução compative com todos os nosso sensores que necessitam de
-            configuração.
+            O Suite Device é uma plataforma modular de configuração de produtos Dualbase.
           </p>
           <div className="flex gap-2">
             <p>Versão atual:</p>
-            <p className="font-bold">v.1.7.0</p>
+            <p className="font-bold">v.1.9.2</p>
           </div>
 
           <Footer />
