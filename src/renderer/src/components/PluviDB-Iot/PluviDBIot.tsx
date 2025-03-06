@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { InstantData } from './components/intantData'
 import PasswordModal from './components/Login'
 import { ModalErroUnloagged } from '../modal/modalUnlogged'
+import { set } from 'zod'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -78,6 +79,10 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [dataReceivedComandProtocol, setDataReceivedComandProtocol] = useState<string>('')
   const [dataReceivedComandProtocolMQTT, setDataReceivedComandProtocolMQTT] = useState<string>('')
   const [dataReceivedComandProtocolFTP, setDataReceivedComandProtocolFTP] = useState<string>('')
+  const [dataReceivedComandMemoryInfo, setDataReceivedComandMemoryInfo] = useState<string>('')
+  const [dataReceivedComandNTP, setDataReceivedComandNTP] = useState<string>('')
+  const [dataReceivedComandMemoryInfoData, setDataReceivedComandMemoryInfoData] =
+    useState<string>('')
   const [PasswordSaved, setPasswordSaved] = useState<string>('')
 
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
@@ -134,8 +139,8 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
     const timeoutPromise = new Promise<string>((_, reject) =>
       setTimeout(() => {
-        reject(new Error('Tempo limite excedido (10s) para resposta do comando'))
-      }, 10000)
+        reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
+      }, 20000)
     )
 
     try {
@@ -144,7 +149,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         timeoutPromise
       ])
 
-      console.log(`Resposta do comando ${comand}:`, response)
+      //console.log(`Resposta do comando ${comand}:`, response)
 
       // Verifica se a resposta indica erro de login e desativa o acesso
       if (response === 'Error: Unlogged.') {
@@ -188,6 +193,29 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     if (props.isConect && !mode.state && enabledAccess) {
       handleComandSend(comand).then((response) => {
         setDataReceivedComandTerminal(response)
+      })
+    }
+  }
+
+  function handleSendComandMemoryInfo(comand: string): void {
+    setDataReceivedComandMemoryInfo('')
+    //console.log('Resposta do comando:', comand)
+    if (props.isConect && !mode.state && enabledAccess) {
+      handleComandSend(`mem=${comand}?`).then((response) => {
+        setDataReceivedComandMemoryInfo(response)
+        //console.log('Resposta do comando Baixa Relatorio:', response)
+      })
+    }
+  }
+
+  function handleSendComandDownMemory(comand: string): void {
+    //console.log('Resposta do comando:', comand)
+    setDataReceivedComandMemoryInfoData('')
+    if (props.isConect && !mode.state && enabledAccess) {
+      handleComandSend(`mem=${comand}?`).then((response) => {
+        setDataReceivedComandMemoryInfoData(response)
+
+        //console.log('Resposta do comando mem=info:', response)
       })
     }
   }
@@ -239,6 +267,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandGeneralTime('')
     setDataReceivedComandHeritage('')
     setDataReceivedComandRepeatSync('')
+    setDataReceivedComandNTP('')
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Baixando informações do dispositivo!')
       setIsLoading(true)
@@ -259,7 +288,12 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                         setTimeout(() => {
                           handleComandSend('resinc=cfg?').then((response) => {
                             setDataReceivedComandRepeatSync(response)
-                            setIsLoading(false)
+                            setTimeout(() => {
+                              handleComandSend('ntp=cfg?').then((response) => {
+                                setDataReceivedComandNTP(response)
+                                setIsLoading(false)
+                              })
+                            }, time)
                           })
                         }, time)
                       })
@@ -474,7 +508,12 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                     setTimeout(() => {
                       handleComandSend(`resinc=${list[5]}!`).then((response) => {
                         console.log('Resposta do resinc:', response)
-                        setIsLoading(false)
+                        setTimeout(() => {
+                          handleComandSend(`ntp=${list[6]}!`).then(() => {
+                            console.log('Resposta do resinc:', response)
+                            setIsLoading(false)
+                          })
+                        }, time)
                       })
                     }, time)
                   })
@@ -579,6 +618,11 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               <Status
                 handleUpdateStatus={handleUpdateStatus}
                 receivedDataStatus={dataReceivedComandStatus}
+                handleSendDownReport={handleSendComandDownMemory}
+                handleSendInfoReport={handleSendComandMemoryInfo}
+                receivedDataDownReport={dataReceivedComandMemoryInfoData}
+                receivedInfoMemory={dataReceivedComandMemoryInfo}
+                handleClearDataMemory={() => setDataReceivedComandMemoryInfoData('')}
               />
             ) : MenuName === 'config' ? (
               <Settings
@@ -610,6 +654,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 receivedTimerMaintenance={dataReceivedComandTimerMaintenance}
                 receiverHeritage={dataReceivedComandHeritage}
                 receivedRepeatSync={dataReceivedComandRepeatSync}
+                receivedNPT={dataReceivedComandNTP}
               />
             ) : MenuName === 'terminal' ? (
               <Terminal

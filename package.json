@@ -27,6 +27,10 @@
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
     "make": "electron-forge make",
+    "make-darwin": "electron-forge make --platform=win32",
+    "make-linux": "electron-forge make --platform=linux",
+    "make-deb": "electron-forge make --target=@electron-forge/maker-deb",
+    "make-rpm": "electron-forge make --target=@electron-forge/maker-rpm",
     "publish": "electron-forge publish",
     "package": "electron-forge package",
     "start-forge": "electron-forge start"

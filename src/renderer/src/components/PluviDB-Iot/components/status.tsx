@@ -1,14 +1,35 @@
 import { ArrowsClockwise, BatteryFull, CellSignalFull, DownloadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
+import { ModalSaveReport } from '@renderer/components/modal/modalSaveReport'
 import { useEffect, useState } from 'react'
+import { saveAs } from 'file-saver'
+import { set } from 'zod'
 
 type Props = {
   receivedDataStatus: string | undefined
   handleUpdateStatus: () => void
+  handleSendDownReport: (valuer: string) => void
+  handleSendInfoReport: (valuer: string) => void
+  receivedDataDownReport: string | undefined
+  receivedInfoMemory: string | undefined
+  handleClearDataMemory: () => void
 }
 
-export default function Status({ receivedDataStatus, handleUpdateStatus }: Props): JSX.Element {
+export default function Status({
+  receivedDataStatus,
+  handleUpdateStatus,
+  handleSendDownReport,
+  handleSendInfoReport,
+  receivedDataDownReport,
+  receivedInfoMemory,
+  handleClearDataMemory
+}: Props): JSX.Element {
   const [arrayData, setArrayData] = useState(Array(20).fill('N/A'))
+  const [showModalSaveReport, setShowModalSaveReport] = useState(false)
+  const [isLoadingModalSaveReport, setIsLoadingModalSaveReport] = useState(false)
+  const [isLoadingAll, setIsLoadingAll] = useState(false)
+  const [dataSave, setDataSave] = useState<string[]>([])
+  const [limit, setLimit] = useState('5')
   const data = [
     { id: 1, name: 'Nome:', value: arrayData[1] },
     { id: 2, name: 'Patrimônio:', value: arrayData[19] },
@@ -22,6 +43,38 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
     { id: 10, name: 'Contador de boot:', value: arrayData[18] },
     { id: 11, name: 'Start time:', value: arrayData[11] }
   ]
+
+  function handleSaveReport(number: number, all: boolean): void {
+    console.log('Salvando relatório com', number, 'registro')
+    setDataSave([])
+
+    if (all) {
+      setIsLoadingAll(true)
+    } else {
+      setIsLoadingModalSaveReport(true)
+    }
+    handleSendDownReport(number.toString())
+  }
+
+  function handleDowReport(): void {
+    handleSendInfoReport('info')
+    setShowModalSaveReport(true)
+  }
+
+  const handleSaveToFile = (): void => {
+    setShowModalSaveReport(false)
+    const headerFile = 'Dados do relatório do Pluvi-IoT - '
+    const date = new Date().toLocaleString()
+    const Data = headerFile + date + '\n \n' + dataSave.join('').replace(/!/g, '')
+    const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
+    saveAs(blob, 'relatorio-Pluvi-IoT.txt')
+    setDataSave([])
+    handleClearDataMemory()
+  }
+
+  function handleCloseModal(): void {
+    setShowModalSaveReport(false)
+  }
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -43,7 +96,34 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
     setArrayData((prevData) =>
       prevData.map((_, index) => extractedValues[index] ?? prevData[index])
     )
-  }, [receivedDataStatus])
+
+    if (receivedDataDownReport) {
+      //console.log('receivedDataDownReport:', receivedDataDownReport)
+      setIsLoadingModalSaveReport(false)
+      setIsLoadingAll(false)
+      setDataSave(receivedDataDownReport.split('!'))
+    }
+
+    if (receivedInfoMemory) {
+      //console.log('receivedInfoMemory:', receivedInfoMemory)
+      const match = receivedInfoMemory.match(/used:(\d+)/)
+      console.log('match:', match ? match[1] : 0)
+      setLimit(match ? match[1] : '0')
+    }
+  }, [receivedDataStatus, receivedInfoMemory, receivedDataDownReport])
+
+  useEffect(() => {
+    if (Array.isArray(dataSave) && dataSave.length > 0) {
+      //console.log('Salvar arquivo')
+      handleSaveToFile()
+      teste()
+    }
+  }, [dataSave])
+
+  function teste(): void {
+    setDataSave([])
+    handleClearDataMemory()
+  }
 
   return (
     <div className="flex flex-col mt-4">
@@ -76,7 +156,7 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
           </div>
         </div>
         <div className="flex flex-col justify-center  bg-white m-2 rounded-md border-4 border-white">
-          <div className="flex flex-col justify-center items-center gap-2 p-2 border-2 border-sky-500 rounded-md h-full min-w-56 gap-2">
+          <div className="flex flex-col justify-center items-center gap-2 p-2 border-2 border-sky-500 rounded-md h-full min-w-56">
             <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500">
               Transmissão
             </span>
@@ -107,7 +187,11 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
               <span>{arrayData[13]}</span>
             </div>
           </div>
-          <Button size={'medium'} className="bg-white text-sky-500 px-1 py-5">
+          <Button
+            size={'medium'}
+            className="bg-white text-sky-500 px-1 py-5"
+            onClick={handleDowReport}
+          >
             <DownloadSimple size={24} />
             Baixar relatórios
           </Button>
@@ -144,6 +228,14 @@ export default function Status({ receivedDataStatus, handleUpdateStatus }: Props
           Atualizar
         </Button>
       </div>
+      <ModalSaveReport
+        show={showModalSaveReport}
+        onClose={handleCloseModal}
+        limit={limit}
+        handleSaveToFile={handleSaveReport}
+        isLoading={isLoadingModalSaveReport}
+        isLoadingAll={isLoadingAll} // Add the appropriate value for isLoadingAll
+      />
     </div>
   )
 }

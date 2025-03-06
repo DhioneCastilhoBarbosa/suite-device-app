@@ -25,6 +25,7 @@ type Props = {
   receivedProtocolDataFTP: string | undefined
   receiverHeritage: string | undefined
   receivedRepeatSync: string | undefined
+  receivedNPT: string | undefined
   handleUpdateSettingsPorts: () => void
   handleUpdateSettingsGeneral: () => void
   handleUpdateSettingsReport: () => void
@@ -67,6 +68,7 @@ export default function Settings({
   receivedProtocolDataFTP,
   receiverHeritage,
   receivedRepeatSync,
+  receivedNPT,
 
   handleUpdateSettingsTransmition
 }: Props): JSX.Element {
@@ -79,6 +81,7 @@ export default function Settings({
   const [GeneralTime, setGeneralTime] = useState<string | undefined>()
   const [GeneralHeritage, setGeneralHeritage] = useState<string | undefined>()
   const [GeneralRepeatSync, setGeneralRepeatSync] = useState<string | undefined>()
+  const [GeneralNPT, setGeneralNPT] = useState<string | undefined>()
   const [PortP1, setPortP1] = useState<string | undefined>()
   const [PortP2, setPortP2] = useState<string | undefined>()
   const [PortSdi, setPortSdi] = useState<string | undefined>()
@@ -110,6 +113,7 @@ export default function Settings({
     setGeneralTime('')
     setGeneralHeritage('')
     setGeneralRepeatSync('')
+    setGeneralNPT('')
     handleUpdateSettingsGeneral()
   }
 
@@ -215,6 +219,10 @@ export default function Settings({
     if (receivedRepeatSync) {
       setGeneralRepeatSync(receivedRepeatSync ?? undefined)
     }
+
+    if (receivedNPT) {
+      setGeneralNPT(receivedNPT ?? undefined)
+    }
   }, [
     receivedTimerFixed,
     receivedTimerdynamic,
@@ -223,7 +231,8 @@ export default function Settings({
     receivedProtocolDataFTP,
     receivedTimerMaintenance,
     receiverHeritage,
-    receivedRepeatSync
+    receivedRepeatSync,
+    receivedNPT
   ])
 
   return (
@@ -262,6 +271,7 @@ export default function Settings({
                 receivedTime={GeneralTime}
                 receivedHeritage={GeneralHeritage}
                 receivedRepeatSync={GeneralRepeatSync}
+                receivedNtp={GeneralNPT}
               />
             ) : selected === 'Conexão' ? (
               <Conection

@@ -11,6 +11,7 @@ type Props = {
   receivedTime: string | undefined
   receivedHeritage: string | undefined
   receivedRepeatSync: string | undefined
+  receivedNtp: string | undefined
 }
 
 export function General({
@@ -21,6 +22,7 @@ export function General({
   receivedTime,
   receivedHeritage,
   receivedRepeatSync,
+  receivedNtp,
   handleUpdateSettingsGeneral
 }: Props): JSX.Element {
   const [isEnabled, setIsEnabled] = useState(false)
@@ -33,6 +35,7 @@ export function General({
   const [time, setTime] = useState('')
   const [Date, setDate] = useState('')
   const [repeatSync, setRepeatSync] = useState('1')
+  const [ntp, setNtp] = useState<string>('time.google.com')
 
   const toggleSwitch = (): void => {
     setIsEnabled(!isEnabled)
@@ -46,7 +49,8 @@ export function General({
         timeZone,
         `${Date} ${time}`,
         heritage,
-        repeatSync
+        repeatSync,
+        ntp
       ])
   }
 
@@ -117,13 +121,18 @@ export function General({
     if (receivedRepeatSync) {
       setRepeatSync(receivedRepeatSync?.replace('resinc=', '').replace('!', ''))
     }
+
+    if (receivedNtp) {
+      setNtp(receivedNtp?.replace('ntp=', '').replace('!', ''))
+    }
   }, [
     receivedDeviceName,
     receivedGeolocation,
     receivedTimeZone,
     receivedTime,
     receivedHeritage,
-    receivedRepeatSync
+    receivedRepeatSync,
+    receivedNtp
   ])
 
   return (
@@ -188,7 +197,7 @@ export function General({
       <div className="flex flex-col rounded-md border-[1px] border-gray-200">
         <span className="w-full bg-gray-300 block pl-2">Data e hora</span>
         <div className="flex flex-col">
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          {/*<div className="flex flex-row justify-start items-center gap-3 m-2">
             <span>Usar hora UTC:</span>
             <button
               onClick={handleClick}
@@ -202,7 +211,7 @@ export function General({
                 }`}
               />
             </button>
-          </div>
+          </div>*/}
           {!isEnabled && (
             <div className="flex flex-row justify-start items-center gap-3 m-2">
               <span>Time zone:</span>
@@ -214,8 +223,10 @@ export function General({
                 className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
                 onChange={handleChange}
               />
+              <span>(0=UTC)</span>
             </div>
           )}
+
           <div className="flex flex-row justify-start items-center gap-3 m-2">
             <span>Data:</span>
             <input
@@ -233,6 +244,16 @@ export function General({
               value={time}
               className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
               onChange={(e) => setTime(e.target.value)}
+              disabled
+            />
+          </div>
+          <div className="flex flex-row justify-start items-center gap-3 m-2">
+            <span>NTP:</span>
+            <input
+              type="text"
+              value={ntp}
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 w-56"
+              onChange={(e) => setNtp(e.target.value)}
               disabled
             />
           </div>

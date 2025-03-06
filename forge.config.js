@@ -43,12 +43,37 @@ module.exports = {
 
     {
       name: '@electron-forge/maker-deb',
-      config: {}
+      config: {
+        options: {
+          name: 'suite-device',
+          productName: 'Suite Device',
+          version: '1.9.2',
+          arch: 'x64',
+          icon: path.join(__dirname, 'resources', 'icon.png'),
+          categories: ['Utility'],
+          maintainer: 'Seu Nome <seuemail@example.com>',
+          homepage: 'https://github.com/DhioneCastilhoBarbosa/suite-device-app',
+          description: 'Aplicação Suite Device para gestão de dispositivos.',
+          section: 'utility'
+        }
+      }
     },
 
     {
       name: '@electron-forge/maker-rpm',
-      config: {}
+      config: {
+        options: {
+          name: 'suite-device',
+          productName: 'Suite Device',
+          version: '1.9.2',
+          arch: 'x86_64',
+          icon: path.join(__dirname, 'resources', 'icon.png'),
+          homepage: 'https://github.com/DhioneCastilhoBarbosa/suite-device-app',
+          license: 'MIT',
+          description: 'Aplicação Suite Device para gestão de dispositivos.',
+          group: 'Utility'
+        }
+      }
     }
   ],
 

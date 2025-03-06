@@ -52,6 +52,10 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight
     }
   }, [dataTerminal])
+  useEffect(() => {
+    // Limpa o estado de dataTerminal toda vez que o componente é carregado.
+    setDataTerminal([]) // Limpa o terminal no primeiro carregamento
+  }, []) // O array
   return (
     <div className="flex flex-col w-full mt-10 mb-4">
       <div className="flex flex-row gap-2 mt-6 mx-8 justify-end">
