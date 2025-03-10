@@ -31,11 +31,11 @@ export function General({
   const [latitude, setLatitude] = useState('')
   const [longitude, setLongitude] = useState('')
   const [altitude, setAltitude] = useState('')
-  const [timeZone, setTimeZone] = useState('')
+  const [timeZone, setTimeZone] = useState('0')
   const [time, setTime] = useState('')
   const [Date, setDate] = useState('')
-  const [repeatSync, setRepeatSync] = useState('1')
-  const [ntp, setNtp] = useState<string>('time.google.com')
+  const [repeatSync, setRepeatSync] = useState('')
+  const [ntp, setNtp] = useState<string>('')
 
   const toggleSwitch = (): void => {
     setIsEnabled(!isEnabled)
@@ -59,10 +59,11 @@ export function General({
 
     // Converte para número, garantindo que seja dentro do intervalo
     if (newValue !== '') {
-      newValue = Math.max(-12, Math.min(12, Number(newValue)))
+      newValue = Math.max(-12, Math.min(14, Number(newValue)))
     }
 
     setTimeZone(newValue)
+    //console.log('Timezone alterado:', newValue)
   }
 
   const handleClick = (): void => {
@@ -139,22 +140,22 @@ export function General({
     <div className="flex flex-col gap-4 p-2 mt-4 mb-4">
       <div className="flex flex-col rounded-md border-[1px] border-gray-200">
         <span className="w-full bg-gray-300 block pl-2">Dispositivo</span>
-        <div className="flex flex-col">
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+        <div className="flex flex-col w-3/4">
+          <div className="flex flex-row justify-between items-center gap-3 m-2 ">
             <span>Nome do dispositivo:</span>
             <input
               type="text"
               value={name}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-between items-center gap-3 m-2">
             <span>Patrimônio:</span>
             <input
               type="text"
               value={heritage}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setHeritage(e.target.value)}
             />
           </div>
@@ -163,31 +164,31 @@ export function General({
 
       <div className="flex flex-col rounded-md border-[1px] border-gray-200">
         <span className="w-full bg-gray-300 block pl-2">Geolocalização</span>
-        <div className="flex flex-col justify-center items-center ">
-          <div className="flex flex-row justify-between items-center gap-3 m-2 w-64">
+        <div className="flex flex-col w-3/4">
+          <div className="flex flex-row justify-between items-center gap-3 m-2 ">
             <span>Latitude:</span>
             <input
               type="text"
               value={latitude}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setLatitude(e.target.value)}
             />
           </div>
-          <div className="flex flex-row justify-between items-center gap-3 m-2 w-64">
+          <div className="flex flex-row justify-between items-center gap-3 m-2 ">
             <span>Longitude:</span>
             <input
               type="text"
               value={longitude}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setLongitude(e.target.value)}
             />
           </div>
-          <div className="flex flex-row justify-between items-center gap-3 m-2 w-64">
-            <span>Altura:</span>
+          <div className="flex flex-row justify-between items-center gap-3 m-2 ">
+            <span>Altitude:</span>
             <input
               type="text"
               value={altitude}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setAltitude(e.target.value)}
             />
           </div>
@@ -196,68 +197,74 @@ export function General({
 
       <div className="flex flex-col rounded-md border-[1px] border-gray-200">
         <span className="w-full bg-gray-300 block pl-2">Data e hora</span>
-        <div className="flex flex-col">
-          {/*<div className="flex flex-row justify-start items-center gap-3 m-2">
-            <span>Usar hora UTC:</span>
-            <button
-              onClick={handleClick}
-              className={`relative w-12 h-6 flex items-center rounded-full transition-colors ${
-                isEnabled ? 'bg-sky-500' : 'bg-gray-300'
-              }`}
+        <div className="flex flex-col w-3/4">
+          <div className="flex flex-row justify-between items-center gap-3 m-2">
+            <span>Time zone:</span>
+            <select
+              value={timeZone}
+              onChange={handleChange}
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
             >
-              <span
-                className={`absolute w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
-                  isEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>*/}
-          {!isEnabled && (
-            <div className="flex flex-row justify-start items-center gap-3 m-2">
-              <span>Time zone:</span>
-              <input
-                type="number"
-                value={timeZone}
-                min="-12"
-                max="12"
-                className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
-                onChange={handleChange}
-              />
-              <span>(0=UTC)</span>
-            </div>
-          )}
+              <option value="-12">UTC -12:00 - Baker Island, EUA</option>
+              <option value="-11">UTC -11:00 - Pago Pago, Samoa Americana</option>
+              <option value="-10">UTC -10:00 - Honolulu, Havaí, EUA</option>
+              <option value="-9">UTC -9:00 - Anchorage, Alasca, EUA</option>
+              <option value="-8">UTC -8:00 - Los Angeles, EUA</option>
+              <option value="-7">UTC -7:00 - Denver, EUA</option>
+              <option value="-6">UTC -6:00 - Cidade do México, México</option>
+              <option value="-5">UTC -5:00 - Nova York, EUA</option>
+              <option value="-4">UTC -4:00 - Caracas, Venezuela</option>
+              <option value="-3">UTC -3:00 - Brasília, Brasil</option>
+              <option value="-2">UTC -2:00 - Ilhas Geórgia do Sul</option>
+              <option value="-1">UTC -1:00 - Ponta Delgada, Portugal</option>
+              <option value="0">UTC ±0:00 - Londres, Reino Unido</option>
+              <option value="1">UTC +1:00 - Berlim, Alemanha</option>
+              <option value="2">UTC +2:00 - Atenas, Grécia</option>
+              <option value="3">UTC +3:00 - Moscou, Rússia</option>
+              <option value="4">UTC +4:00 - Dubai, Emirados Árabes</option>
+              <option value="5">UTC +5:00 - Islamabad, Paquistão</option>
+              <option value="6">UTC +6:00 - Daca, Bangladesh</option>
+              <option value="7">UTC +7:00 - Bangkok, Tailândia</option>
+              <option value="8">UTC +8:00 - Pequim, China</option>
+              <option value="9">UTC +9:00 - Tóquio, Japão</option>
+              <option value="10">UTC +10:00 - Sydney, Austrália</option>
+              <option value="11">UTC +11:00 - Honiara, Ilhas Salomão</option>
+              <option value="12">UTC +12:00 - Wellington, Nova Zelândia</option>
+              <option value="13">UTC +13:00 - Nuku'alofa, Tonga</option>
+              <option value="14">UTC +14:00 - Kiritimati, Kiribati</option>
+            </select>
+          </div>
 
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-between items-center gap-3 m-2">
             <span>Data:</span>
             <input
               type="text"
               value={Date}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setDate(e.target.value)}
               disabled
             />
           </div>
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-between items-center gap-3 m-2">
             <span>Hora:</span>
             <input
               type="text"
               value={time}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setTime(e.target.value)}
               disabled
             />
           </div>
-          <div className="flex flex-row justify-start items-center gap-3 m-2">
+          <div className="flex flex-row justify-between items-center gap-3 m-2">
             <span>NTP:</span>
             <input
               type="text"
               value={ntp}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 w-56"
+              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 w-56 text-center"
               onChange={(e) => setNtp(e.target.value)}
-              disabled
             />
           </div>
-          <div className="flex flex-row justify-start items-center gap-3 m-2 mb-3">
+          <div className="flex flex-row justify-between items-center gap-3 m-2 mb-3">
             <span>Repetir sincronização a cada 24h:</span>
 
             {/* Radio buttons para os tipos */}

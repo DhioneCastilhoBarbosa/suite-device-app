@@ -20,7 +20,14 @@ module.exports = {
 
   packagerConfig: {
     asar: true,
-    icon: path.join(__dirname, 'resources', 'icon')
+    icon: path.join(__dirname, 'resources', 'icon'),
+    extraResources: [
+      {
+        from: path.join(__dirname, 'resources'), // Caminho para a pasta resources
+        to: 'resources', // Copia a pasta resources para o diretório de build
+        filter: ['**/*'] // Certifica-se de que todos os arquivos dentro de resources sejam copiados
+      }
+    ]
   },
 
   rebuildConfig: {},
@@ -30,7 +37,7 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'Suite-Device',
-        version: '1.9.2',
+        version: '1.9.7',
         setupExe: 'Suite-Device.exe',
         appIconPath: path.join(__dirname, 'resources', 'icon.ico'),
         loadingGif: path.join(__dirname, 'resources', 'db.gif'),
@@ -47,7 +54,7 @@ module.exports = {
         options: {
           name: 'suite-device',
           productName: 'Suite Device',
-          version: '1.9.2',
+          version: '1.9.7',
           arch: 'x64',
           icon: path.join(__dirname, 'resources', 'icon.png'),
           categories: ['Utility'],
@@ -65,7 +72,7 @@ module.exports = {
         options: {
           name: 'suite-device',
           productName: 'Suite Device',
-          version: '1.9.2',
+          version: '1.9.7',
           arch: 'x86_64',
           icon: path.join(__dirname, 'resources', 'icon.png'),
           homepage: 'https://github.com/DhioneCastilhoBarbosa/suite-device-app',

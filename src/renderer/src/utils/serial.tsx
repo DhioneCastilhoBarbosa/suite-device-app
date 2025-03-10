@@ -21,6 +21,7 @@ class SerialManagerRS232 {
         baudRate: baudRate,
         dataBits: 8,
         parity: 'none',
+        highWaterMark: 4194304, // 4MB
         stopBits: 1
       })
 
@@ -65,10 +66,6 @@ class SerialManagerRS232 {
       })
     })
   }
-
-
-
-
 
 
     sendCommandTSatDB(command: string): Promise<void> {
@@ -265,37 +262,78 @@ class SerialManagerRS232 {
 receiveDataPluvi(): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!this.port) {
-        reject(new Error('Porta serial não está aberta.'));
-        return;
+      reject(new Error('Porta serial não está aberta.'));
+      return;
     }
 
     let response = '';
-    const timeoutDuration = 200; // Tempo de espera para finalizar a captura
+    const timeoutDuration = 200; // Aumentado para 2s
     let timeout: NodeJS.Timeout;
 
     const onData = (data: Buffer) => {
-        response += data.toString();
+      response += data.toString();
+      //console.log(`Recebendo dados Data: ${response.length} bytes`);
 
-        // Reinicia o timeout sempre que novos dados chegam
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            this.port.removeListener('data', onData);
-            this.port.removeListener('error', onError);
-            resolve(response.trim());
-        }, timeoutDuration);
+      // Reinicia o timeout sempre que novos dados chegam
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        console.log(`Recebimento finalizado, total: ${response.length} bytes`);
+        this.port?.removeListener('data', onData);
+        this.port?.removeListener('error', onError);
+        resolve(response.trim());
+      }, timeoutDuration);
     };
 
     const onError = (err: Error) => {
-        clearTimeout(timeout);
-        this.port.removeListener('data', onData);
-        this.port.removeListener('error', onError);
-        reject(err);
+      clearTimeout(timeout);
+      this.port?.removeListener('data', onData);
+      this.port?.removeListener('error', onError);
+      reject(err);
     };
 
     this.port.on('data', onData);
     this.port.once('error', onError);
-});
+  });
 }
+
+
+receiveReportPluvi(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!this.port) {
+      reject(new Error('Porta serial não está aberta.'));
+      return;
+    }
+
+    let response = '';
+    const timeoutDuration = 2000; // Aumentado para 2s
+    let timeout: NodeJS.Timeout;
+
+    const onData = (data: Buffer) => {
+      response += data.toString();
+      //console.log(`Recebendo dados report: ${response.length} bytes`);
+
+      // Reinicia o timeout sempre que novos dados chegam
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        console.log(`Recebimento finalizado, total: ${response.length} bytes`);
+        this.port?.removeListener('data', onData);
+        this.port?.removeListener('error', onError);
+        resolve(response.trim());
+      }, timeoutDuration);
+    };
+
+    const onError = (err: Error) => {
+      clearTimeout(timeout);
+      this.port?.removeListener('data', onData);
+      this.port?.removeListener('error', onError);
+      reject(err);
+    };
+
+    this.port.on('data', onData);
+    this.port.once('error', onError);
+  });
+}
+
 
 /*
   receiveDataPluvi(): Promise<string> {

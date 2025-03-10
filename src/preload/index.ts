@@ -3,15 +3,15 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  showSaveDialog: () => ipcRenderer.invoke('show-save-dialog')
+  // Abre o diálogo de salvamento
+  showSaveDialog: (): Promise<Electron.SaveDialogReturnValue> =>
+    ipcRenderer.invoke('show-save-dialog'),
+
+  // Executa o atualizador que está na pasta resources
+  runUpdater: (): Promise<void> => ipcRenderer.invoke('run-updater')
 }
 
-window.require = require
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+// Expõe APIs para o renderer
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)

@@ -227,31 +227,31 @@ export function ReadingPorts({
 
       <div className="w-full rounded-md border-[1px] border-gray-200 pb-2">
         <span className="w-full bg-gray-300 block pl-2">SDI-12</span>
-        <div className="flex flex-col justify-center items-start gap-3 p-2">
-          <div className="flex flex-row gap-3 justify-center items-center">
+        <div className="flex flex-col gap-3 p-2">
+          <div className="flex flex-row justify-between items-center w-72">
             <span>Endereço:</span>
             <input
               type="text"
               value={AddressSdi}
-              className="flex-1 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="w-36 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setAddressSdi(e.target.value)}
             />
           </div>
-          <div className="flex flex-row gap-3 justify-center items-center">
+          <div className="flex flex-row justify-between items-center w-72">
             <span>Número de campos:</span>
             <input
               type="number"
               value={FieldsSdi}
-              className="flex-1 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="w-36 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setFieldsSdi(e.target.value)}
             />
           </div>
-          <div className="flex flex-row gap-3 justify-center items-center">
+          <div className="flex flex-row justify-between items-center w-72">
             <span>Rótulos das leituras:</span>
             <input
               type="text"
               value={LabelsSdi}
-              className="border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300"
+              className="w-36 border-[1px] border-gray-200 p-1 rounded-lg focus:outline-sky-300 text-center"
               onChange={(e) => setLabelsSdi(e.target.value)}
             />
           </div>

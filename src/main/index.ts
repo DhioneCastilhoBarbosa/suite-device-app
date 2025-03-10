@@ -1,10 +1,10 @@
-import { app, shell, BrowserWindow, autoUpdater, dialog, screen } from 'electron'
+import { app, shell, BrowserWindow, autoUpdater, dialog, screen, ipcMain } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import iconLinux from '../../resources/icon.png?asset'
 import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
-import { spawn } from 'child_process'
+import { spawn, execFile } from 'child_process'
 
 if (squirrelStartup) {
   app.quit()
@@ -112,6 +112,31 @@ if (!handleSquirrelEvent()) {
     createWindow()
 
     autoUpdater.checkForUpdates()
+  })
+
+  // teste de executar .exe fora da aplicação
+
+  ipcMain.handle('run-updater', () => {
+    const exePath =
+      process.env.NODE_ENV === 'development'
+        ? path.join(__dirname, '..', 'resources', 'PluviDB-Updater.exe') // Para desenvolvimento
+        : path.join(app.getAppPath(), 'resources', 'PluviDB-Updater.exe') // Para build
+
+    console.log('Tentando executar:', exePath)
+
+    return new Promise<string>((resolve, reject) => {
+      execFile(exePath, (error, stdout, stderr) => {
+        if (error) {
+          reject(`Erro ao executar o .exe: ${error.message}`)
+          return
+        }
+        if (stderr) {
+          reject(`Erro do programa: ${stderr}`)
+          return
+        }
+        resolve(stdout)
+      })
+    })
   })
 
   app.whenReady().then(() => {

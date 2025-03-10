@@ -17,6 +17,7 @@ import { InstantData } from './components/intantData'
 import PasswordModal from './components/Login'
 import { ModalErroUnloagged } from '../modal/modalUnlogged'
 import { set } from 'zod'
+import { Update } from './components/update'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -53,6 +54,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [colorConfig, setColorConfig] = useState(false)
   const [colorStatus, setColorStatus] = useState(true)
   const [colorTerminal, setColorTerminal] = useState(false)
+  const [colorUpdate, setColorUpdade] = useState(false)
   const [colorInstantData, setColorInstantData] = useState(false)
   const [dataReceivedComandTerminal, setDataReceivedComandTerminal] = useState<string>('')
   const [dataReceivedComandInst, setDataReceivedComandInst] = useState<string>('')
@@ -103,18 +105,21 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         setColorStatus(false)
         setColorTerminal(false)
         setColorInstantData(false)
+        setColorUpdade(false)
         break
       case 'status':
         setColorConfig(false)
         setColorStatus(true)
         setColorTerminal(false)
         setColorInstantData(false)
+        setColorUpdade(false)
         break
       case 'terminal':
         setColorConfig(false)
         setColorStatus(false)
         setColorTerminal(true)
         setColorInstantData(false)
+        setColorUpdade(false)
         break
 
       case 'instantaneous':
@@ -122,7 +127,17 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         setColorStatus(false)
         setColorTerminal(false)
         setColorInstantData(true)
+        setColorUpdade(false)
         break
+
+      case 'Atualizar':
+        setColorConfig(false)
+        setColorStatus(false)
+        setColorTerminal(false)
+        setColorInstantData(false)
+        setColorUpdade(true)
+        break
+
       default:
         break
     }
@@ -136,29 +151,33 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
   async function handleComandSend(comand: string): Promise<string> {
     serialManagerPluviIoT.sendCommandPluviIot(comand)
+    const regex = /^mem=\d+\?$/
+    // Verifica se deve aplicar timeout
+    const shouldUseTimeout = !regex.test(comand)
+    console.log('Comando enviado:', shouldUseTimeout)
 
-    const timeoutPromise = new Promise<string>((_, reject) =>
-      setTimeout(() => {
-        reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
-      }, 20000)
-    )
+    // Promessa de timeout (só é criada se necessário)
+    const timeoutPromise = shouldUseTimeout
+      ? new Promise<string>((_, reject) =>
+          setTimeout(() => {
+            reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
+          }, 20000)
+        )
+      : null
 
     try {
-      const response = await Promise.race([
-        serialManagerPluviIoT.receiveDataPluvi(),
-        timeoutPromise
-      ])
+      // Se não houver timeout, apenas aguarda a resposta normal
+      const response = await (timeoutPromise
+        ? Promise.race([serialManagerPluviIoT.receiveDataPluvi(), timeoutPromise])
+        : serialManagerPluviIoT.receiveReportPluvi())
 
       //console.log(`Resposta do comando ${comand}:`, response)
 
       // Verifica se a resposta indica erro de login e desativa o acesso
-      if (response === 'Error: Unlogged.') {
-        //setEnabledAccess(false)
+      if (response.includes('Error: Unlogged')) {
         setTimeout(() => {
           revalidateAutentication(comand)
         }, 500)
-
-        //setIsModalPassWordOpen(true)
       }
 
       return response
@@ -609,6 +628,14 @@ export default function PluviDBIot(props: PluviDBIotProps) {
             >
               Terminal
             </button>
+            {/*<button
+              className={`border-b-2 border-transparent ${
+                colorUpdate ? 'text-sky-500' : ''
+              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              onClick={() => handleMenu('Atualizar')}
+            >
+              Atualização
+            </button>*/}
           </div>
         </header>
 
@@ -661,13 +688,13 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 receiverTerminal={dataReceivedComandTerminal}
                 handleSendComandTerminal={handleSendComandTerminal}
               />
+            ) : MenuName === 'instantaneous' ? (
+              <InstantData
+                handleUpdateInst={handleUpdateInst}
+                receivedDataInst={dataReceivedComandInst}
+              />
             ) : (
-              MenuName === 'instantaneous' && (
-                <InstantData
-                  handleUpdateInst={handleUpdateInst}
-                  receivedDataInst={dataReceivedComandInst}
-                />
-              )
+              MenuName === 'Atualizar' && <Update />
             )}
           </div>
         }

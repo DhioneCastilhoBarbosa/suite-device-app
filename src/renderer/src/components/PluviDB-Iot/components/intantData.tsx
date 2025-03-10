@@ -10,18 +10,18 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
   const [selected, setSelected] = useState('5')
   const [date, setDate] = useState('00/00/00 00:00:00')
   const [data, setData] = useState([
-    { id: 1, name: 'Chuva P1 intantânea(mm):', value: '0.00' },
+    { id: 1, name: 'Chuva P1 instantânea(mm):', value: '0.00' },
     { id: 2, name: 'Chuva P1 diária(mm):', value: '0.00' },
     { id: 3, name: 'Chuva P1 mensal(mm):', value: '0.00' },
     { id: 4, name: 'Chuva P1 anual(mm):', value: '0.00' },
     { id: 5, name: 'Chuva P1 Total(mm):', value: '0.00' },
-    { id: 6, name: 'Chuva P2 intantânea(mm):', value: '0.00' },
+    { id: 6, name: 'Chuva P2 instantânea(mm):', value: '0.00' },
     { id: 7, name: 'Chuva P2 diária(mm):', value: '0.00' },
     { id: 8, name: 'Chuva P2 mensal(mm):', value: '0.00' },
     { id: 9, name: 'Chuva P2 anual(mm):', value: '0.00' },
     { id: 10, name: 'Chuva P2 Total(mm):', value: '0.00' },
     { id: 11, name: 'Bateria(V):', value: '0.0' },
-    { id: 12, name: 'Sinal(dBm):', value: '-120' },
+    { id: 12, name: 'Sinal(dBm):', value: '0' },
     { id: 13, name: 'Contador de inicialização:', value: '0' }
   ])
 
@@ -68,7 +68,7 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
 
               <th className=" flex  justify-end items-center gap-1">
                 <label className="mt-3  text-xs font-semibold text-gray-700">
-                  Tempo de atualização de scan 60 segundos
+                  Totalização a cada 60 segundos
                 </label>
                 <span className="ml-2"></span>
               </th>

@@ -33,11 +33,18 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = 'Dados gerado do Pluvi-IoT - '
+    const headerFile = 'Dados gerado do PluviDB-IoT - '
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
-    saveAs(blob, 'Terminal-Pluvi-IoT.txt')
+
+    const dateObj = new Date(
+      date.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/, '$3-$2-$1T$4:$5:$6')
+    )
+    // Formatando a data no formato desejado
+    const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getFullYear().toString().slice(-2)}-${dateObj.getHours().toString().padStart(2, '0')}${dateObj.getMinutes().toString().padStart(2, '0')}${dateObj.getSeconds().toString().padStart(2, '0')}`
+    //console.log(formattedDate)
+    saveAs(blob, `Terminal-PluviDB-IoT_${formattedDate}.txt`)
   }
 
   useEffect(() => {

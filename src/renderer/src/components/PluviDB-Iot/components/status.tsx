@@ -24,24 +24,26 @@ export default function Status({
   receivedInfoMemory,
   handleClearDataMemory
 }: Props): JSX.Element {
-  const [arrayData, setArrayData] = useState(Array(20).fill('N/A'))
+  const [arrayData, setArrayData] = useState(Array(21).fill('N/A'))
   const [showModalSaveReport, setShowModalSaveReport] = useState(false)
   const [isLoadingModalSaveReport, setIsLoadingModalSaveReport] = useState(false)
   const [isLoadingAll, setIsLoadingAll] = useState(false)
   const [dataSave, setDataSave] = useState<string[]>([])
-  const [limit, setLimit] = useState('5')
+  const [limit, setLimit] = useState('0')
   const data = [
     { id: 1, name: 'Nome:', value: arrayData[1] },
     { id: 2, name: 'Patrimônio:', value: arrayData[19] },
-    { id: 3, name: 'Data e hora:', value: arrayData[15] },
-    { id: 4, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
-    { id: 5, name: 'ICCID:', value: arrayData[16] },
-    { id: 6, name: 'IMEI:', value: arrayData[8] },
-    { id: 7, name: 'Número de série:', value: arrayData[14] },
+    { id: 3, name: 'Número de série:', value: arrayData[14] },
+    { id: 4, name: 'Data e hora:', value: arrayData[15] },
+
+    { id: 5, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
+    { id: 6, name: 'ICCID:', value: arrayData[16] },
+    { id: 7, name: 'IMEI:', value: arrayData[8] },
     { id: 8, name: 'Versão do Firmware:', value: arrayData[9] },
     { id: 9, name: 'Versão do hardware:', value: arrayData[10] },
-    { id: 10, name: 'Contador de boot:', value: arrayData[18] },
-    { id: 11, name: 'Start time:', value: arrayData[11] }
+    { id: 10, name: 'ProSig:', value: arrayData[20] },
+    { id: 11, name: 'Contador de boot:', value: arrayData[18] },
+    { id: 12, name: 'Start time:', value: arrayData[11] }
   ]
 
   function handleSaveReport(number: number, all: boolean): void {
@@ -63,11 +65,18 @@ export default function Status({
 
   const handleSaveToFile = (): void => {
     setShowModalSaveReport(false)
-    const headerFile = 'Dados do relatório do Pluvi-IoT - '
+    const headerFile = 'Dados do relatório do PluviDB-IoT - '
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataSave.join('').replace(/!/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
-    saveAs(blob, 'relatorio-Pluvi-IoT.txt')
+    const dateObj = new Date(
+      date.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/, '$3-$2-$1T$4:$5:$6')
+    )
+    // Formatando a data no formato desejado
+    const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getFullYear().toString().slice(-2)}-${dateObj.getHours().toString().padStart(2, '0')}${dateObj.getMinutes().toString().padStart(2, '0')}${dateObj.getSeconds().toString().padStart(2, '0')}`
+    console.log(formattedDate)
+
+    saveAs(blob, `relatorio-PluviDB-IoT_${formattedDate}.txt`)
     setDataSave([])
     handleClearDataMemory()
   }
@@ -162,11 +171,11 @@ export default function Status({
             </span>
             <div className="flex flex-row justify-center items-center gap-2">
               <span>Protocolo utilizado:</span>
-              <span className="font-bold">{arrayData[0]}</span>
+              <span className="font-bold">{arrayData[0].toUpperCase()}</span>
             </div>
 
             <div className="flex flex-col justify-center items-center gap-2">
-              <span>Ultima transmissão:</span>
+              <span>Última transmissão:</span>
               <span className="font-bold">{arrayData[7]}</span>
             </div>
           </div>
@@ -183,8 +192,8 @@ export default function Status({
               <span>{arrayData[12]}</span>
             </div>
             <div className="flex flex-row gap-2">
-              <span>Memoria utilizada:</span>
-              <span>{arrayData[13]}</span>
+              <span>Memória utilizada:</span>
+              <span>{arrayData[13]}%</span>
             </div>
           </div>
           <Button
