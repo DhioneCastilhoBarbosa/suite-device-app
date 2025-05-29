@@ -6,7 +6,7 @@ interface LoadingDataProps {
   onClose: () => void
 }
 
-export default function About({ visible, onClose }: LoadingDataProps) {
+export default function About({ visible, onClose }: LoadingDataProps): JSX.Element | null {
   if (!visible) return null
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -29,7 +29,7 @@ export default function About({ visible, onClose }: LoadingDataProps) {
           </p>
           <div className="flex gap-2">
             <p>Versão atual:</p>
-            <p className="font-bold">v.1.9.7</p>
+            <p className="font-bold">v.1.9.8</p>
           </div>
 
           <Footer />

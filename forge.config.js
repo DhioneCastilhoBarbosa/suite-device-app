@@ -37,7 +37,7 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'Suite-Device',
-        version: '1.9.7',
+        version: '1.9.8',
         setupExe: 'Suite-Device.exe',
         appIconPath: path.join(__dirname, 'resources', 'icon.ico'),
         loadingGif: path.join(__dirname, 'resources', 'db.gif'),
@@ -54,7 +54,7 @@ module.exports = {
         options: {
           name: 'suite-device',
           productName: 'Suite Device',
-          version: '1.9.7',
+          version: '1.9.8',
           arch: 'x64',
           icon: path.join(__dirname, 'resources', 'icon.png'),
           categories: ['Utility'],
