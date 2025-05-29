@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+//import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({
   main: {
@@ -23,16 +23,16 @@ export default defineConfig({
       }
     },
     plugins: [
-      react(),
+      react()
       // Configuração do plugin de cópia de arquivos
-      viteStaticCopy({
+      /*viteStaticCopy({
         targets: [
           {
             src: 'resources/**', // Caminho para os arquivos que você deseja copiar
             dest: 'resources' // Destino dentro do diretório de build
           }
         ]
-      })
+      })*/
     ],
     build: {
       outDir: 'dist/renderer' // Define a saída do frontend

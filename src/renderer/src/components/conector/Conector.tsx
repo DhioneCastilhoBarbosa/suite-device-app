@@ -15,11 +15,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
   const [valorSelecionado, setValorSelecionado] = useState('')
   const [isConnected, setIsConnected] = useState(isOnline)
   const [conected, setConected] = useState(false)
+  const [isActive, setIsActive] = useState(false)
 
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const { PortOpen, SetPortOpen, setMode, device, resetUpdate, setResetUpdate }: any = Device()
+  const { PortOpen, SetPortOpen, setMode, device, setDevice, resetUpdate, setResetUpdate }: any =
+    Device()
 
   const [buttonAbility, setButtonAbility] = useState(true)
 
@@ -133,6 +135,15 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
     setMode({ state: true })
   }
 
+  const handleClick = () => {
+    setIsActive((prev) => !prev)
+    setDevice((prev) => ({
+      ...prev,
+      name: prev.name === 'PluviDB-Iot' ? 'PluviDB-Iot-Remote' : 'PluviDB-Iot'
+    }))
+    console.log('Dispositivo remoto:', device.name)
+  }
+
   useEffect(() => {
     if (conected === false) {
       listSerialPorts()
@@ -176,7 +187,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
                 className="w-[49px] h-[22px] bg-gray-200 border-[1px] border-gray-300 rounded-full relative  data-[state=checked]:bg-green-500 outline-none cursor-default"
                 defaultChecked={OfflineMode}
                 onCheckedChange={modeOffLine}
-                disabled={isConnected ? true : false}
+                disabled={isConnected ? true : false || isActive}
               >
                 <Switch.Thumb className="block w-[18px] h-[18px] bg-white rounded-full shadow-[2px_1px_3px] shadow-black transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[26px]" />
               </Switch.Root>
@@ -184,14 +195,25 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
           </form>
         </div>
         <div className="pt-6">
+          {(device.name === 'PluviDB-Iot' || device.name === 'PluviDB-Iot-Remote') && (
+            <button
+              onClick={handleClick}
+              disabled={isConnected}
+              className={`w-full p-1 rounded-lg text-white font-semibold transition-colors duration-300 ${
+                isActive ? 'bg-red-600  hover:bg-red-500 ' : 'bg-green-500 hover:bg-green-400 '
+              } ${isConnected ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              {isActive ? 'Conectar local' : 'Conectar remoto'}
+            </button>
+          )}
           <span className=" text-[#336B9E] text-[10px] font-bold pl-2 pr-2">
             Selecionar a porta COM:
           </span>
           <select
-            className="w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none cursor-pointer"
+            className={`w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none  ${isActive ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             value={valorSelecionado}
             onChange={handleChange}
-            disabled={OfflineMode}
+            disabled={OfflineMode || isActive}
           >
             <option value={'Selecione'}>Selecione</option>
             {availablePorts.map((port, index) => (
@@ -203,9 +225,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
         </div>
         {isConnected ? (
           <button
-            className="bg-red-600 w-full rounded-lg p-1 outline-none mt-3 text-white hover:bg-red-500 cursor-pointer"
+            className={`w-full rounded-lg p-1 outline-none mt-3 text-white ${
+              buttonAbility || isActive
+                ? 'bg-red-300 cursor-not-allowed'
+                : 'bg-red-500 hover:bg-red-600 cursor-pointer'
+            }`}
             onClick={handleClickDisconect}
-            disabled={buttonAbility}
+            disabled={buttonAbility || isActive}
           >
             Desconectar
           </button>
@@ -215,7 +241,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }) {
               buttonAbility ? 'cursor-not-allowed' : ' hover:bg-green-400 cursor-pointer'
             } `}
             onClick={handleClickConect}
-            disabled={buttonAbility}
+            disabled={buttonAbility || isActive}
           >
             Conectar
           </button>

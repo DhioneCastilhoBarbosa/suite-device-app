@@ -5,6 +5,18 @@ import iconLinux from '../../resources/icon.png?asset'
 import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
+import '../db/db'
+import {
+  insertDevice,
+  getAllDevices,
+  updateDevice,
+  deleteDevice,
+  insertTerminalLog,
+  getTerminalLogsByDevice,
+  deleteTerminalLogsByDevice
+} from '../db/db' // ajuste o caminho se necessário
+
+const fs = require('fs')
 
 if (squirrelStartup) {
   app.quit()
@@ -112,6 +124,91 @@ if (!handleSquirrelEvent()) {
     createWindow()
 
     autoUpdater.checkForUpdates()
+    ipcMain.handle('save-device', async (event, device) => {
+      try {
+        await insertDevice(device)
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
+      }
+    })
+
+    ipcMain.handle('get-all-devices', async () => {
+      try {
+        const devices = await getAllDevices()
+        return devices
+      } catch (error) {
+        console.error('Erro ao buscar dispositivos:', error)
+        return []
+      }
+    })
+
+    ipcMain.handle('update-device', async (event, device) => {
+      try {
+        await updateDevice(device)
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
+      }
+    })
+
+    ipcMain.handle('delete-device', async (event, id: number) => {
+      try {
+        await deleteDevice(id)
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
+      }
+    })
+
+    ipcMain.handle('insertTerminalLog', async (event, logEntry) => {
+      try {
+        await insertTerminalLog(logEntry.deviceId, logEntry.message) // Corrigido aqui!
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
+      }
+    })
+
+    ipcMain.handle('get-terminal-logs', async (event, deviceId) => {
+      try {
+        const logs = await getTerminalLogsByDevice(deviceId)
+        return logs || [] // 🔥 Garante um array
+      } catch (error) {
+        console.error('Erro ao buscar logs do terminal:', error)
+        return [] // 🔥 Retorna array vazio no erro
+      }
+    })
+
+    ipcMain.handle('clear-terminal-logs', async (event, deviceId) => {
+      try {
+        await deleteTerminalLogsByDevice(deviceId)
+        return { success: true }
+      } catch (error) {
+        console.error('Erro ao limpar logs do dispositivo:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    ipcMain.handle('save-logs-file', async (event, { fileName, content }) => {
+      try {
+        const { canceled, filePath } = await dialog.showSaveDialog({
+          title: 'Salvar Histórico',
+          defaultPath: fileName,
+          filters: [{ name: 'Text Files', extensions: ['txt'] }]
+        })
+
+        if (canceled || !filePath) {
+          return { success: false, error: 'Operação cancelada.' }
+        }
+
+        fs.writeFileSync(filePath, content, 'utf-8')
+        return { success: true, path: filePath }
+      } catch (error) {
+        console.error('Erro ao salvar o arquivo:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
   })
 
   // teste de executar .exe fora da aplicação

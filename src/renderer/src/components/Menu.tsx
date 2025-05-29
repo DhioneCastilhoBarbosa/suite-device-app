@@ -107,7 +107,7 @@ export default function Menu() {
               <button
                 className={twMerge(
                   'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'PluviDB-Iot'
+                  device.name === 'PluviDB-Iot' || device.name === 'PluviDB-Iot-Remote'
                     ? 'bg-white text-[#1E9EF4]'
                     : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
                 )}
