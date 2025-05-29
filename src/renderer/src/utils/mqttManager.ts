@@ -1,77 +1,31 @@
-// src/utils/MqttManager.ts
-const mqtt = window.require('mqtt') // Ajuste para uso do require do Electron
-import type { MqttClient, IClientOptions } from 'mqtt'
+// src/utils/mqttManagerIPC.ts
+const { ipcRenderer } = window.require('electron');
 
-class MqttManager {
-  private client: MqttClient | null = null
+class MqttManagerIPC {
+  connect(brokerUrl: string, options: any = {}): Promise<void> {
+    return ipcRenderer.invoke('mqtt-connect', brokerUrl, options);
+  }
 
- connect(brokerUrl: string, options: IClientOptions = {}): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const clientId = localStorage.getItem('idDevice') || `client_${Math.random().toString(36).substr(2, 9)}`;
+  publish(topic: string, message: string): Promise<void> {
+    return ipcRenderer.invoke('mqtt-publish', topic, message);
+  }
 
-    this.client = mqtt.connect(brokerUrl, {
-      clientId,        // 🔥 Cliente com ID único
-      clean: false,    // 🔥 Sessão persistente
-      ...options
+  subscribe(topic: string, callback: (topic: string, message: string) => void): Promise<void> {
+    ipcRenderer.on('mqtt-message', (_, receivedTopic, message) => {
+      if (receivedTopic === topic) {
+        callback(receivedTopic, message);
+      }
     });
-
-    if (this.client) {
-      this.client.on('connect', () => {
-        console.log('MQTT conectado com sucesso com clientId:', clientId);
-        resolve();
-      });
-
-      this.client.on('error', (err) => {
-        console.error('Erro na conexão MQTT:', err.message);
-        reject(err);
-      });
-    } else {
-      reject(new Error('Falha ao criar o cliente MQTT'));
-    }
-  });
-}
-
-publish(topic: string, message: string): void {
-  if (!this.client) {
-    throw new Error('Cliente MQTT não está conectado');
-  }
-  this.client.publish(topic, message, { qos: 1 });  // 🔥 Mantém QoS 1
-}
-
-subscribe(topic: string, callback: (message: string, topic: string) => void): void {
-  if (!this.client) {
-    throw new Error('Cliente MQTT não está conectado');
-  }
-  this.client.subscribe(topic, { qos: 1 });  // 🔥 Subscrição com QoS 1
-  this.client.on('message', (receivedTopic, message) => {
-    callback(message.toString(), receivedTopic);
-  });
-}
-
-unsubscribe(topic: string): void {
-  if (!this.client) {
-    throw new Error('Cliente MQTT não está conectado')
-  }
-  this.client.unsubscribe(topic, (err) => {
-    if (err) {
-      console.error('Erro ao cancelar inscrição:', err)
-    } else {
-      console.log(`Cancelada a inscrição no tópico: ${topic}`)
-    }
-  })
-}
-
-  disconnect(): void {
-    if (this.client) {
-      this.client.end()
-      console.log('MQTT desconectado')
-      this.client = null
-    }
+    return ipcRenderer.invoke('mqtt-subscribe', topic);
   }
 
-  isConnected(): boolean {
-    return this.client?.connected ?? false
+  unsubscribe(topic: string): Promise<void> {
+    return ipcRenderer.invoke('mqtt-unsubscribe', topic);
+  }
+
+  disconnect(): Promise<void> {
+    return ipcRenderer.invoke('mqtt-disconnect');
   }
 }
 
-export default MqttManager
+export default MqttManagerIPC;

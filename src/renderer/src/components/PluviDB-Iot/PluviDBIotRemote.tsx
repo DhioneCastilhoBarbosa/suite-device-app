@@ -2,8 +2,7 @@ import { Drop, PencilSimple, TrashSimple, Plug, Plugs } from '@phosphor-icons/re
 import ContainerDevice from '../containerDevice/containerDevice'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import AddDeviceModal from './components/addDeviceModalRemote'
-import React, { useState, useRef, useEffect } from 'react'
-import MqttManager from '../../utils/mqttManager'
+import React, { useState, useEffect, useRef } from 'react'
 
 interface Device {
   id: number
@@ -18,7 +17,7 @@ interface Device {
 
 export default function PluviDBIotRemote(): React.ReactElement {
   const [devices, setDevices] = useState<Device[]>([])
-  const [idDevice, setIdDevice] = useState<string>('') // Adicionado para armazenar o ID
+  const [idDevice, setIdDevice] = useState<string>('')
   const [lastSubPath, setLastSubPath] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editDevice, setEditDevice] = useState<Device | null>(null)
@@ -30,23 +29,183 @@ export default function PluviDBIotRemote(): React.ReactElement {
       status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight' | 'error'
     }[]
   >([])
-  const mqttManagerRef = useRef<MqttManager | null>(null)
   const [command, setCommand] = useState('')
   const terminalEndRef = useRef<HTMLDivElement>(null)
   const { ipcRenderer } = window.require('electron')
+  const lastSubPathRef = useRef(lastSubPath)
+  const connectedDeviceRef = useRef<Device | null>(null)
 
   const loadDevices = async (): Promise<void> => {
-    try {
-      const devicesFromDb = await ipcRenderer.invoke('get-all-devices')
-      setDevices(devicesFromDb)
-    } catch (error) {
-      console.error('Erro ao carregar dispositivos:', error)
-    }
+    const devicesFromDb = await ipcRenderer.invoke('get-all-devices')
+    setDevices(devicesFromDb)
   }
 
   useEffect(() => {
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [terminalOutput])
+
+  useEffect(() => {
+    connectedDeviceRef.current = connectedDevice
+  }, [connectedDevice])
+
+  useEffect(() => {
+    lastSubPathRef.current = lastSubPath
+  }, [lastSubPath])
+
+  useEffect(() => {
     loadDevices()
-  }, [])
+
+    let localId = localStorage.getItem('idDevice')
+    if (!localId) {
+      localId = `device_${Math.random().toString(36).substr(2, 6)}`
+      localStorage.setItem('idDevice', localId)
+    }
+    setIdDevice(localId)
+
+    // 🔥 Registrar listener apenas uma vez
+    const handleMessage = (_: unknown, data: { topic: string; message: string }): void => {
+      const { topic, message } = data // ✅ Correção: desestruturando o objeto
+      const device = connectedDeviceRef.current
+      const prefix = lastSubPathRef.current
+
+      console.log(`Mensagem recebida: [${topic}] -> ${message}`)
+
+      if (!device) {
+        console.log('Nenhum dispositivo conectado, ignorando mensagem.')
+        return
+      }
+
+      const topicMatches = topic.includes(`${device.imei}/rsp`)
+      const messageMatches = prefix && message.includes(prefix)
+
+      if (topicMatches && messageMatches) {
+        const timestamp = new Date().toLocaleString()
+        const responseText = `${timestamp} ->Recebido de ${topic}: ${message}`
+        const errorKeywords = ['error', 'unknown', 'denied', 'unlogged']
+        const isError = errorKeywords.some((kw) => message.toLowerCase().includes(kw))
+        const status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight' | 'error' =
+          isError ? 'error' : 'normal'
+
+        ipcRenderer
+          .invoke('insertTerminalLog', {
+            deviceId: device.id,
+            message: responseText
+          })
+          .catch((err) => console.error('Erro ao registrar log:', err))
+
+        setTerminalOutput((prev) => [
+          ...prev.map((msg) =>
+            msg.status === 'pending' && msg.text.includes(prefix)
+              ? {
+                  ...msg,
+                  text: msg.text.replace(' (pendente de resposta)', ''),
+                  status: 'responded' as const
+                }
+              : msg
+          ),
+          { id: Date.now(), text: responseText, status }
+        ])
+      } else {
+        console.log(
+          'Mensagem recebida, mas ignorada (não corresponde ao prefixo ou tópico esperado).'
+        )
+      }
+    }
+
+    ipcRenderer.on('mqtt-message', handleMessage)
+
+    return () => {
+      ipcRenderer.removeListener('mqtt-message', handleMessage)
+    }
+  }, []) // 👈 Remove connectedDevice e lastSubPath das dependências
+
+  const handleConnectToggle = async (device: Device): Promise<void> => {
+    if (connectedDevice?.name === device.name) {
+      // Desconectar
+      await ipcRenderer.invoke('mqtt-unsubscribe', `${device.brokerTopic}/#`)
+      await ipcRenderer.invoke('mqtt-disconnect')
+      setConnectedDevice(null)
+      setLastSubPath('')
+      setTerminalOutput([])
+    } else {
+      try {
+        const brokerUrl = `mqtt://${device.brokerAddress}:${device.brokerPort}`
+        const options = {
+          username: device.brokerUser || undefined,
+          password: device.brokerPassword || undefined,
+          clientId: idDevice
+        }
+        await ipcRenderer.invoke('mqtt-connect', brokerUrl, options)
+        await ipcRenderer.invoke('mqtt-subscribe', `${device.brokerTopic}/#`)
+        setConnectedDevice(device)
+
+        const logs = await ipcRenderer.invoke('get-terminal-logs', device.id)
+        if (Array.isArray(logs)) {
+          const logEntries = logs.map((log) => ({
+            id: Date.now() + Math.random(),
+            text: log.message,
+            status: 'highlight' as const
+          }))
+          setTerminalOutput([
+            { id: Date.now(), text: `Conectado a ${device.name}`, status: 'normal' },
+            { id: Date.now(), text: '📜 Início do Histórico', status: 'highlight' },
+            ...logEntries,
+            { id: Date.now(), text: '📜 Fim do Histórico', status: 'highlight' }
+          ])
+        }
+      } catch (error) {
+        console.error('Erro ao conectar MQTT:', error)
+        setTerminalOutput([
+          { id: Date.now(), text: `Erro na conexão: ${error}`, status: 'warning' }
+        ])
+      }
+    }
+  }
+
+  const handleSendCommand = async (): Promise<void> => {
+    if (connectedDevice && command.trim()) {
+      const id = Date.now()
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[-:T.Z]/g, '')
+        .slice(0, 14)
+      const now = new Date()
+      const timestampFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
+      const ID = `${idDevice}${timestamp}`
+      setLastSubPath(ID)
+      const fullTopic = `${connectedDevice.imei}/cmd`
+      const initialText = `${timestampFormatted}  ->Publicado no tópico ${fullTopic}: ${ID}|${command}`
+      const commandWithId = `${ID}|${command}`
+
+      await ipcRenderer.invoke('mqtt-publish', fullTopic, commandWithId)
+      await ipcRenderer.invoke('insertTerminalLog', {
+        deviceId: connectedDevice.id,
+        message: initialText
+      })
+      setTerminalOutput((prev) => [...prev, { id, text: initialText, status: 'pending' }])
+      setCommand('')
+
+      setTimeout(() => {
+        setTerminalOutput((prev) =>
+          prev.map((msg) =>
+            msg.status === 'pending' && msg.text.includes(ID)
+              ? { ...msg, text: `${msg.text} (pendente de resposta)`, status: 'pending' }
+              : msg
+          )
+        )
+      }, 15000)
+    }
+  }
+
+  const handleClearLogs = async (): Promise<void> => {
+    if (connectedDevice) {
+      const res = await ipcRenderer.invoke('clear-terminal-logs', connectedDevice.id)
+      if (res.success)
+        setTerminalOutput([{ id: Date.now(), text: 'Histórico apagado!', status: 'normal' }])
+    }
+  }
 
   const handleDeleteDevice = async (id: number): Promise<void> => {
     try {
@@ -64,223 +223,17 @@ export default function PluviDBIotRemote(): React.ReactElement {
       console.error('Erro ao deletar dispositivo:', error)
     }
   }
-
-  const handleConnectToggle = async (device): Promise<void> => {
-    if (connectedDevice?.name === device.name) {
-      mqttManagerRef.current?.unsubscribe(`${device.brokerTopic}/#`)
-      mqttManagerRef.current?.disconnect()
-      mqttManagerRef.current = null
-      setConnectedDevice(null)
-      setLastSubPath('')
-      setTerminalOutput([])
-
-      /*setTimeout(() => {
-        setTerminalOutput(() => [
-          { id: Date.now(), text: `Desconectado de ${device.name}`, status: 'normal' }
-        ])
-      }, 200)*/
-    } else {
-      try {
-        const manager = new MqttManager()
-        const brokerUrl = `mqtt://${device.brokerAddress}:${device.brokerPort}`
-        const options = {
-          username: device.brokerUser || undefined,
-          password: device.brokerPassword || undefined,
-          connectTimeout: 4000
-        }
-        await manager.connect(brokerUrl, options)
-
-        mqttManagerRef.current = manager
-        setConnectedDevice(device)
-
-        // 🔥 Carregar logs anteriores do banco
-        const logs = await ipcRenderer.invoke('get-terminal-logs', device.id)
-        if (Array.isArray(logs)) {
-          const logEntries = logs.map((log) => ({
-            id: Date.now() + Math.random(),
-            text: log.message,
-            status: 'highlight' as const // 🔥 Usando highlight para cinza
-          }))
-
-          // 🔥 Limpa terminal antes de carregar histórico
-          setTerminalOutput([
-            { id: Date.now(), text: `Conectado a ${device.name}`, status: 'normal' },
-            { id: Date.now(), text: '📜 Início do Histórico', status: 'highlight' }
-          ])
-
-          // 🔥 Adiciona os logs do histórico e o fim depois
-          setTerminalOutput((prev) => [
-            ...prev,
-            ...logEntries,
-            { id: Date.now(), text: '📜 Fim do Histórico', status: 'highlight' }
-          ])
-        } else {
-          console.warn('get-terminal-logs não retornou um array:', logs)
-        }
-
-        // 🔥 Subscrição com wildcard e verificação do tópico
-        manager.subscribe(`${device.brokerTopic}/#`, async (message, topicReceived) => {
-          const messageStr = message.toString()
-          const prefix = lastSubPath
-
-          // 🔥 Verifica se o tópico contém o nome do device
-          const topicMatchesDevice = topicReceived.includes(`${device.imei}/rsp`)
-          const messageMatchesPrefix = messageStr.includes(prefix)
-
-          if (topicMatchesDevice && messageMatchesPrefix) {
-            const now = new Date()
-
-            const year = now.getFullYear()
-            const month = String(now.getMonth() + 1).padStart(2, '0')
-            const day = String(now.getDate()).padStart(2, '0')
-            const hours = String(now.getHours()).padStart(2, '0')
-            const minutes = String(now.getMinutes()).padStart(2, '0')
-            const seconds = String(now.getSeconds()).padStart(2, '0')
-
-            const timestampFormatted = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-            const responseText = `${timestampFormatted}  ->Recebido de ${topicReceived}: ${messageStr}`
-            await ipcRenderer.invoke('insertTerminalLog', {
-              deviceId: device.id,
-              message: responseText
-            })
-            const errorKeywords = ['error', 'unknown', 'denied', 'unlogged']
-            const isError = errorKeywords.some((keyword) =>
-              responseText.toLowerCase().includes(keyword)
-            )
-            const responseObj = isError
-              ? { id: Date.now(), text: responseText, status: 'error' }
-              : { id: Date.now(), text: responseText, status: 'normal' }
-
-            setTerminalOutput((prev) => [
-              ...prev.map((msg) =>
-                msg.status === 'pending'
-                  ? {
-                      ...msg,
-                      text: msg.text.replace(' (pendente de resposta)', ''),
-                      status: 'responded' as const
-                    }
-                  : msg
-              ),
-              responseObj as {
-                id: number
-                text: string
-                status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight'
-              }
-            ])
-          } else {
-            console.log('Mensagem ignorada: não corresponde ao dispositivo ou prefixo')
-          }
-        })
-      } catch (error) {
-        setTerminalOutput([
-          {
-            id: Date.now(),
-            text: `Erro na conexão: ${typeof error === 'object' && error !== null && 'message' in error ? (error as { message: string }).message : String(error)}`,
-            status: 'warning'
-          }
-        ])
-      }
-    }
-  }
-
-  const handleSendCommand = async (): Promise<void> => {
-    if (connectedDevice && mqttManagerRef.current && command.trim()) {
-      const id = Date.now()
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[-:T.Z]/g, '')
-        .slice(0, 14)
-
-      const now = new Date()
-
-      const year = now.getFullYear()
-      const month = String(now.getMonth() + 1).padStart(2, '0')
-      const day = String(now.getDate()).padStart(2, '0')
-      const hours = String(now.getHours()).padStart(2, '0')
-      const minutes = String(now.getMinutes()).padStart(2, '0')
-      const seconds = String(now.getSeconds()).padStart(2, '0')
-
-      const timestampFormatted = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-      const ID = `${idDevice}${timestamp}`
-      setLastSubPath(ID) // <-- Armazena o subPath
-      const fullTopic = `${connectedDevice.imei}/cmd`
-      const initialText = `${timestampFormatted}  ->Publicado no tópico ${fullTopic}: ${ID}|${command}`
-      const commandWithId = `${ID}|${command}`
-
-      mqttManagerRef.current.publish(fullTopic, commandWithId)
-      await ipcRenderer.invoke('insertTerminalLog', {
-        deviceId: connectedDevice.id,
-        message: initialText
-      })
-      setTerminalOutput((prev) => [...prev, { id, text: initialText, status: 'pending' }])
-      setCommand('')
-
-      setTimeout(() => {
-        setTerminalOutput((prev) =>
-          prev.map((msg) =>
-            msg.id === id && msg.status === 'pending'
-              ? { ...msg, text: `${msg.text} (pendente de resposta)`, status: 'pending' }
-              : msg
-          )
-        )
-      }, 10000)
-    }
-  }
-
-  const handleClearLogs = async (): Promise<void> => {
-    if (connectedDevice) {
-      const result = await ipcRenderer.invoke('clear-terminal-logs', connectedDevice.id)
-      if (result.success) {
-        setTerminalOutput([{ id: Date.now(), text: 'Histórico apagado!', status: 'normal' }])
-      } else {
-        console.error('Erro ao limpar logs:', result.error)
-      }
-    }
-  }
-
   const handleSaveLogs = async (): Promise<void> => {
-    if (!connectedDevice) {
-      alert('Nenhum dispositivo conectado para salvar o histórico.')
-      return
-    }
-
+    if (!connectedDevice) return alert('Nenhum dispositivo conectado.')
     const imei = connectedDevice.imei
     const header = `Relatório de logs do Pluvi-IoT-${imei}\n\n`
-    const logs = terminalOutput.map((entry) => entry.text).join('\n')
-    const content = header + logs
-
-    try {
-      const result = await ipcRenderer.invoke('save-logs-file', {
-        fileName: `Pluvio-Iot-${imei}.txt`,
-        content
-      })
-      if (result.success) {
-        console.log('Histórico salvo com sucesso:', result.path)
-      } else {
-        console.error('Erro ao salvar o arquivo:', result.error)
-      }
-    } catch (error) {
-      console.error('Erro ao salvar histórico:', error)
-    }
+    const logs = terminalOutput.map((e) => e.text).join('\n')
+    const res = await ipcRenderer.invoke('save-logs-file', {
+      fileName: `Pluvio-Iot-${imei}.txt`,
+      content: header + logs
+    })
+    if (res.success) console.log('Salvo:', res.path)
   }
-
-  useEffect(() => {
-    if (terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [terminalOutput])
-
-  useEffect(() => {
-    // Carrega ou cria um idDevice único no localStorage
-    let localId = localStorage.getItem('idDevice')
-    if (!localId) {
-      localId = `device_${Math.random().toString(36).substr(2, 6)}`
-      localStorage.setItem('idDevice', localId)
-    }
-    setIdDevice(localId)
-
-    loadDevices()
-  }, [])
 
   return (
     <ContainerDevice heightScreen={true}>
@@ -379,10 +332,10 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
             <div className="flex-1 bg-white border border-sky-200 rounded p-3 overflow-auto text-sky-800 shadow-inner">
               {terminalOutput.length > 0 ? (
-                terminalOutput.map((msg) => (
+                terminalOutput.map((msg, index) => (
                   <p
-                    key={msg.id}
-                    className={`px-2 py-1 rounded mb-1 ${
+                    key={`${msg.id}-${index}`}
+                    className={`break-words px-2 py-1 rounded mb-1 ${
                       msg.status === 'pending'
                         ? 'bg-yellow-200'
                         : msg.status === 'warning'

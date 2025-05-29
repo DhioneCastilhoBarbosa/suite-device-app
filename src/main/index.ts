@@ -6,6 +6,8 @@ import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
 import '../db/db'
+import './mqttManagerMain'
+
 import {
   insertDevice,
   getAllDevices,
