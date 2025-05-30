@@ -31,13 +31,15 @@ export default function PluviDBIotRemote(): React.ReactElement {
   >([])
   const [command, setCommand] = useState('')
   const terminalEndRef = useRef<HTMLDivElement>(null)
-  const { ipcRenderer } = window.require('electron')
+
+  const mqttAPI = window.mqttAPI
+
   const lastSubPathRef = useRef(lastSubPath)
   const connectedDeviceRef = useRef<Device | null>(null)
 
   const loadDevices = async (): Promise<void> => {
-    const devicesFromDb = await ipcRenderer.invoke('get-all-devices')
-    setDevices(devicesFromDb)
+    const devicesFromDb = await mqttAPI.invoke('get-all-devices')
+    setDevices(devicesFromDb as Device[])
   }
 
   useEffect(() => {
@@ -54,6 +56,54 @@ export default function PluviDBIotRemote(): React.ReactElement {
     lastSubPathRef.current = lastSubPath
   }, [lastSubPath])
 
+  // Move handleMessage to component scope so it can be used in multiple places
+  const handleMessage = (topic: string, message: string): void => {
+    const device = connectedDeviceRef.current
+    const prefix = lastSubPathRef.current
+
+    console.log(`Mensagem recebida: [${topic}] -> ${message}`)
+
+    if (!device) {
+      console.log('Nenhum dispositivo conectado, ignorando mensagem.')
+      return
+    }
+
+    const topicMatches = topic.includes(`${device.imei}/rsp`)
+    const messageMatches = prefix && message.includes(prefix)
+
+    if (topicMatches && messageMatches) {
+      const timestamp = new Date().toLocaleString()
+      const responseText = `${timestamp} ->Recebido de ${topic}: ${message}`
+      const errorKeywords = ['error', 'unknown', 'denied', 'unlogged']
+      const isError = errorKeywords.some((kw) => message.toLowerCase().includes(kw))
+      const status = isError ? 'error' : 'normal'
+
+      mqttAPI
+        .invoke('insertTerminalLog', {
+          deviceId: device.id,
+          message: responseText
+        })
+        .catch((err) => console.error('Erro ao registrar log:', err))
+
+      setTerminalOutput((prev) => [
+        ...prev.map((msg) =>
+          msg.status === 'pending' && msg.text.includes(prefix)
+            ? {
+                ...msg,
+                text: msg.text.replace(' (pendente de resposta)', ''),
+                status: 'responded' as const
+              }
+            : msg
+        ),
+        { id: Date.now(), text: responseText, status }
+      ])
+    } else {
+      console.log(
+        'Mensagem recebida, mas ignorada (não corresponde ao prefixo ou tópico esperado).'
+      )
+    }
+  }
+
   useEffect(() => {
     loadDevices()
 
@@ -64,68 +114,23 @@ export default function PluviDBIotRemote(): React.ReactElement {
     }
     setIdDevice(localId)
 
-    // 🔥 Registrar listener apenas uma vez
-    const handleMessage = (_: unknown, data: { topic: string; message: string }): void => {
-      const { topic, message } = data // ✅ Correção: desestruturando o objeto
-      const device = connectedDeviceRef.current
-      const prefix = lastSubPathRef.current
+    // Use uma chave única para o listener
+    const listenerKey = 'PluviDBIotRemote'
 
-      console.log(`Mensagem recebida: [${topic}] -> ${message}`)
+    // Registra o listener com a chave única
+    mqttAPI.onMessage(listenerKey, handleMessage)
 
-      if (!device) {
-        console.log('Nenhum dispositivo conectado, ignorando mensagem.')
-        return
-      }
-
-      const topicMatches = topic.includes(`${device.imei}/rsp`)
-      const messageMatches = prefix && message.includes(prefix)
-
-      if (topicMatches && messageMatches) {
-        const timestamp = new Date().toLocaleString()
-        const responseText = `${timestamp} ->Recebido de ${topic}: ${message}`
-        const errorKeywords = ['error', 'unknown', 'denied', 'unlogged']
-        const isError = errorKeywords.some((kw) => message.toLowerCase().includes(kw))
-        const status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight' | 'error' =
-          isError ? 'error' : 'normal'
-
-        ipcRenderer
-          .invoke('insertTerminalLog', {
-            deviceId: device.id,
-            message: responseText
-          })
-          .catch((err) => console.error('Erro ao registrar log:', err))
-
-        setTerminalOutput((prev) => [
-          ...prev.map((msg) =>
-            msg.status === 'pending' && msg.text.includes(prefix)
-              ? {
-                  ...msg,
-                  text: msg.text.replace(' (pendente de resposta)', ''),
-                  status: 'responded' as const
-                }
-              : msg
-          ),
-          { id: Date.now(), text: responseText, status }
-        ])
-      } else {
-        console.log(
-          'Mensagem recebida, mas ignorada (não corresponde ao prefixo ou tópico esperado).'
-        )
-      }
-    }
-
-    ipcRenderer.on('mqtt-message', handleMessage)
-
+    // Remove o listener com a chave ao desmontar
     return () => {
-      ipcRenderer.removeListener('mqtt-message', handleMessage)
+      mqttAPI.offMessage(listenerKey)
     }
-  }, []) // 👈 Remove connectedDevice e lastSubPath das dependências
+  }, [])
 
   const handleConnectToggle = async (device: Device): Promise<void> => {
     if (connectedDevice?.name === device.name) {
       // Desconectar
-      await ipcRenderer.invoke('mqtt-unsubscribe', `${device.brokerTopic}/#`)
-      await ipcRenderer.invoke('mqtt-disconnect')
+      await mqttAPI.invoke('mqtt-unsubscribe', `${device.brokerTopic}/#`)
+      await mqttAPI.invoke('mqtt-disconnect')
       setConnectedDevice(null)
       setLastSubPath('')
       setTerminalOutput([])
@@ -137,11 +142,11 @@ export default function PluviDBIotRemote(): React.ReactElement {
           password: device.brokerPassword || undefined,
           clientId: idDevice
         }
-        await ipcRenderer.invoke('mqtt-connect', brokerUrl, options)
-        await ipcRenderer.invoke('mqtt-subscribe', `${device.brokerTopic}/#`)
+        await mqttAPI.invoke('mqtt-connect', brokerUrl, options)
+        await mqttAPI.invoke('mqtt-subscribe', `${device.brokerTopic}/#`)
         setConnectedDevice(device)
 
-        const logs = await ipcRenderer.invoke('get-terminal-logs', device.id)
+        const logs = await mqttAPI.invoke('get-terminal-logs', device.id)
         if (Array.isArray(logs)) {
           const logEntries = logs.map((log) => ({
             id: Date.now() + Math.random(),
@@ -179,8 +184,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
       const initialText = `${timestampFormatted}  ->Publicado no tópico ${fullTopic}: ${ID}|${command}`
       const commandWithId = `${ID}|${command}`
 
-      await ipcRenderer.invoke('mqtt-publish', fullTopic, commandWithId)
-      await ipcRenderer.invoke('insertTerminalLog', {
+      await mqttAPI.invoke('mqtt-publish', fullTopic, commandWithId)
+      await mqttAPI.invoke('insertTerminalLog', {
         deviceId: connectedDevice.id,
         message: initialText
       })
@@ -201,23 +206,37 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
   const handleClearLogs = async (): Promise<void> => {
     if (connectedDevice) {
-      const res = await ipcRenderer.invoke('clear-terminal-logs', connectedDevice.id)
-      if (res.success)
+      const res = await mqttAPI.invoke('clear-terminal-logs', connectedDevice.id)
+      if (
+        typeof res === 'object' &&
+        res !== null &&
+        'success' in res &&
+        (res as { success: boolean }).success
+      )
         setTerminalOutput([{ id: Date.now(), text: 'Histórico apagado!', status: 'normal' }])
     }
   }
 
   const handleDeleteDevice = async (id: number): Promise<void> => {
     try {
-      const result = await ipcRenderer.invoke('delete-device', id)
-      if (result.success) {
+      const result = await mqttAPI.invoke('delete-device', id)
+      if (
+        typeof result === 'object' &&
+        result !== null &&
+        'success' in result &&
+        (result as { success: boolean }).success
+      ) {
         setTerminalOutput((prev) => [
           ...prev,
           { id: Date.now(), text: 'Dispositivo removido!', status: 'normal' }
         ])
         await loadDevices()
       } else {
-        console.error('Erro ao deletar:', result.error)
+        if (typeof result === 'object' && result !== null && 'error' in result) {
+          console.error('Erro ao deletar:', (result as { error?: unknown }).error)
+        } else {
+          console.error('Erro ao deletar: resultado inesperado', result)
+        }
       }
     } catch (error) {
       console.error('Erro ao deletar dispositivo:', error)
@@ -228,11 +247,18 @@ export default function PluviDBIotRemote(): React.ReactElement {
     const imei = connectedDevice.imei
     const header = `Relatório de logs do Pluvi-IoT-${imei}\n\n`
     const logs = terminalOutput.map((e) => e.text).join('\n')
-    const res = await ipcRenderer.invoke('save-logs-file', {
+    const res = await mqttAPI.invoke('save-logs-file', {
       fileName: `Pluvio-Iot-${imei}.txt`,
       content: header + logs
     })
-    if (res.success) console.log('Salvo:', res.path)
+    if (
+      typeof res === 'object' &&
+      res !== null &&
+      'success' in res &&
+      (res as { success: boolean }).success
+    ) {
+      console.log('Salvo:', (res as { path?: string }).path)
+    }
   }
 
   return (
