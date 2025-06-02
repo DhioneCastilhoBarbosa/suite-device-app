@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../Context/DeviceContext'
 import { useEffect } from 'react'
 import Footer from './Footer'
 

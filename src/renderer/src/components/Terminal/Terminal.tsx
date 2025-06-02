@@ -6,7 +6,7 @@ import SerialManager from '../../utils/serialSDI12'
 import TerminalImagem from '../../assets/TerminalImage.png'
 import { CardInformation } from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 

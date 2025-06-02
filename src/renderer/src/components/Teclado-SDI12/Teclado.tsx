@@ -11,7 +11,7 @@ import ButtonSet from './components/buttonSet'
 import SerialManagerRS232 from '@renderer/utils/serial'
 import { useEffect, useState } from 'react'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../Context/DeviceContext'
 import { saveAs } from 'file-saver'
 
 interface TecladoSDI12Props {

@@ -1,4 +1,4 @@
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../Context/DeviceContext'
 
 interface LoadingDataProps {
   visible: boolean

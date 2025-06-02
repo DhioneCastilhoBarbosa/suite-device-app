@@ -1,9 +1,9 @@
 import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../../Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
 import { selectFile } from '@renderer/utils/fileUtils'
-import { IdModBus, WriteModbus, readModbusData } from '@renderer/utils/modbusRTU'
+import { IdModBus, WriteModbus, readModbusData } from '../../../utils/modbusRTU'
 import { useEffect, useState } from 'react'
 
 export default function Settings() {

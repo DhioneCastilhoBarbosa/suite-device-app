@@ -1,43 +1,44 @@
 appId: com.electron.app
 productName: suite-device-app
+
 directories:
   buildResources: build
+
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-asarUnpack:
+  - dist/main/**
+  - dist/preload/**
+  - dist/renderer/**
   - resources/**
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!*.config.{js,ts,cjs,mjs}"
+  - "!{*.md,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,pnpm-lock.yaml,yarn.lock}"
+
+asarUnpack:
+  - dist/preload/**       # 🔥 Garante que o preload não fique no asar
+  - resources/**          # 🔥 Se tiver recursos como imagens ou binários
+
 win:
-  executableName: suite-device-app
-nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}-${version}.${ext}
-linux:
   target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}-${version}.${ext}
+    - nsis               # 🔥 Gera instalador NSIS (Windows)
+  icon: resources/icon.ico               # Caminho relativo ao buildResources
+  sign: false
+  signingHashAlgorithms: []  # Desativa assinatura
+  executableName: suite-device-app
+
+nsis:
+  oneClick: false                     # Permite escolher opções na instalação
+  perMachine: false                   # Opcional, instalação por usuário
+  allowElevation: true                # Para permissões elevadas
+  allowToChangeInstallationDirectory: true # Escolher diretório
+  include: null                       # Remove custom uninstaller.nsh que depende de plugins
+
 npmRebuild: false
+
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: DhioneCastilhoBarbosa
+  repo: suite-device-app
+  releaseType: draft
+  vPrefixedTagName: true

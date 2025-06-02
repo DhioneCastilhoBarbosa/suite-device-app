@@ -29,7 +29,7 @@ export default function About({ visible, onClose }: LoadingDataProps): JSX.Eleme
           </p>
           <div className="flex gap-2">
             <p>Versão atual:</p>
-            <p className="font-bold">v.2.0.1</p>
+            <p className="font-bold">v.2.1.1</p>
           </div>
 
           <Footer />

@@ -1,6 +1,6 @@
 {
   "name": "suite-device-app",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
@@ -24,10 +24,10 @@
     "build": "npm run typecheck && electron-vite build && npm run copy-resources",
     "copy-resources": "cpx \"resources/**/*\" dist/resources",
     "postinstall": "electron-builder install-app-deps",
-    "build:win": "npm run build && electron-builder --win --config",
+    "build:win": "dotenv electron-builder --win --config=electron-builder.yml --publish always",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
-    "make": "electron-forge make",
+    "make": "npm run build && electron-forge make",
     "make-darwin": "electron-forge make --platform=win32",
     "make-linux": "electron-forge make --platform=linux",
     "make-deb": "electron-forge make --target=@electron-forge/maker-deb",
@@ -78,6 +78,7 @@
     "@vitejs/plugin-react": "^4.0.4",
     "autoprefixer": "^10.4.16",
     "cpx": "^1.5.0",
+    "dotenv-cli": "^8.0.0",
     "electron": "^25.9.8",
     "electron-builder": "^24.6.3",
     "electron-log": "^5.1.5",
@@ -93,6 +94,7 @@
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.1.6",
-    "vite": "^4.5.3"
+    "vite": "^4.5.3",
+    "vite-plugin-externalize-deps": "^0.9.0"
   }
 }

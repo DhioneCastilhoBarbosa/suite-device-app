@@ -1,4 +1,4 @@
-import { DeviceProvider } from '@renderer/Context/DeviceContext'
+import { DeviceProvider } from '../Context/DeviceContext'
 import Menu from './Menu'
 import Preview from './Preview'
 

@@ -6,7 +6,8 @@ import iconWin from '../../resources/icon.ico?asset'
 import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
 import '../db/db'
-import './mqttManagerMain'
+import { setupMQTTHandlers } from './mqttHandler'
+import express from 'express'
 
 import {
   insertDevice,
@@ -32,6 +33,10 @@ updateElectronApp({
 
 let mainWindow: BrowserWindow | null
 
+const distPath = is.dev
+  ? path.join(__dirname, '../renderer')
+  : path.join(app.getAppPath(), 'renderer', 'dist')
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -42,61 +47,77 @@ function createWindow(): void {
     autoHideMenuBar: true,
     icon: process.platform === 'linux' ? iconLinux : iconWin,
     webPreferences: {
-      contextIsolation: false, // false
-      nodeIntegration: true, // true
+      contextIsolation: false,
+      nodeIntegration: true,
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
 
-  // Ajuste quando a tela principal muda
+  setupMQTTHandlers(mainWindow)
+
+  // 🌐 Servidor local ou prod com express
+  const server = express()
+  const port = 3000
+
+  server.use(express.static(distPath))
+
+  server.get('*', (req, res) => {
+    const indexFile = path.join(distPath, 'index.html')
+    console.log(`Servindo index.html de: ${indexFile}`)
+    res.sendFile(indexFile)
+  })
+
+  server.listen(port, () => {
+    console.log(`🌐 Servidor rodando em http://localhost:${port}`)
+    console.log(`✅ distPath usado: ${distPath}`)
+
+    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+      mainWindow!.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    } else {
+      //mainWindow!.loadURL(`http://localhost:${port}`)
+      mainWindow!.loadFile(join(__dirname, '../renderer/index.html'))
+    }
+
+    mainWindow!.on('ready-to-show', () => mainWindow!.show())
+
+    mainWindow!.webContents.setWindowOpenHandler(({ url }) => {
+      shell.openExternal(url)
+      return { action: 'deny' }
+    })
+
+    mainWindow!.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      console.error(`❌ Erro ao carregar renderer: ${errorDescription} (Código ${errorCode})`)
+    })
+  })
+
   screen.on('display-metrics-changed', () => {
     if (mainWindow) {
       const currentScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
-      const { width: maxWidth, height: maxHeight } = currentScreen.workAreaSize
-
+      const { width, height } = currentScreen.workAreaSize
       const [currentWidth, currentHeight] = mainWindow.getSize()
-
-      const widthRatio = currentWidth / maxWidth
-      const heightRatio = currentHeight / maxHeight
-
-      mainWindow.setSize(Math.floor(widthRatio * maxWidth), Math.floor(heightRatio * maxHeight))
+      mainWindow.setSize(
+        Math.floor((currentWidth / width) * width),
+        Math.floor((currentHeight / height) * height)
+      )
     }
   })
 
   mainWindow.setTitle('Suite Device')
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow!.show()
-  })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
 }
 
 function handleSquirrelEvent(): boolean {
-  if (process.argv.length === 1) {
-    return false
-  }
+  if (process.argv.length === 1) return false
 
   const appFolder = path.resolve(process.execPath, '..')
   const rootAtomFolder = path.resolve(appFolder, '..')
   const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'))
   const exeName = path.basename(process.execPath)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const spawnUpdate = (args: string[]): any => {
+  const spawnUpdate = (args: string[]): import('child_process').ChildProcess | null => {
     try {
       return spawn(updateDotExe, args, { detached: true })
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -108,12 +129,10 @@ function handleSquirrelEvent(): boolean {
       spawnUpdate(['--createShortcut', exeName])
       setTimeout(app.quit, 1000)
       return true
-
     case '--squirrel-uninstall':
       spawnUpdate(['--removeShortcut', exeName])
       setTimeout(app.quit, 1000)
       return true
-
     case '--squirrel-obsolete':
       app.quit()
       return true

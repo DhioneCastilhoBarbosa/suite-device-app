@@ -5,7 +5,7 @@ module.exports = {
   publishers: [
     {
       name: '@electron-forge/publisher-github',
-      platforms: ['darwin', 'linux'],
+      platforms: ['darwin', 'linux', 'win32'],
       config: {
         repository: {
           owner: process.env.GITHUB_REPOSITORY_OWNER,
@@ -26,6 +26,10 @@ module.exports = {
         from: path.join(__dirname, 'resources'), // Caminho para a pasta resources
         to: 'resources', // Copia a pasta resources para o diretório de build
         filter: ['**/*'] // Certifica-se de que todos os arquivos dentro de resources sejam copiados
+      },
+      {
+        from: './dist/renderer', // ou ajuste para o caminho real do dist
+        to: 'renderer/dist'
       }
     ]
   },

@@ -1,4 +1,4 @@
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../../Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
 import NoDeviceFoundModbus from '@renderer/components/modal/noDeviceFoundModbus'

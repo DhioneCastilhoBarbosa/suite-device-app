@@ -7,7 +7,7 @@ import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import SerialManagerRS232 from '@renderer/utils/serial'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
-import { Device } from '@renderer/Context/DeviceContext'
+import { Device } from '../../Context/DeviceContext'
 import Status from './components/status'
 
 import { Terminal } from './components/terminal'

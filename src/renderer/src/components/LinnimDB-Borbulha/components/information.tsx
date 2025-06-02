@@ -1,6 +1,6 @@
 import LoadingData from '@renderer/components/loading/loadingData'
-import { Device } from '@renderer/Context/DeviceContext'
-import { readModbusData } from '@renderer/utils/modbusRTU'
+import { Device } from '../../../Context/DeviceContext'
+import { readModbusData } from '../../../utils/modbusRTU'
 import { useEffect, useState } from 'react'
 
 export default function Information() {

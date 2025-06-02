@@ -1,31 +1,46 @@
-// src/utils/mqttManagerIPC.ts
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = require('electron');
 
-class MqttManagerIPC {
-  connect(brokerUrl: string, options: any = {}): Promise<void> {
-    return ipcRenderer.invoke('mqtt-connect', brokerUrl, options);
+class MqttManager {
+  // ✅ Declaração explícita da propriedade privada
+  private _listener: ((event: any, data: any) => void) | null = null;
+
+  async connect(brokerUrl: string, options = {}) {
+    try {
+      await ipcRenderer.invoke('mqtt-connect', { brokerUrl, options });
+      console.log('✅ Conectado ao MQTT');
+    } catch (err) {
+      console.error('❌ Erro ao conectar MQTT:', err);
+    }
   }
 
-  publish(topic: string, message: string): Promise<void> {
-    return ipcRenderer.invoke('mqtt-publish', topic, message);
+  publish(topic: string, message: string) {
+    ipcRenderer.send('mqtt-publish', { topic, message });
   }
 
-  subscribe(topic: string, callback: (topic: string, message: string) => void): Promise<void> {
-    ipcRenderer.on('mqtt-message', (_, receivedTopic, message) => {
-      if (receivedTopic === topic) {
-        callback(receivedTopic, message);
-      }
-    });
-    return ipcRenderer.invoke('mqtt-subscribe', topic);
+  subscribe(topic: string) {
+  ipcRenderer.send('mqtt-subscribe', { topic });
+}
+
+  unsubscribe(topic: string) {
+    ipcRenderer.send('mqtt-unsubscribe', { topic });
+    if (this._listener) {
+      ipcRenderer.removeListener('mqtt-message', this._listener);
+      this._listener = null;
+    }
   }
 
-  unsubscribe(topic: string): Promise<void> {
-    return ipcRenderer.invoke('mqtt-unsubscribe', topic);
+  disconnect() {
+    ipcRenderer.send('mqtt-disconnect');
+    if (this._listener) {
+      ipcRenderer.removeListener('mqtt-message', this._listener);
+      this._listener = null;
+    }
   }
 
-  disconnect(): Promise<void> {
-    return ipcRenderer.invoke('mqtt-disconnect');
+  isConnected() {
+    console.warn('isConnected: Status depende do main process. Retornando falso por padrão.');
+    return false;
   }
 }
 
-export default MqttManagerIPC;
+export default MqttManager;

@@ -1,6 +1,6 @@
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
-import { readModbusData } from '@renderer/utils/modbusRTU'
+import { readModbusData } from '../../../utils/modbusRTU'
 import { useState } from 'react'
 
 export default function Measure() {
