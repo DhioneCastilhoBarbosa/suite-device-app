@@ -59,15 +59,15 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
   }, [selected])
 
   return (
-    <div className="my-4">
+    <div className="my-2">
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
           <thead>
             <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal ">
-              <th className="py-3 px-6 text-left">Dados Instantâneos</th>
+              <th className="py-1 px-6 text-left">Dados Instantâneos</th>
 
               <th className=" flex  justify-end items-center gap-1">
-                <label className="mt-3  text-xs font-semibold text-gray-700">
+                <label className="mt-1  text-xs font-semibold text-gray-700">
                   Totalização a cada 60 segundos
                 </label>
                 <span className="ml-2"></span>
@@ -76,15 +76,15 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
           </thead>
           <tbody className="text-gray-600 text-sm font-light">
             <tr className=" border-b border-gray-200 hover:bg-gray-50">
-              <td className="py-3 px-6 text-left font-bold text-gray-500">Data/Hora:</td>
-              <td className=" flex justify-center items-end py-3 px-6 text-left font-semibold text-gray-400 text-md">
+              <td className="py-1 px-6 text-left font-bold text-gray-500">Data/Hora:</td>
+              <td className=" flex justify-center items-end py-1.5 px-6 text-left font-semibold text-gray-400 text-md">
                 {date}
               </td>
             </tr>
             {data.map((item) => (
               <tr key={item.id} className=" border-b border-gray-200 hover:bg-gray-50">
-                <td className="py-3 px-6 text-left font-bold text-gray-500">{item.name}</td>
-                <td className=" flex justify-center items-end py-3 px-6 text-left font-semibold text-gray-400 text-md">
+                <td className="py-1 px-6 text-left font-bold text-gray-500">{item.name}</td>
+                <td className=" flex justify-center items-end py-1.5 px-6 text-left font-semibold text-gray-400 text-md">
                   {item.value}
                 </td>
               </tr>

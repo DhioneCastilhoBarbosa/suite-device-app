@@ -3,7 +3,6 @@ import Button from '@renderer/components/button/Button'
 import { ModalSaveReport } from '@renderer/components/modal/modalSaveReport'
 import { useEffect, useState } from 'react'
 import { saveAs } from 'file-saver'
-import { set } from 'zod'
 
 type Props = {
   receivedDataStatus: string | undefined
@@ -135,57 +134,90 @@ export default function Status({
   }
 
   return (
-    <div className="flex flex-col mt-4">
-      <div className="flex flex-row justify-evenly bg-sky-500 h-auto rounded-md ">
-        <div className="flex flex-col justify-center  bg-white m-2 rounded-md border-4 border-white">
-          <div className="flex flex-row justify-center items-end gap-8 p-2 border-2 border-sky-500 rounded-t-md min-w-56">
-            <div>
-              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 mb-6">
+    <div className="flex flex-col mt-1">
+      <div className="flex flex-row justify-around bg-sky-500 h-16 rounded-md ">
+        <div className="flex flex-row items-center  bg-white m-0.5 rounded-md border-2 border-white w-64">
+          <div className="flex flex-row justify-center items-center gap-8 p-1 border-2 border-sky-500 rounded-l-md w-full h-full">
+            <div className="flex flex-col items-center text-sky-500 ">
+              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 mt-2">
                 {arrayData[4]}
               </span>
-            </div>
-            <div className="mt-2 text-sky-500">
-              <CellSignalFull size={62} />
-              <span>{`${arrayData[2]} dBm`} </span>
+              <div className="flex flex-row justify-center items-center gap-1 mb-1.5">
+                <CellSignalFull size={36} />
+                <span>{`${arrayData[2]} dBm`} </span>
+              </div>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center w-full bg-sky-500 p-1  rounded-b-md">
-            <span className=" font-light text-white">{arrayData[6]}</span>
-            <span className=" font-light text-white">{arrayData[5]}</span>
+          <div className="flex flex-col justify-center items-center  bg-sky-500  rounded-r-md w-full h-full ">
+            <span className=" font-light text-white text-[12px]">{arrayData[6]}</span>
+            <span className=" font-light text-white text-[12px]">{arrayData[5]}</span>
           </div>
         </div>
-        <div className="flex flex-col justify-center  bg-white m-2 rounded-md border-4 border-white">
-          <div className="flex flex-col justify-center items-center gap-2 p-2 border-2 border-sky-500 rounded-md h-full min-w-56">
-            <div className=" text-sky-500">
-              <BatteryFull size={62} />
+        <div className="flex flex-col justify-center  bg-white m-0.5 rounded-md border-2 border-white">
+          <div className="flex flex-col justify-start  gap-1 p-1 border-2 border-sky-500 rounded-md h-full w-auto">
+            <div>
+              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500 ">
+                Transmissão
+              </span>
+
+              <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-row justify-center items-center gap-2 text-[12px] ">
+                  <span>Protocolo utilizado:</span>
+                  <span className="font-bold">{arrayData[0].toUpperCase()}</span>
+                </div>
+
+                <div className="flex flex-row justify-center items-center gap-2 text-[12px]">
+                  <span>Última transmissão:</span>
+                  <span className="font-bold">{arrayData[7]}</span>
+                </div>
+              </div>
             </div>
-            <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 ">
+          </div>
+        </div>
+        <div className="flex flex-col justify-center  bg-white m-0.5 rounded-md border-2 border-white">
+          <div className="flex flex-col justify-center items-center p-1 border-2 border-sky-500 rounded-md h-full w-auto">
+            <div className=" text-sky-500">
+              <BatteryFull size={36} />
+            </div>
+            <span className="flex flex-row justify-center items-baseline font-bold  ml-2 text-[12px]">
               {`${arrayData[3]} Volts`}
             </span>
           </div>
         </div>
-        <div className="flex flex-col justify-center  bg-white m-2 rounded-md border-4 border-white">
-          <div className="flex flex-col justify-center items-center gap-2 p-2 border-2 border-sky-500 rounded-md h-full min-w-56">
-            <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500">
-              Transmissão
-            </span>
-            <div className="flex flex-row justify-center items-center gap-2">
-              <span>Protocolo utilizado:</span>
-              <span className="font-bold">{arrayData[0].toUpperCase()}</span>
-            </div>
+      </div>
 
-            <div className="flex flex-col justify-center items-center gap-2">
-              <span>Última transmissão:</span>
-              <span className="font-bold">{arrayData[7]}</span>
-            </div>
-          </div>
+      <div className="my-2">
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+            <thead>
+              <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
+                <th className="py-0.5 px-4 text-left">Informações do dispositivo</th>
+                <th className="py-0.5 px-4 text-left"></th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-600 text-sm font-light">
+              {data.map((item) => (
+                <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="py-0.5 px-4 text-left font-bold text-gray-500">{item.name}</td>
+                  <td className="py-0.5 px-4 text-left font-semibold text-gray-400">
+                    {item.value}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-200 text-gray-700 text-sm leading-normal rounded-b-lg ">
+                <td className="py-2 px-4 text-left rounded-bl-lg" colSpan={3}></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
-      <div className="flex flex-col justify-evenly bg-white h-auto rounded-md mt-2 border-2 border-sky-500">
-        <div className="bg-sky-500 text-white p-1 ">
+      <div className="flex flex-col justify-evenly bg-white h-auto rounded-md  border-2 border-sky-500">
+        <div className="bg-sky-500 text-white p-0.5 ">
           <span className="font-bold">Relatório:</span>
         </div>
-        <div className="flex flex-row justify-between items-center my-3 mx-10">
+        <div className="flex flex-row justify-between items-center my-1 mx-2">
           <div className="flex flex-col justify-center items-start gap-2">
             <div className="flex flex-row gap-2">
               <span className="font-bold">Número de registros:</span>
@@ -202,33 +234,8 @@ export default function Status({
             onClick={handleDowReport}
           >
             <DownloadSimple size={24} />
-            Baixar relatórios
+            Coletar relatórios
           </Button>
-        </div>
-      </div>
-      <div className="my-2">
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
-            <thead>
-              <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
-                <th className="py-2 px-4 text-left">Informações do dispositivo</th>
-                <th className="py-2 px-4 text-left"></th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-600 text-sm font-light">
-              {data.map((item) => (
-                <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-1 px-4 text-left font-bold text-gray-500">{item.name}</td>
-                  <td className="py-1 px-4 text-left font-semibold text-gray-400">{item.value}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-gray-200 text-gray-700 text-sm leading-normal rounded-b-lg ">
-                <td className="py-2 px-4 text-left rounded-bl-lg" colSpan={3}></td>
-              </tr>
-            </tfoot>
-          </table>
         </div>
       </div>
       <div className="flex justify-end mt-1 border-t-[1px] border-gray-200 pt-2 w-full gap-4">

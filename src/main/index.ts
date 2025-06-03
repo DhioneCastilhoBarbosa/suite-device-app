@@ -1,4 +1,5 @@
-import { app, shell, BrowserWindow, autoUpdater, dialog, screen, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, dialog, screen, ipcMain } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import iconLinux from '../../resources/icon.png?asset'
@@ -25,11 +26,11 @@ if (squirrelStartup) {
   app.quit()
 }
 
-const { updateElectronApp } = require('update-electron-app')
+/*const { updateElectronApp } = require('update-electron-app')
 updateElectronApp({
   updateInterval: '5 minutes',
   notifyUser: true
-})
+})*/
 
 let mainWindow: BrowserWindow | null
 
@@ -144,7 +145,7 @@ if (!handleSquirrelEvent()) {
   app.on('ready', () => {
     createWindow()
 
-    autoUpdater.checkForUpdates()
+    autoUpdater.checkForUpdatesAndNotify()
     ipcMain.handle('save-device', async (event, device) => {
       try {
         await insertDevice(device)
@@ -275,24 +276,22 @@ if (!handleSquirrelEvent()) {
     }
   })
 
-  autoUpdater.on('update-downloaded', (releaseNotes, releaseName) => {
+  autoUpdater.on('update-downloaded', (info) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dialogOpts: any = {
       type: 'info',
       buttons: ['Restart', 'Later'],
       title: 'Application Update',
-      message: process.platform === 'darwin' ? releaseNotes : releaseName,
+      message: info.releaseName || 'Atualização disponível',
       detail: 'A new version has been downloaded. Restart the application to apply the updates.'
       //detail: 'Uma nova versão foi baixada. Reinicie o aplicativo para aplicar as atualizações.'
     }
 
-    dialog.showMessageBox(dialogOpts)
-
-    /*dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
       if (returnValue.response === 0) {
         autoUpdater.quitAndInstall()
       }
-    })*/
+    })
   })
 
   autoUpdater.on('checking-for-update', () => {
@@ -307,7 +306,8 @@ if (!handleSquirrelEvent()) {
     // Aqui você pode adicionar qualquer lógica necessária quando uma atualização não está disponível
   })
 
-  autoUpdater.on('error', () => {
+  autoUpdater.on('error', (err) => {
     // Aqui você pode adicionar qualquer lógica necessária para lidar com erros de atualização
+    console.error('Erro ao verificar atualizações:', err)
   })
 }

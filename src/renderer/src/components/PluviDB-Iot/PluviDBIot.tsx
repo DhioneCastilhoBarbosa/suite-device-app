@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react'
 import { InstantData } from './components/intantData'
 import PasswordModal from './components/Login'
 import { ModalErroUnloagged } from '../modal/modalUnlogged'
-import { set } from 'zod'
+
 import { Update } from './components/update'
 
 interface PluviDBIotProps {
