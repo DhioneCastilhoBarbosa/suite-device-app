@@ -49,6 +49,22 @@ export function Conection({
 
   const toggleSwitch = (): void => {
     setIsEnabled(!isEnabled)
+    setFormData((prevData) => {
+      const newData = [...prevData]
+      if (!isEnabled) {
+        // Se o switch estava ligado, desliga e limpa os campos
+        newData[1] = 'auto'
+        newData[2] = 'null'
+        newData[3] = 'null'
+        newData[4] = '0000'
+      } else {
+        // Se o switch estava desligado, mantém os valores atuais
+        newData[1] = prevData[1]
+        newData[2] = prevData[2]
+        newData[3] = prevData[3]
+      }
+      return newData
+    })
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -98,6 +114,10 @@ export function Conection({
       }
     }
   }, [receivedSettingsConection])
+
+  useEffect(() => {
+    console.log('Form data updated:', formData)
+  }, [formData])
 
   useEffect(() => {
     const timeout = setTimeout(() => {

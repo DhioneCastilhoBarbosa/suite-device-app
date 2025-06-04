@@ -1,7 +1,29 @@
+import { app } from 'electron'
+import { is } from '@electron-toolkit/utils'
+const path = require('path')
+const fs = require('fs')
 import sqlite3 from 'sqlite3'
 sqlite3.verbose()
 
-const db = new sqlite3.Database('./suite-device.db')
+//const dbPath = path.join(app.getPath('userData'), 'suite-device.db')
+//const db = new sqlite3.Database(dbPath)
+
+const dbPath = is.dev
+  ? path.join(process.cwd(), 'suite-device.db') // durante desenvolvimento
+  : path.join(app.getPath('userData'), 'suite-device.db')
+
+// Apenas em produção é necessário garantir a existência do diretório
+if (!is.dev) {
+  const dir = path.dirname(dbPath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+}
+
+const db = new sqlite3.Database(dbPath)
+
+//const db = new sqlite3.Database('./suite-device.db')
+console.log('Caminho do banco SQLite:', dbPath)
 
 // Tabela de dispositivos (já existente)
 db.serialize(() => {

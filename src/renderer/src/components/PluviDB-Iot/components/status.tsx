@@ -1,4 +1,14 @@
-import { ArrowsClockwise, BatteryFull, CellSignalFull, DownloadSimple } from '@phosphor-icons/react'
+import {
+  ArrowsClockwise,
+  BatteryFull,
+  CellSignalFull,
+  CellSignalHigh,
+  CellSignalLow,
+  CellSignalMedium,
+  CellSignalNone,
+  CellSignalX,
+  DownloadSimple
+} from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { ModalSaveReport } from '@renderer/components/modal/modalSaveReport'
 import { useEffect, useState } from 'react'
@@ -40,7 +50,7 @@ export default function Status({
     { id: 7, name: 'IMEI:', value: arrayData[8] },
     { id: 8, name: 'Versão do Firmware:', value: arrayData[9] },
     { id: 9, name: 'Versão do hardware:', value: arrayData[10] },
-    { id: 10, name: 'ProSig:', value: arrayData[20] },
+    { id: 10, name: 'ProgSig:', value: arrayData[20] },
     { id: 11, name: 'Contador de boot:', value: arrayData[18] },
     { id: 12, name: 'Start time:', value: arrayData[11] }
   ]
@@ -82,6 +92,29 @@ export default function Status({
 
   function handleCloseModal(): void {
     setShowModalSaveReport(false)
+  }
+
+  const renderSignalIcon = () => {
+    const signalStr = parseInt(arrayData[2])
+    console.log('Signal Strength:', signalStr)
+    if (isNaN(signalStr)) return <CellSignalX size={36} />
+    if (signalStr === 0) return <CellSignalX size={36} />
+    if (signalStr <= -120) return <CellSignalX size={36} />
+    if (signalStr > -120 && signalStr <= -110) return <CellSignalNone size={36} />
+    if (signalStr > -110 && signalStr <= -100) return <CellSignalLow size={36} />
+    if (signalStr > -100 && signalStr <= -90) return <CellSignalMedium size={36} />
+    if (signalStr > -90 && signalStr < -80) return <CellSignalHigh size={36} />
+    return <CellSignalFull size={36} />
+  }
+
+  const getBatteryBars = (): number => {
+    const voltage = parseFloat(arrayData[3])
+    if (isNaN(voltage)) return 0
+    if (voltage < 3.1) return 1
+    if (voltage < 3.2) return 2
+    if (voltage < 3.3) return 3
+    if (voltage < 3.4) return 4
+    return 5 // 3.4 ou mais sempre mostra 5 barras
   }
 
   useEffect(() => {
@@ -143,7 +176,7 @@ export default function Status({
                 {arrayData[4]}
               </span>
               <div className="flex flex-row justify-center items-center gap-1 mb-1.5">
-                <CellSignalFull size={36} />
+                {renderSignalIcon()}
                 <span>{`${arrayData[2]} dBm`} </span>
               </div>
             </div>
@@ -176,12 +209,24 @@ export default function Status({
         </div>
         <div className="flex flex-col justify-center  bg-white m-0.5 rounded-md border-2 border-white">
           <div className="flex flex-col justify-center items-center p-1 border-2 border-sky-500 rounded-md h-full w-auto">
-            <div className=" text-sky-500">
-              <BatteryFull size={36} />
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center ">
+                {/* Corpo da bateria */}
+                <div className="flex flex-row items-center gap-[3px] border-2 border-sky-500 rounded-md p-[3px] w-[48px] h-[24px]">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-[5px] h-full rounded-sm ${
+                        index < getBatteryBars() ? 'bg-sky-500' : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+                {/* Terminal da bateria */}
+                <div className="w-[4px] h-[12px] bg-sky-500 ml-[2px] rounded-sm" />
+              </div>
+              <span className="text-[12px] font-bold mt-1">{`${arrayData[3]} Volts`}</span>
             </div>
-            <span className="flex flex-row justify-center items-baseline font-bold  ml-2 text-[12px]">
-              {`${arrayData[3]} Volts`}
-            </span>
           </div>
         </div>
       </div>

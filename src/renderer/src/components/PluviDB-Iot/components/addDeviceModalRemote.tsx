@@ -63,7 +63,7 @@ export default function AddDeviceModal({
       brokerPort,
       brokerUser,
       brokerPassword,
-      brokerTopic
+      brokerTopic: imei
     }
 
     try {

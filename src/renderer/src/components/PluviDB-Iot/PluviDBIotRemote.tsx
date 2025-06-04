@@ -72,7 +72,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
           message: responseText
         })
 
-        const errorKeywords = ['error', 'unknown', 'denied', 'unlogged']
+        const errorKeywords = ['error', 'denied', 'unlogged']
         const isError = errorKeywords.some((keyword) => message.toLowerCase().includes(keyword))
 
         setTerminalOutput((prev) => [
@@ -380,9 +380,9 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
             <div className="flex-1 bg-white border border-sky-200 rounded p-3 overflow-auto text-sky-800 shadow-inner">
               {terminalOutput.length > 0 ? (
-                terminalOutput.map((msg) => (
+                terminalOutput.map((msg, index) => (
                   <p
-                    key={msg.id}
+                    key={`${msg.id}-${index}`}
                     className={`px-2 py-1 rounded mb-1 ${
                       msg.status === 'pending'
                         ? 'bg-yellow-200'

@@ -22,7 +22,7 @@ export function InstantData({ receivedDataInst, handleUpdateInst }: Props): JSX.
     { id: 10, name: 'Chuva P2 Total(mm):', value: '0.00' },
     { id: 11, name: 'Bateria(V):', value: '0.0' },
     { id: 12, name: 'Sinal(dBm):', value: '0' },
-    { id: 13, name: 'Contador de inicialização:', value: '0' }
+    { id: 13, name: 'Contador de boot:', value: '0' }
   ])
 
   useEffect(() => {
