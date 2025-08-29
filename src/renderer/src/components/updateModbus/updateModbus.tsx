@@ -7,6 +7,7 @@ import { Device } from '../../Context/DeviceContext'
 import { ModalUpdate } from '../modal/modalUpdate'
 import { ModalSucess } from '../modal/modalSucces'
 import { ModalFailUpdate } from '../modal/modalFailUpdate'
+import { SerialManager } from '@renderer/utils/serialManager'
 
 export default function UpdateModubus() {
   const [fileContent, setFileContent] = useState<string>('')
@@ -38,15 +39,18 @@ export default function UpdateModubus() {
     //console.log('Erro durante a atualização')
     setStatus((status) => status + 'Erro durante a atualização. \n')
     setShowModalFail(true)
+    SerialManager.setIdle()
   }
 
   const finished = () => {
     setStatus((status) => status + 'Atualização concluida com sucesso! \n')
     //SetPortOpen({state:false})
     setShowModalSucess(true)
+    SerialManager.setIdle()
   }
 
   const handleUpdate = () => {
+    SerialManager.setBusy()
     setStatus('Aguardando sincronizar com o sensor... \n')
     setShowModal(false)
     atualizaFirmware({

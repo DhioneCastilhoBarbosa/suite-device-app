@@ -40,6 +40,8 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
     setMenuName(menu)
   }
 
+  console.log('LinnimDB-Borbulha', props.isConect)
+
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
       <HeaderDevice DeviceName={'LinnimDB-Borbulha'}>

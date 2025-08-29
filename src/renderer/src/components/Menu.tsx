@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '../Context/DeviceContext'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Footer from './Footer'
 
 export default function Menu() {

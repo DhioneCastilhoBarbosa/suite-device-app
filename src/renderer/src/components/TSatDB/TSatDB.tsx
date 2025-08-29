@@ -32,8 +32,8 @@ interface SerialProps {
 const serialManagerTsatDB = new SerialManagerRS232()
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function OpenPortTSatDB({ portName, bauld }: SerialProps) {
-  serialManagerTsatDB.openPortRS232(portName, bauld)
+export function OpenPortTSatDB({ portName, bauld }: SerialProps): Promise<void> {
+  return serialManagerTsatDB.openPortRS232(portName, bauld)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

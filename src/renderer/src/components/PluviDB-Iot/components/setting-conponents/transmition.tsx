@@ -299,6 +299,7 @@ export function Transmition({
               value={Publish}
               className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
               onChange={(e) => setPublish(e.target.value)}
+              disabled
             />
           </div>
 
@@ -309,6 +310,7 @@ export function Transmition({
               value={Subscribe}
               className="border-[1px] border-gray-200 p-1 rounded-lg  focus:outline-sky-300"
               onChange={(e) => setSubscribe(e.target.value)}
+              disabled
             />
           </div>
 

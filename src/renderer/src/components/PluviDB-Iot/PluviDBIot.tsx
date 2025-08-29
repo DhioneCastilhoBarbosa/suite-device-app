@@ -6,7 +6,6 @@ import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import SerialManagerRS232 from '@renderer/utils/serial'
-import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '../../Context/DeviceContext'
 import Status from './components/status'
 
@@ -18,6 +17,7 @@ import PasswordModal from './components/Login'
 import { ModalErroUnloagged } from '../modal/modalUnlogged'
 
 import { Update } from './components/update'
+import { toast } from 'react-toastify'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -30,11 +30,20 @@ interface SerialProps {
   bauld: number
 }
 
+// amplie se precisar na sua base
+type PasswordValidationResult =
+  | { success: true }
+  | {
+      success: false
+      errorCode: 'wrong-password' | 'invalid-command' | 'connection-error' | 'unexpected'
+      message?: string
+    }
+
 const serialManagerPluviIoT = new SerialManagerRS232()
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function OpenPortPluviIoT({ portName, bauld }: SerialProps) {
-  serialManagerPluviIoT.openPortRS232(portName, bauld)
+export function OpenPortPluviIoT({ portName, bauld }: SerialProps): Promise<void> {
+  return serialManagerPluviIoT.openPortRS232(portName, bauld)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -59,6 +68,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [dataReceivedComandTerminal, setDataReceivedComandTerminal] = useState<string>('')
   const [dataReceivedComandInst, setDataReceivedComandInst] = useState<string>('')
   const [dataReceivedComandStatus, setDataReceivedComandStatus] = useState<string>('')
+  const [dataReceivedComandGL, setDataReceivedComandGL] = useState<string>('')
   const [dataReceivedComandReport, setDataReceivedComandReport] = useState<string>('')
   const [dataReceivedComandConection, setDataReceivedComandConection] = useState<string>('')
   const [dataReceivedComandGeneralName, setDataReceivedComandGeneralName] = useState<string>('')
@@ -96,7 +106,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [isModalPassWordOpen, setIsModalPassWordOpen] = useState(true)
   const [enabledAccess, setEnabledAccess] = useState(false)
   const [showModalErroUnloagged, setShowModalErroUnloagged] = useState(false)
-  const { mode }: any = Device()
+  const { mode, connectorDisconnect }: any = Device()
 
   function handleMenu(menu): void {
     switch (menu) {
@@ -145,9 +155,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setMenuName(menu)
   }
 
-  function closeNoDeviceFoundModal(): void {
+  /*function closeNoDeviceFoundModal(): void {
     setDeviceFound(null)
-  }
+  }*/
 
   async function handleComandSend(comand: string): Promise<string> {
     serialManagerPluviIoT.sendCommandPluviIot(comand)
@@ -160,7 +170,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     const timeoutPromise = shouldUseTimeout
       ? new Promise<string>((_, reject) =>
           setTimeout(() => {
-            reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
+            reject(new Error('TIMEOUT'))
           }, 20000)
         )
       : null
@@ -171,7 +181,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         ? Promise.race([serialManagerPluviIoT.receiveDataPluvi(), timeoutPromise])
         : serialManagerPluviIoT.receiveReportPluvi())
 
-      //console.log(`Resposta do comando ${comand}:`, response)
+      console.log(`Resposta do comando ${comand}:`, response)
 
       // Verifica se a resposta indica erro de login e desativa o acesso
       if (response.includes('Error: Unlogged')) {
@@ -181,26 +191,118 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       }
 
       return response
-    } catch (error) {
-      console.error(`Erro ao receber resposta do comando ${comand}:`, error)
+    } catch (error: any) {
+      if (error.message === 'TIMEOUT') {
+        toast.warn('Tempo excedido sem resposta do dispositivo. Tente novamente.') // [CHANGE]
+      } else {
+        toast.error(`Erro ao receber resposta: ${error.message ?? 'desconhecido'}`)
+      }
       setIsLoading(false)
       setDeviceFound(false)
       throw error
     }
   }
 
-  function revalidateAutentication(lastComand: string): void {
+  // === handleComandSend enxuto (quase igual ao antigo) ===
+  /*async function handleComandSend(comand: string, fireAndForget = false): Promise<string> {
+    // envia sempre
+    try {
+      serialManagerPluviIoT.sendCommandPluviIot(comand)
+    } catch (e: any) {
+      toast.error(`Erro ao enviar comando: ${e?.message ?? 'desconhecido'}`)
+      throw e
+    }
+
+    // não esperar resposta quando solicitado
+    if (fireAndForget) return ''
+
+    const isMemQuery = /^mem=\d+\?$/.test(comand)
+    const isLogin = /^lg=/.test(comand)
+
+    // escolha do "receiver" igual ao antigo
+    const receivePromise = isMemQuery
+      ? serialManagerPluviIoT.receiveReportPluvi()
+      : serialManagerPluviIoT.receiveDataPluvi()
+
+    // timeout só para LOGIN; demais = 0 (sem timeout)
+    const timeoutMs = isLogin ? 2000 : 20000
+    const timeoutPromise =
+      timeoutMs > 0
+        ? new Promise<string>((_, reject) =>
+            setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
+          )
+        : null
+
+
+
+    try {
+      const response = timeoutPromise
+        ? await Promise.race([receivePromise, timeoutPromise])
+        : await receivePromise
+
+      if (response.includes('Error: Unlogged')) {
+        setTimeout(() => {
+          revalidateAutentication(comand)
+        }, 500)
+      }
+
+      console.log(`Resposta do comando ${comand}:`, response)
+      return response
+    } catch (error: any) {
+      if (error?.message === 'TIMEOUT') {
+        // só cai aqui em login
+        toast.warn('Tempo excedido sem resposta do dispositivo. Tente novamente.')
+      } else {
+        toast.error(`Erro ao receber resposta: ${error?.message ?? 'desconhecido'}`)
+      }
+      setIsLoading(false)
+      setDeviceFound(false)
+      throw error
+    }
+  }*/
+
+  // Mapeamento dos comandos completos com seus respectivos handlers
+  // Mapeamento dos comandos completos com seus respectivos handlers (agora com array)
+  const responseHandlers: { [command: string]: ((response: string) => void)[] } = {
+    'conex=cfg?': [setDataReceivedComandConection],
+    'ps=inst?': [setDataReceivedComandInst],
+    'ps=status?': [setDataReceivedComandStatus],
+    'gl=cfg?': [setDataReceivedComandGL, setDataReceivedComandGeneralGeolocation],
+    'nd=cfg?': [setDataReceivedComandGeneralName],
+    'tz=cfg?': [setDataReceivedComandGeneralTimeZone],
+    'dt=cfg?': [setDataReceivedComandGeneralTime],
+    'p1=cfg?': [setDataReceivedComandPortP1],
+    'p2=cfg?': [setDataReceivedComandPortP2],
+    'sdi=cfg?': [setDataReceivedComandPortSdi],
+    'tf=cfg?': [setDataReceivedComandTimerFixed],
+    'td=cfg?': [setDataReceivedComandTimerDynamic],
+    'tm=cfg?': [setDataReceivedComandTimerMaintenance],
+    'patrimonio=cfg?': [setDataReceivedComandHeritage],
+    'resinc=cfg?': [setDataReceivedComandRepeatSync],
+    'prot=cfg?': [setDataReceivedComandProtocol],
+    'mqtt=cfg?': [setDataReceivedComandProtocolMQTT],
+    'ftp=cfg?': [setDataReceivedComandProtocolFTP],
+    'ntp=cfg?': [setDataReceivedComandNTP]
+  }
+
+  function revalidateAutentication(lastCommand: string): void {
     if (props.isConect && !mode.state) {
       handleComandSend(`lg=${PasswordSaved}?`).then((response) => {
-        //console.log('Recebeu erro: unlogged e revalidou:', response)
         if (response === 'lg=1!') {
-          /*setTimeout(() => {
-            handleComandSend(lastComand).then((response) => {
-              console.log('Ultimo comando enviado:', lastComand)
-              console.log('Resposta do ultimo comando:', response)
+          setTimeout(() => {
+            handleComandSend(lastCommand).then((response) => {
+              console.log('Último comando enviado:', lastCommand)
+              console.log('Resposta do último comando:', response)
+
+              const handlers = responseHandlers[lastCommand] // agora pega pelo comando completo
+
+              if (handlers) {
+                handlers.forEach((handler) => handler(response))
+              } else {
+                console.warn(`Nenhum handler definido para o comando: ${lastCommand}`)
+              }
             })
-          }, 500)*/
-          setShowModalErroUnloagged(true)
+          }, 500)
           setEnabledAccess(true)
         }
       })
@@ -251,10 +353,25 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Baixando informações do dispositivo!')
       setIsLoading(true)
-      handleComandSend('ps=status?').then((response) => {
-        setDataReceivedComandStatus(response)
-        setIsLoading(false)
-      })
+
+      // Envia o primeiro comando
+      handleComandSend('ps=status?')
+        .then((responseStatus) => {
+          setDataReceivedComandStatus(responseStatus)
+
+          // Envia o segundo comando após o primeiro
+          return handleComandSend('gl=cfg?')
+        })
+        .then((responseCfg) => {
+          setDataReceivedComandGL(responseCfg)
+          console.log('Resposta de gl=cfg?:', responseCfg)
+        })
+        .catch((error) => {
+          console.error('Erro ao executar comandos:', error)
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
     }
   }
 
@@ -484,7 +601,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     // Formata a string no padrão desejado
     const formattedString = `conex=${list.slice(0, 5).join(';')}!`
 
-    //console.log('String formatada:', formattedString) // Para debug
+    //console.log('String de dados de conexao a se enviada:', formattedString) // Para debug
 
     if (props.isConect && !mode.state && enabledAccess) {
       setMessageIsLoading('Enviando configurações para o dispositivo!')
@@ -545,22 +662,97 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     }
   }
 
-  const handlePasswordValidation = async (password: string): Promise<boolean> => {
+  /*const handlePasswordValidation = async (password: string): Promise<PasswordValidationResult> => {
+    // bloco só roda quando conectado e NÃO em modo offline
     if (props.isConect && !mode.state) {
       try {
-        const response = await handleComandSend(`lg=${password}?`)
-        //console.log('Resposta da validação de senha:', response)
+        const raw = await handleComandSend(`lg=${password}?`)
+        const resp = String(raw).trim()
 
-        const acessoLiberado = response === 'lg=1!'
-        setEnabledAccess(acessoLiberado) // Atualiza o estado global`
-        setPasswordSaved(password) // Salva a senha para futuras
-        return acessoLiberado
-      } catch {
-        setEnabledAccess(false) // Garante que fica false em caso de erro
-        return false
+        // ✅ sucesso explícito
+        if (resp === 'lg=1!') {
+          setEnabledAccess(true)
+          setPasswordSaved(password)
+          setIsModalPassWordOpen(false) // [CHANGE] fecha modal no sucesso
+          return { success: true }
+        }
+
+        // ❌ senha errada (mapeie todas as variantes conhecidas)
+        if (resp === 'lg=0!' || /wrong\s*password/i.test(resp) || /senha\s*incorreta/i.test(resp)) {
+          setEnabledAccess(false)
+          return { success: false, errorCode: 'wrong-password', message: resp }
+        }
+
+        // ❌ comando inválido/desconhecido → NÃO é senha errada
+        if (/invalid\s*command/i.test(resp) || /unknown\s*command/i.test(resp)) {
+          setEnabledAccess(false)
+          return { success: false, errorCode: 'invalid-command', message: resp }
+        }
+
+        // ❌ outros textos de erro viram inesperado
+        setEnabledAccess(false)
+        return { success: false, errorCode: 'unexpected', message: resp }
+      } catch (e: any) {
+        // timeouts, cabo solto, etc.
+        setEnabledAccess(false)
+        return { success: false, errorCode: 'connection-error', message: e?.message }
       }
     }
-    return false // Retorna false caso a validação não ocorra
+
+    // não conectado ou offline
+    setEnabledAccess(false)
+    return { success: false, errorCode: 'connection-error', message: 'not-connected-or-offline' }
+  }*/
+
+  // helper: pega o último token de login da resposta
+  // === helper p/ extrair o último token de login ===
+  const pickLastLoginToken = (s: string) => {
+    const m = String(s)
+      .replace(/\r/g, '')
+      .match(/lg=\d!/g)
+    return m && m.length ? m[m.length - 1] : String(s).trim()
+  }
+
+  // === handlePasswordValidation usando o fire-and-forget e último token ===
+  const handlePasswordValidation = async (password: string): Promise<PasswordValidationResult> => {
+    if (props.isConect && !mode.state) {
+      try {
+        // reset de login sem esperar
+        await handleComandSend('lg=0?')
+
+        // opcional: micro intervalo para reduzir colagem de respostas
+        await new Promise((r) => setTimeout(r, 80))
+
+        const raw = await handleComandSend(`lg=${password}?`) // timeout só aqui (3s)
+        const token = pickLastLoginToken(raw)
+
+        if (token === 'lg=1!') {
+          setEnabledAccess(true)
+          setPasswordSaved(password)
+          setIsModalPassWordOpen(false)
+          return { success: true }
+        }
+
+        if (token === 'lg=0!' || /wrong\s*password/i.test(raw) || /senha\s*incorreta/i.test(raw)) {
+          setEnabledAccess(false)
+          return { success: false, errorCode: 'wrong-password', message: String(raw).trim() }
+        }
+
+        if (/invalid\s*command/i.test(raw) || /unknown\s*command/i.test(raw)) {
+          setEnabledAccess(false)
+          return { success: false, errorCode: 'invalid-command', message: String(raw).trim() }
+        }
+
+        setEnabledAccess(false)
+        return { success: false, errorCode: 'unexpected', message: String(raw).trim() }
+      } catch (e: any) {
+        setEnabledAccess(false)
+        return { success: false, errorCode: 'connection-error', message: e?.message }
+      }
+    }
+
+    setEnabledAccess(false)
+    return { success: false, errorCode: 'connection-error', message: 'not-connected-or-offline' }
   }
 
   const handleCloseModalErroUnlogged = (): void => {
@@ -645,6 +837,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               <Status
                 handleUpdateStatus={handleUpdateStatus}
                 receivedDataStatus={dataReceivedComandStatus}
+                receivedDataGeolocation={dataReceivedComandGL}
                 handleSendDownReport={handleSendComandDownMemory}
                 handleSendInfoReport={handleSendComandMemoryInfo}
                 receivedDataDownReport={dataReceivedComandMemoryInfoData}
@@ -699,15 +892,19 @@ export default function PluviDBIot(props: PluviDBIotProps) {
           </div>
         }
       </div>
-      {deviceFound !== null && !deviceFound && (
+      {/*deviceFound !== null && !deviceFound && (
         <NoDeviceFoundModbus onClose={closeNoDeviceFoundModal} />
-      )}
+      )*/}
 
       <LoadingData visible={isLoading} title={messageIsLoading} />
 
       {isModalPassWordOpen && (
         <PasswordModal
           onClose={() => setIsModalPassWordOpen(false)}
+          onCancel={() => {
+            connectorDisconnect?.()
+            setIsModalPassWordOpen(false)
+          }}
           onValidatePassword={handlePasswordValidation}
         />
       )}

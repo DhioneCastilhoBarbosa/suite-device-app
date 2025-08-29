@@ -28,8 +28,8 @@ interface SerialProps {
 const serialManagerRS232 = new SerialManagerRS232()
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function OpenPortRS232({ portName, bauld }: SerialProps) {
-  serialManagerRS232.openPortRS232(portName, bauld)
+export function OpenPortRS232({ portName, bauld }: SerialProps): Promise<void> {
+  return serialManagerRS232.openPortRS232(portName, bauld)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

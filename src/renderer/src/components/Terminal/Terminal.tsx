@@ -28,8 +28,8 @@ const serialManager = new SerialManager()
 const numericSchema = z.string().regex(/^\d*$/, 'Deve conter apenas números')
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function Openport({ portName, bauld }: SerialProps) {
-  serialManager.openPort(portName, bauld)
+export function Openport({ portName, bauld }: SerialProps): Promise<void> {
+  return serialManager.openPort(portName, bauld)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

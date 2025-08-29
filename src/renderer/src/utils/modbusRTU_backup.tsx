@@ -6,12 +6,11 @@
 'use strict'
 
 //==============================================================
-// ★ CHANGED: em vez de um client global fixo, criamos e destruímos sob demanda.
-//             Isso evita reuso de handle “morto” após desconexão física.
+// create an empty modbus client
 const ModbusRTU = window.require('modbus-serial')
-let client: any /* ModbusRTU */ = null // ★ CHANGED: antes era const client = new ModbusRTU()
+const client = new ModbusRTU()
 
-let mbsStatus = 'Initializing...'
+let mbsStatus = 'Initializing...' // holds a status of Modbus
 
 // Modbus 'state' constants
 const MBS_STATE_INIT = 'State init'
@@ -22,43 +21,16 @@ const MBS_STATE_FAIL_CONNECT = 'State fail (port)'
 
 // eslint-disable-next-line no-unused-vars
 let mbsId = 1
-let mbsTimeout = 250
+let mbsTimeout = 250 // 250
 // eslint-disable-next-line no-unused-vars
 let mbsState = MBS_STATE_INIT
 
-// ★ ADDED: flag simples para evitar corrida durante varredura/conexão
-let busy = false
-
-// ★ ADDED: util
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
-// ★ ADDED: cria um client novo SEM reusar instância anterior
-function newClient() {
-  const c = new ModbusRTU()
-  // propaga erro para log
-  c.on('error', (error: any) => {
-    console.log('SerialPort Error: ', error)
-  })
-  return c
-}
-
-// ★ ADDED: fecha e limpa qualquer client antigo
-async function hardCloseClient() {
-  try {
-    if (!client) return
-    try { client.removeAllListeners?.() } catch {}
-    // modbus-serial expõe close(cb)
-    await new Promise<void>((res) => {
-      try { client.close?.(() => res()) } catch { res() }
-    })
-  } finally {
-    client = null
-    mbsId = 1
-  }
-}
+// Upon SerialPort error
+client.on('error', function (error) {
+  console.log('SerialPort Error: ', error)
+})
 
 export function IdModBus(address) {
-  if (!client) return
   client.setID(address)
 }
 
@@ -69,45 +41,52 @@ interface ModBusConectProps {
 
 let cancelScan = false
 const MAX_ADDRESS = 247
-const CONCURRENCY = 20
+const CONCURRENCY = 20 // Número de endereços a escanear em paralelo
 let deviceFound = false
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const scanAddress = async (mbsId: number): Promise<number | null> => {
-  if (cancelScan || deviceFound) return null
-  if (!client) return null // ★ ADDED: guarda
-  client.setID(mbsId)
-  // console.log(`Verificando endereço ${mbsId}...`)
+  if (cancelScan || deviceFound) {
+    return null
+  }
+  client.setID(mbsId) // Definir o endereço Modbus que estamos verificando
+  console.log(`Verificando endereço ${mbsId}...`)
   try {
     const data = await client.readHoldingRegisters(255, 1)
-    if (cancelScan || deviceFound) return null
-    // console.log(`Dispositivo encontrado no endereço ${mbsId}:`, data.data)
+    if (cancelScan || deviceFound) {
+      return null
+    }
+    console.log(`Dispositivo encontrado no endereço ${mbsId}:`, data.data)
     deviceFound = true
-    return mbsId
-  } catch {
+
+    return mbsId // Dispositivo encontrado;
+  } catch (err) {
+    //console.error(`Nenhum dispositivo encontrado no endereço ${mbsId}`);
     return null
   }
 }
 
 export const scanNextAddress = async (): Promise<boolean> => {
   for (let i = 1; i <= MAX_ADDRESS; i += CONCURRENCY) {
-    if (cancelScan || deviceFound) return deviceFound
+    if (cancelScan || deviceFound) {
+      return deviceFound
+    }
     const promises: Promise<number | null>[] = []
     for (let j = i; j < i + CONCURRENCY && j <= MAX_ADDRESS; j++) {
       promises.push(scanAddress(j))
-      await delay(250)
+      await delay(250) // Atraso de 50ms entre as verificações (ajuste conforme necessário)/250
     }
     const results = await Promise.all(promises)
     const foundAddress = results.find((result) => result !== null)
-    if (foundAddress !== undefined && foundAddress !== null) {
-      if (client) client.setID(foundAddress) // ★ CHANGED: checa client
-      // console.log('Varredura parada, dispositivo encontrado.')
-      return true
+    if (foundAddress !== undefined) {
+      client.setID(foundAddress) // Definir o cliente para o endereço encontrado
+      console.log('Varredura parada, dispositivo encontrado.')
+      return true // Dispositivo encontrado
     }
   }
-  // console.log('Varredura completa, nenhum dispositivo encontrado.')
-  return false
+  console.log('Varredura completa, nenhum dispositivo encontrado.')
+  return false // Varredura completa, nenhum dispositivo encontrado
 }
 
 // Para cancelar a varredura
@@ -117,45 +96,27 @@ export const cancelScanProcess = () => {
 }
 
 export async function connectClient({ SerialName, BaudRate }: ModBusConectProps): Promise<boolean> {
-  if (busy) return false // ★ ADDED: evita chamada concorrente
-  busy = true
-  cancelScan = false
-  deviceFound = false
+  cancelScan = false // Resetar o sinal de cancelamento
+  client.setTimeout(mbsTimeout)
 
   try {
-    // ★ ADDED: fecha qualquer client pendente antes de abrir novamente
-    await hardCloseClient()
-
-    // ★ ADDED: cooldown curto após unplug/plug para Windows/FTDI
-    await sleep(800)
-
-    client = newClient()
-    client.setTimeout(mbsTimeout)
-
-    // ★ CHANGED: parity 'none' → sua versão usava 'One' (inválido para 'parity')
     await client.connectRTUBuffered(SerialName, {
       baudRate: BaudRate,
-      parity: 'none',          // ★ CHANGED
+      parity: 'One',
       dataBits: 8,
       stopBits: 1
-      // autoOpen é gerenciado pelo modbus-serial internamente no connectRTUBuffered
     })
-
     mbsState = MBS_STATE_GOOD_CONNECT
     mbsStatus = 'Connected, wait for reading...'
     console.log(mbsStatus)
 
-    const ok = await scanNextAddress()
-    return ok
+    const deviceFound = await scanNextAddress()
+    return deviceFound
   } catch (e) {
     mbsState = MBS_STATE_FAIL_CONNECT
     mbsStatus = (e as Error).message
-    console.log('Erro Modbus:', e)
-    // ★ ADDED: garante limpeza em falha para próxima tentativa ser “fresh”
-    await hardCloseClient()
-    throw e // ★ CHANGED: manter propagação
-  } finally {
-    busy = false // ★ ADDED
+   console.log('Erro Modbus:', e)
+   throw e // <-- isso é essencial para propagar o erro
   }
 }
 
@@ -173,34 +134,40 @@ export function readModbusData(
   timeout: number
 ) {
   return new Promise((resolve, reject) => {
-    if (!client) return reject(new Error('Cliente Modbus não conectado')) // ★ ADDED
+    // try to read data
     client.setTimeout(timeout)
     client
       .readHoldingRegisters(address, register)
       .then(function (data) {
         mbsState = MBS_STATE_GOOD_READ
         mbsStatus = 'success'
+        //console.log("Buffer:",data.buffer);
 
         let Data = data.buffer
         let asciiData = ''
 
+        // Convert each byte to ASCII character
         for (let i = 0; i < Data.length; i++) {
           asciiData += String.fromCharCode(Data[i])
         }
 
         if (Int16 === true) {
           let Int16Data = Data.readInt16BE()
+          console.log(Int16Data)
           resolve(Int16Data)
         } else if (Float32LE === true) {
-          let floatValue = Data.readFloatBE(0)
+          let floatValue = Data.readFloatBE(0) // Converte o buffer em um float de 32 bits em little-endian
+          console.log(floatValue)
           resolve(floatValue)
         } else {
+          console.log(asciiData)
           resolve(asciiData)
         }
       })
       .catch(function (e) {
         mbsState = MBS_STATE_FAIL_READ
         mbsStatus = e.message
+        // console.log(e);
         reject(e)
       })
   })
@@ -214,7 +181,6 @@ function floatToRegisters(float) {
 
 export const WriteModbus = async (register, value, type = 'int') => {
   try {
-    if (!client) throw new Error('Cliente Modbus não conectado') // ★ ADDED
     if (type === 'float') {
       const registers = floatToRegisters(value)
       await client.writeRegisters(register, registers)
@@ -225,16 +191,20 @@ export const WriteModbus = async (register, value, type = 'int') => {
     }
   } catch (error) {
     console.error('Erro ao gravar no Modbus:', error)
-    throw error // ★ ADDED: propaga para UI decidir
   }
 }
 
-export async function CloseModBus() {
-  // ★ CHANGED: fechamento agressivo e assíncrono para liberar handle antes da próxima conexão
-  await hardCloseClient()
-  console.log('Conexão fechada com sucesso.')
-  cancelScan = false
-  deviceFound = false
+export function CloseModBus() {
+  client.close(function (err) {
+    if (err) {
+      console.error('Erro ao fechar a conexão:', err)
+    } else {
+      console.log('Conexão fechada com sucesso.')
+      mbsId = 1
+      cancelScan = false
+      deviceFound = false
+    }
+  })
 }
 /* eslint-enable no-unused-vars */
 //==============================================================

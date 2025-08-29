@@ -16,59 +16,24 @@ interface Device {
   imei: string
 }
 
-type TerminalLogEntry = {
-  id: number
-  text: string
-  status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight' | 'error'
-  reqId?: string
-}
-
-const normalizeId = (s: string) =>
-  s
-    .replace(/^\s*["']?/, '')
-    .replace(/["']?\s*$/, '')
-    .trim()
-    .toLowerCase()
-
-const extractReqId = (s: string): string | null => {
-  if (!s) return null
-  const cleaned = String(s)
-  const byPipe = cleaned
-    .split('|')
-    .map((t) => normalizeId(t))
-    .find((t) => t.startsWith('device_'))
-  if (byPipe) return byPipe
-  const mJson = cleaned.match(/id\s*[:=]\s*"?([^"\s|;,]*device_[^"\s|;,]*)"?/i)
-  if (mJson) return normalizeId(mJson[1])
-  const mLoose = cleaned.match(/(device_[A-Za-z0-9]+)/i)
-  return mLoose ? normalizeId(mLoose[1]) : null
-}
-
-// "Recebido de <topic>: <payload>"
-const parseSavedReceiveLine = (line: string): { topic: string; payload: string } | null => {
-  const m = String(line).match(/Recebido de\s+([^:]+):\s*(.*)$/)
-  if (!m) return null
-  return { topic: m[1].trim(), payload: m[2].trim() }
-}
-
 export default function PluviDBIotRemote(): React.ReactElement {
   const [devices, setDevices] = useState<Device[]>([])
-  const [idDevice, setIdDevice] = useState<string>('')
+  const [idDevice, setIdDevice] = useState<string>('') // Adicionado para armazenar o ID
+  const [lastSubPath, setLastSubPath] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editDevice, setEditDevice] = useState<Device | null>(null)
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null)
+  type TerminalLogEntry = {
+    id: number
+    text: string
+    status: 'normal' | 'pending' | 'warning' | 'responded' | 'highlight' | 'error'
+  }
 
   const [terminalOutput, setTerminalOutput] = useState<TerminalLogEntry[]>([])
   const mqttManagerRef = useRef<MqttManager | null>(null)
   const [command, setCommand] = useState('')
   const terminalEndRef = useRef<HTMLDivElement>(null)
-  const { ipcRenderer } = (window as any).require('electron')
-
-  // Dedupe pós-conexão
-  const seenPayloadsRef = useRef<Set<string>>(new Set()) // seedado do DB
-  const warmupUntilRef = useRef<number>(0) // timestamp ms
-  const warmupEchoBudgetRef = useRef<number>(0) // 1 eco UI-only na conexão
-  const recentBurstRef = useRef<Map<string, number>>(new Map()) // anti-duplicata instantânea
+  const { ipcRenderer } = window.require('electron')
 
   const loadDevices = async (): Promise<void> => {
     try {
@@ -80,100 +45,63 @@ export default function PluviDBIotRemote(): React.ReactElement {
   }
 
   useEffect(() => {
+    console.log('🚀 Renderer sinalizando pronto')
     ipcRenderer.send('renderer-ready')
 
     const handleMQTTMessage = async (
-      _event: any,
+      event: any,
       { topic, message }: { topic: string; message: string }
     ) => {
-      if (!connectedDevice) return
-      if (!topic.includes(`${connectedDevice.imei}/rsp`)) return
+      console.log('📥 MQTT Renderer recebeu:', topic, message)
 
-      const respId = extractReqId(message)
-      const nowEpoch = Date.now()
-      const isWarmup = nowEpoch < warmupUntilRef.current
+      if (!connectedDevice) {
+        console.warn('❌ Nenhum dispositivo conectado. Ignorando mensagem.')
+        return
+      }
 
-      const payloadStr = String(message).trim()
-      const payloadKey = `${topic}|${payloadStr}`
+      const topicMatchesDevice = topic.includes(`${connectedDevice.imei}/rsp`)
+      const prefixMatches = message.includes(lastSubPath) // Se você quiser só mensagens com o lastSubPath
 
-      const timestamp = new Date().toLocaleString('pt-BR')
-      const responseText = `${timestamp} -> Recebido de ${topic}: ${message}`
+      if (topicMatchesDevice && prefixMatches) {
+        const now = new Date()
+        const timestamp = now.toLocaleString('pt-BR')
+        const responseText = `${timestamp} -> Recebido de ${topic}: ${message}`
 
-      const errorKeywords = ['error', 'denied', 'unlogged']
-      const isError = errorKeywords.some((k) => payloadStr.toLowerCase().includes(k))
-
-      // Anti-duplicata instantânea
-      const last = recentBurstRef.current.get(payloadKey)
-      if (last && nowEpoch - last < 250) return
-      recentBurstRef.current.set(payloadKey, nowEpoch)
-
-      setTerminalOutput((prev) => {
-        let matched = false
-
-        // Promove pending/warning -> responded
-        const promoted = prev.map((entry) => {
-          const isSameReq = respId && entry.reqId && normalizeId(entry.reqId) === respId
-          if (isSameReq && (entry.status === 'pending' || entry.status === 'warning')) {
-            matched = true
-            return {
-              ...entry,
-              text: entry.text
-                .replace(' (pendente de resposta)', '')
-                .replace(' (sem resposta 5min)', ''),
-              status: 'responded' as TerminalLogEntry['status']
-            }
-          }
-          return entry
-        })
-
-        // Se casou reqId: sempre mostra e persiste
-        if (matched) {
-          ipcRenderer.invoke('insertTerminalLog', {
-            deviceId: connectedDevice.id,
-            message: responseText
-          })
-          return [
-            ...promoted,
-            {
-              id: Date.now(),
-              text: responseText,
-              status: (isError ? 'error' : 'normal') as TerminalLogEntry['status']
-            }
-          ]
-        }
-
-        // Warmup: se já existe no DB, só 1 eco visual e sem persistir
-        if (isWarmup && seenPayloadsRef.current.has(payloadKey)) {
-          if (warmupEchoBudgetRef.current > 0) {
-            warmupEchoBudgetRef.current -= 1
-            return [
-              ...promoted,
-              {
-                id: Date.now(),
-                text: responseText,
-                status: (isError ? 'error' : 'normal') as TerminalLogEntry['status']
-              }
-            ]
-          }
-          return promoted
-        }
-
-        // Fora do warmup ou conteúdo novo
-        seenPayloadsRef.current.add(payloadKey)
-        ipcRenderer.invoke('insertTerminalLog', {
+        await ipcRenderer.invoke('insertTerminalLog', {
           deviceId: connectedDevice.id,
           message: responseText
         })
-        return [
-          ...promoted,
-          { id: Date.now(), text: responseText, status: isError ? 'error' : 'normal' }
-        ]
-      })
+
+        const errorKeywords = ['error', 'denied', 'unlogged']
+        const isError = errorKeywords.some((keyword) => message.toLowerCase().includes(keyword))
+
+        setTerminalOutput((prev) => [
+          ...prev.map((msg) =>
+            msg.status === 'pending'
+              ? {
+                  ...msg,
+                  text: msg.text.replace(' (pendente de resposta)', ''),
+                  status: 'responded' as const
+                }
+              : msg
+          ),
+          {
+            id: Date.now(),
+            text: responseText,
+            status: isError ? 'error' : 'normal'
+          }
+        ])
+      } else {
+        console.log('📭 Mensagem ignorada: não corresponde ao dispositivo ou prefixo')
+      }
     }
 
     ipcRenderer.on('mqtt-message', handleMQTTMessage)
-    return () => ipcRenderer.removeListener('mqtt-message', handleMQTTMessage)
-  }, [connectedDevice])
+
+    return () => {
+      ipcRenderer.removeListener('mqtt-message', handleMQTTMessage)
+    }
+  }, [connectedDevice, lastSubPath])
 
   useEffect(() => {
     loadDevices()
@@ -196,126 +124,111 @@ export default function PluviDBIotRemote(): React.ReactElement {
     }
   }
 
-  const handleConnectToggle = async (device: Device) => {
+  const handleConnectToggle = async (device) => {
     if (connectedDevice?.name === device.name) {
       mqttManagerRef.current?.unsubscribe(`${device.brokerTopic}/#`)
       mqttManagerRef.current?.disconnect()
       mqttManagerRef.current = null
       setConnectedDevice(null)
+      setLastSubPath('')
       setTerminalOutput([])
-      seenPayloadsRef.current = new Set()
-      warmupUntilRef.current = 0
-      warmupEchoBudgetRef.current = 0
-      recentBurstRef.current = new Map()
-      return
-    }
-
-    try {
-      const manager = new MqttManager()
-      const brokerUrl = `mqtt://${device.brokerAddress}:${device.brokerPort}`
-      const options = {
-        username: device.brokerUser || undefined,
-        password: device.brokerPassword || undefined,
-        connectTimeout: 4000,
-        clientId: idDevice,
-        topic: device.imei
-      }
-      await manager.connect(brokerUrl, options)
-      mqttManagerRef.current = manager
-      setConnectedDevice(device)
-
-      // 1) Carrega logs do DB
-      const logs = await ipcRenderer.invoke('get-terminal-logs', device.id)
-      if (!Array.isArray(logs)) {
-        console.warn('get-terminal-logs não retornou um array:', logs)
-        return
-      }
-
-      const errorKeywords = ['error', 'denied', 'unlogged']
-
-      // 2) Seed dedupe com respostas já salvas no DB (topic|payload) — usado no warmup
-      seenPayloadsRef.current = new Set()
-      for (const l of logs) {
-        const line = String(l.message).trim()
-        const parsed = parseSavedReceiveLine(line)
-        if (parsed) {
-          seenPayloadsRef.current.add(`${parsed.topic}|${parsed.payload}`)
+    } else {
+      try {
+        const manager = new MqttManager()
+        const brokerUrl = `mqtt://${device.brokerAddress}:${device.brokerPort}`
+        const options = {
+          username: device.brokerUser || undefined,
+          password: device.brokerPassword || undefined,
+          connectTimeout: 4000,
+          clientId: idDevice,
+          topic: device.imei
         }
-      }
-      recentBurstRef.current = new Map()
+        await manager.connect(brokerUrl, options)
+        mqttManagerRef.current = manager
+        setConnectedDevice(device)
 
-      // 3) IDs já respondidos no histórico
-      const receivedIds = new Set<string>()
-      for (const l of logs) {
-        const t = String(l.message).trim()
-        if (t.includes('Recebido de')) {
-          const id = extractReqId(t)
-          if (id) receivedIds.add(id)
-        }
-      }
+        // Carrega logs anteriores
+        const logs = await ipcRenderer.invoke('get-terminal-logs', device.id)
+        if (Array.isArray(logs)) {
+          const logEntries: TerminalLogEntry[] = []
+          const errorKeywords = ['error', 'denied', 'unlogged']
 
-      // 4) Reconstrói histórico com DEDUPE POR LINHA (timestamp incluso)
-      const dbSeenReceiveLines = new Set<string>()
-      const dbSeenPublishLines = new Set<string>()
-      const logEntries: TerminalLogEntry[] = []
+          for (let i = 0; i < logs.length; i++) {
+            const current = logs[i]
+            const currentText = (current.message as string).trim()
 
-      for (const l of logs) {
-        const currentText = String(l.message).trim()
-        const isPublicado = currentText.includes('Publicado no tópico')
-        const isRecebido = currentText.includes('Recebido de')
+            const isPublicado = currentText.includes('Publicado no tópico')
+            const isRecebido = currentText.includes('Recebido de')
 
-        if (isPublicado) {
-          if (dbSeenPublishLines.has(currentText)) continue
-          dbSeenPublishLines.add(currentText)
+            console.log('🧪 Linha:', currentText)
 
-          const idPublicado = extractReqId(currentText)
-          const status: TerminalLogEntry['status'] =
-            idPublicado && receivedIds.has(idPublicado) ? 'responded' : 'warning'
-          logEntries.push({
-            id: Date.now() + Math.random(),
-            text: currentText,
-            status,
-            reqId: idPublicado || undefined
-          })
-        } else if (isRecebido) {
-          if (dbSeenReceiveLines.has(currentText)) continue
-          dbSeenReceiveLines.add(currentText)
+            if (isPublicado) {
+              const idPublicado = currentText.match(/device_[^|]+/)?.[0]?.trim()
+              let status: 'responded' | 'warning' | 'highlight' = 'highlight'
 
-          const isError = errorKeywords.some((k) => currentText.toLowerCase().includes(k))
-          logEntries.push({
-            id: Date.now() + Math.random(),
-            text: currentText,
-            status: isError ? 'error' : 'highlight'
-          })
+              for (let j = i + 1; j < logs.length; j++) {
+                const nextText = (logs[j].message as string).trim()
+                if (nextText.includes('Recebido de')) {
+                  const idRecebido = nextText.match(/device_[^|]+/)?.[0]?.trim()
+                  console.log('🔁 Comparando:', { idPublicado, idRecebido })
+
+                  if (idRecebido === idPublicado) {
+                    status = 'responded'
+                  } else {
+                    status = 'warning'
+                  }
+                  break
+                }
+              }
+
+              logEntries.push({
+                id: Date.now() + Math.random(),
+                text: currentText,
+                status
+              })
+            } else if (isRecebido) {
+              const isError = errorKeywords.some((k) => currentText.toLowerCase().includes(k))
+              logEntries.push({
+                id: Date.now() + Math.random(),
+                text: currentText,
+                status: isError ? 'error' : 'highlight'
+              })
+            } else {
+              console.warn('⚠️ Caiu no ELSE:', currentText)
+              logEntries.push({
+                id: Date.now() + Math.random(),
+                text: currentText,
+                status: 'highlight'
+              })
+            }
+          }
+
+          console.log('💬 logEntries:', logEntries)
+          setTerminalOutput([
+            { id: Date.now(), text: `Conectado a ${device.name}`, status: 'normal' },
+            { id: Date.now(), text: '📜 Início do Histórico', status: 'highlight' },
+            ...logEntries,
+            { id: Date.now(), text: '📜 Fim do Histórico', status: 'highlight' }
+          ])
         } else {
-          // Outras linhas
-          logEntries.push({
-            id: Date.now() + Math.random(),
-            text: currentText,
-            status: 'highlight'
-          })
+          console.warn('get-terminal-logs não retornou um array:', logs)
         }
+
+        // 🔥 Subscrição apenas envia o pedido para o main process
+        manager.subscribe(`${device.brokerTopic}/#`)
+      } catch (error) {
+        setTerminalOutput([
+          {
+            id: Date.now(),
+            text: `Erro na conexão: ${
+              typeof error === 'object' && error !== null && 'message' in error
+                ? (error as { message: string }).message
+                : String(error)
+            }`,
+            status: 'warning'
+          }
+        ])
       }
-
-      setTerminalOutput([
-        { id: Date.now(), text: `Conectado a ${device.name}`, status: 'normal' },
-        { id: Date.now(), text: '📜 Início do Histórico', status: 'highlight' },
-        ...logEntries,
-        { id: Date.now(), text: '📜 Fim do Histórico', status: 'highlight' }
-      ])
-
-      // 5) Assina e abre janela de aquecimento (1 eco visual permitido)
-      manager.subscribe(`${device.brokerTopic}/#`)
-      warmupUntilRef.current = Date.now() + 1500
-      warmupEchoBudgetRef.current = 1
-    } catch (error: any) {
-      setTerminalOutput([
-        {
-          id: Date.now(),
-          text: `Erro na conexão: ${error?.message ?? String(error)}`,
-          status: 'warning'
-        }
-      ])
     }
   }
 
@@ -328,6 +241,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
         .slice(0, 14)
 
       const now = new Date()
+
       const year = now.getFullYear()
       const month = String(now.getMonth() + 1).padStart(2, '0')
       const day = String(now.getDate()).padStart(2, '0')
@@ -336,8 +250,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
       const seconds = String(now.getSeconds()).padStart(2, '0')
 
       const timestampFormatted = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-      const ID = normalizeId(`${idDevice}${timestamp}`)
-
+      const ID = `${idDevice}${timestamp}`
+      setLastSubPath(ID) // <-- Armazena o subPath
       const fullTopic = `${connectedDevice.imei}/cmd`
       const initialText = `${timestampFormatted}  ->Publicado no tópico ${fullTopic}: ${ID}|${command}`
       const commandWithId = `${ID}|${command}`
@@ -347,41 +261,18 @@ export default function PluviDBIotRemote(): React.ReactElement {
         deviceId: connectedDevice.id,
         message: initialText
       })
-
-      setTerminalOutput((prev) => [
-        ...prev,
-        { id, text: initialText, status: 'pending', reqId: ID }
-      ])
+      setTerminalOutput((prev) => [...prev, { id, text: initialText, status: 'pending' }])
       setCommand('')
 
-      // Marca "pendente" em 10s
       setTimeout(() => {
         setTerminalOutput((prev) =>
           prev.map((msg) =>
             msg.id === id && msg.status === 'pending'
-              ? { ...msg, text: `${msg.text} (pendente de resposta)`, status: 'pending' }
+              ? { ...msg, text: `${msg.text} (pendente de resposta)`, status: 'pending' as const }
               : msg
           )
         )
       }, 10000)
-
-      // Escala para WARNING em 5 min
-      setTimeout(
-        () => {
-          setTerminalOutput((prev) =>
-            prev.map((msg) =>
-              msg.id === id && msg.status === 'pending'
-                ? {
-                    ...msg,
-                    status: 'warning',
-                    text: `${msg.text.replace(' (pendente de resposta)', '')} (sem resposta a mais de 5min)`
-                  }
-                : msg
-            )
-          )
-        },
-        5 * 60 * 1000
-      )
     }
   }
 
@@ -390,10 +281,6 @@ export default function PluviDBIotRemote(): React.ReactElement {
       const result = await ipcRenderer.invoke('clear-terminal-logs', connectedDevice.id)
       if (result.success) {
         setTerminalOutput([{ id: Date.now(), text: 'Histórico apagado!', status: 'normal' }])
-        seenPayloadsRef.current = new Set()
-        warmupUntilRef.current = 0
-        warmupEchoBudgetRef.current = 0
-        recentBurstRef.current = new Map()
       } else {
         console.error('Erro ao limpar logs:', result.error)
       }
@@ -433,12 +320,14 @@ export default function PluviDBIotRemote(): React.ReactElement {
   }, [terminalOutput])
 
   useEffect(() => {
+    // Carrega ou cria um idDevice único no localStorage
     let localId = localStorage.getItem('idDevice')
     if (!localId) {
       localId = `device_${Math.random().toString(36).substr(2, 6)}`
       localStorage.setItem('idDevice', localId)
     }
     setIdDevice(localId)
+
     loadDevices()
   }, [])
 
@@ -461,7 +350,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
             <ul className="flex-1 overflow-auto space-y-2">
               {devices.map((device, index) => {
                 const isConnected = connectedDevice?.name === device.name
-                const isAnotherConnectedOrConnected = connectedDevice
+                const isAnotherConnectedOrConnected = connectedDevice // Se algum dispositivo estiver conectado
+
                 return (
                   <li
                     key={index}
@@ -474,7 +364,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                           setEditDevice(device)
                           setIsModalOpen(true)
                         }}
-                        disabled={!!isAnotherConnectedOrConnected}
+                        disabled={!!isAnotherConnectedOrConnected} // 🔥 Desabilita todos se houver algum conectado
                         className={`text-yellow-500 hover:text-yellow-600 ${isAnotherConnectedOrConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title="Editar"
                       >
@@ -482,7 +372,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                       </button>
                       <button
                         onClick={() => handleDeleteDevice(device.id)}
-                        disabled={!!isAnotherConnectedOrConnected}
+                        disabled={!!isAnotherConnectedOrConnected} // 🔥 Desabilita todos se houver algum conectado
                         className={`text-red-500 hover:text-red-600 ${isAnotherConnectedOrConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title="Deletar"
                       >
@@ -490,7 +380,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                       </button>
                       <button
                         onClick={() => handleConnectToggle(device)}
-                        disabled={!!(isAnotherConnectedOrConnected && !isConnected)}
+                        disabled={!!(isAnotherConnectedOrConnected && !isConnected)} // 🔥 Só ativa "Desconectar" para o conectado
                         className={`${isConnected ? 'text-green-600 hover:text-green-700' : 'text-green-500 hover:text-green-600'} ${isAnotherConnectedOrConnected && !isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={isConnected ? 'Desconectar' : 'Conectar'}
                       >
@@ -525,6 +415,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                   >
                     Limpar Histórico
                   </button>
+
                   <button
                     onClick={handleSaveLogs}
                     className="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-sm"
@@ -544,13 +435,13 @@ export default function PluviDBIotRemote(): React.ReactElement {
                       msg.status === 'responded'
                         ? 'bg-green-200'
                         : msg.status === 'warning'
-                          ? 'bg-red-500 text-white'
+                          ? 'bg-yellow-300'
                           : msg.status === 'pending'
                             ? 'bg-yellow-200'
                             : msg.status === 'highlight'
                               ? 'bg-gray-200'
                               : msg.status === 'error'
-                                ? 'bg-red-800 text-white'
+                                ? 'bg-red-500 text-white'
                                 : 'bg-white'
                     }`}
                   >
@@ -560,7 +451,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
               ) : (
                 <p className="text-gray-400">Conecte a um dispositivo para usar o terminal</p>
               )}
-              <div ref={terminalEndRef} />
+              <div ref={terminalEndRef} /> {/* Referência para rolar até aqui */}
             </div>
 
             <div className="flex mt-3">
@@ -572,8 +463,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 disabled={!connectedDevice}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleSendCommand()
+                    e.preventDefault() // Evita comportamento padrão de form
+                    handleSendCommand() // Chama a função para enviar
                   }
                 }}
                 className={`flex-1 px-4 py-2 rounded-l-lg outline-none border ${connectedDevice ? 'bg-white border-sky-300 focus:ring-2 focus:ring-sky-400' : 'bg-gray-200 border-gray-300 cursor-not-allowed'} transition`}

@@ -25,12 +25,12 @@ win:
   icon: resources/icon.ico               # Caminho relativo ao buildResources
   sign: false
   signingHashAlgorithms: []  # Desativa assinatura
-  executableName: suite-device-app
+  executableName: suite-device
 
 nsis:
   oneClick: false                     # Permite escolher opções na instalação
   perMachine: false                   # Opcional, instalação por usuário
-  allowElevation: true                # Para permissões elevadas
+  #allowElevation: true                # Para permissões elevadas
   allowToChangeInstallationDirectory: true # Escolher diretório
   include: null                       # Remove custom uninstaller.nsh que depende de plugins
 

@@ -1,14 +1,4 @@
-import {
-  ArrowsClockwise,
-  BatteryFull,
-  CellSignalFull,
-  CellSignalHigh,
-  CellSignalLow,
-  CellSignalMedium,
-  CellSignalNone,
-  CellSignalX,
-  DownloadSimple
-} from '@phosphor-icons/react'
+import { ArrowsClockwise, CellSignalX, DownloadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { ModalSaveReport } from '@renderer/components/modal/modalSaveReport'
 import { useEffect, useState } from 'react'
@@ -16,6 +6,7 @@ import { saveAs } from 'file-saver'
 
 type Props = {
   receivedDataStatus: string | undefined
+  receivedDataGeolocation: string | undefined
   handleUpdateStatus: () => void
   handleSendDownReport: (valuer: string) => void
   handleSendInfoReport: (valuer: string) => void
@@ -26,6 +17,7 @@ type Props = {
 
 export default function Status({
   receivedDataStatus,
+  receivedDataGeolocation,
   handleUpdateStatus,
   handleSendDownReport,
   handleSendInfoReport,
@@ -34,6 +26,7 @@ export default function Status({
   handleClearDataMemory
 }: Props): JSX.Element {
   const [arrayData, setArrayData] = useState(Array(21).fill('N/A'))
+  const [arrayDataGL, setArrayDataGL] = useState(Array(3).fill('N/A'))
   const [showModalSaveReport, setShowModalSaveReport] = useState(false)
   const [isLoadingModalSaveReport, setIsLoadingModalSaveReport] = useState(false)
   const [isLoadingAll, setIsLoadingAll] = useState(false)
@@ -43,16 +36,21 @@ export default function Status({
     { id: 1, name: 'Nome:', value: arrayData[1] },
     { id: 2, name: 'Patrimônio:', value: arrayData[19] },
     { id: 3, name: 'Número de série:', value: arrayData[14] },
-    { id: 4, name: 'Data e hora:', value: arrayData[15] },
+    {
+      id: 4,
+      name: 'Latitude,Longitude,Altitude:',
+      value: `${arrayDataGL[0]}, ${arrayDataGL[1]}, ${arrayDataGL[2]}`
+    },
+    { id: 5, name: 'Data e hora:', value: arrayData[15] },
 
-    { id: 5, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
-    { id: 6, name: 'ICCID:', value: arrayData[16] },
-    { id: 7, name: 'IMEI:', value: arrayData[8] },
-    { id: 8, name: 'Versão do Firmware:', value: arrayData[9] },
-    { id: 9, name: 'Versão do hardware:', value: arrayData[10] },
-    { id: 10, name: 'ProgSig:', value: arrayData[20] },
-    { id: 11, name: 'Contador de boot:', value: arrayData[18] },
-    { id: 12, name: 'Start time:', value: arrayData[11] }
+    { id: 6, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
+    { id: 7, name: 'ICCID:', value: arrayData[16] },
+    { id: 8, name: 'IMEI:', value: arrayData[8] },
+    { id: 9, name: 'Versão do Firmware:', value: arrayData[9] },
+    { id: 10, name: 'Versão do Hardware:', value: arrayData[10] },
+    { id: 11, name: 'ProgSig:', value: arrayData[20] },
+    { id: 12, name: 'Contador de boot:', value: arrayData[18] },
+    { id: 13, name: 'Start time:', value: arrayData[11] }
   ]
 
   function handleSaveReport(number: number, all: boolean): void {
@@ -94,17 +92,29 @@ export default function Status({
     setShowModalSaveReport(false)
   }
 
-  const renderSignalIcon = () => {
-    const signalStr = parseInt(arrayData[2])
-    console.log('Signal Strength:', signalStr)
-    if (isNaN(signalStr)) return <CellSignalX size={36} />
-    if (signalStr === 0) return <CellSignalX size={36} />
-    if (signalStr <= -120) return <CellSignalX size={36} />
-    if (signalStr > -120 && signalStr <= -110) return <CellSignalNone size={36} />
-    if (signalStr > -110 && signalStr <= -100) return <CellSignalLow size={36} />
-    if (signalStr > -100 && signalStr <= -90) return <CellSignalMedium size={36} />
-    if (signalStr > -90 && signalStr < -80) return <CellSignalHigh size={36} />
-    return <CellSignalFull size={36} />
+  const getSignalBars = (): number => {
+    const signal = parseInt(arrayData[2])
+
+    // Valores que indicam desconectado
+    if (isNaN(signal) || signal === 0 || signal === 255) return 0
+
+    // 0 barras: pior que -130 dBm
+    if (signal < -130) return 0
+
+    // 1 barra: entre -130 e -120
+    if (signal >= -130 && signal < -120) return 1
+
+    // 2 barras: entre -120 e -110
+    if (signal >= -120 && signal < -110) return 2
+
+    // 3 barras: entre -110 e -100
+    if (signal >= -110 && signal < -100) return 3
+
+    // 4 barras: entre -100 e -90
+    if (signal >= -100 && signal < -90) return 4
+
+    // 5 barras: melhor que -90
+    return 5
   }
 
   const getBatteryBars = (): number => {
@@ -120,7 +130,9 @@ export default function Status({
   useEffect(() => {
     const timeout = setTimeout(() => {
       handleUpdateStatus()
+      console.log('dado de geolocalizacao', receivedDataGeolocation)
     }, 500) // Aguarda 500ms antes de executar a função
+
     return () => clearTimeout(timeout)
   }, [])
 
@@ -134,6 +146,7 @@ export default function Status({
     const extractedValues = valuesArray.map((item) => item.split('=')[1] || '')
 
     //console.log('extractedValues:', extractedValues)
+
     setArrayData((prevData) =>
       prevData.map((_, index) => extractedValues[index] ?? prevData[index])
     )
@@ -145,13 +158,27 @@ export default function Status({
       setDataSave(receivedDataDownReport.split('!'))
     }
 
+    if (!receivedDataGeolocation) return
+    console.log('receivedDataGeolocation:', receivedDataGeolocation)
+    const valuesArrayGL = receivedDataGeolocation?.split('!').filter(Boolean)
+    const extractedValuesGL = valuesArrayGL?.flatMap((item) => {
+      const afterEqual = item.split('gl=')[1] || ''
+      return afterEqual.split(';').filter(Boolean)
+    })
+    console.log('extractedValuesGL', extractedValuesGL)
+
+    setArrayDataGL((prevDataGL) =>
+      prevDataGL.map((_, index) => extractedValuesGL[index] ?? prevDataGL[index])
+    )
+    console.log('extractedValuesGL', arrayDataGL)
+
     if (receivedInfoMemory) {
       //console.log('receivedInfoMemory:', receivedInfoMemory)
       const match = receivedInfoMemory.match(/used:(\d+)/)
       console.log('match:', match ? match[1] : 0)
       setLimit(match ? match[1] : '0')
     }
-  }, [receivedDataStatus, receivedInfoMemory, receivedDataDownReport])
+  }, [receivedDataStatus, receivedInfoMemory, receivedDataDownReport, receivedDataGeolocation])
 
   useEffect(() => {
     if (Array.isArray(dataSave) && dataSave.length > 0) {
@@ -172,12 +199,28 @@ export default function Status({
         <div className="flex flex-row items-center  bg-white m-0.5 rounded-md border-2 border-white w-64">
           <div className="flex flex-row justify-center items-center gap-8 p-1 border-2 border-sky-500 rounded-l-md w-full h-full">
             <div className="flex flex-col items-center text-sky-500 ">
-              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 mt-2">
+              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 ">
                 {arrayData[4]}
               </span>
-              <div className="flex flex-row justify-center items-center gap-1 mb-1.5">
-                {renderSignalIcon()}
-                <span>{`${arrayData[2]} dBm`} </span>
+              <div className="flex flex-row items-center justify-center gap-1.5">
+                <div className="relative flex flex-row items-end gap-[2px] w-[28px] h-[24px]">
+                  {getSignalBars() === 0 ? (
+                    <div className="absolute inset-0 flex items-center justify-center text-red-500 text-xs font-bold">
+                      <CellSignalX weight="bold" size={36} />
+                    </div>
+                  ) : (
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-[3px] transition-all rounded-sm ${
+                          index < getSignalBars() ? 'bg-sky-500' : 'bg-gray-300'
+                        }`}
+                        style={{ height: `${(index + 1) * 20}%` }}
+                      />
+                    ))
+                  )}
+                </div>
+                <span className="text-[12px] font-bold mt-1">{`${arrayData[2]} dBm`}</span>
               </div>
             </div>
           </div>

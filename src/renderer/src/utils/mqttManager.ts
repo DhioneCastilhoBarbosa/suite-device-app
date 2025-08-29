@@ -7,7 +7,7 @@ class MqttManager {
   async connect(brokerUrl: string, options = {}) {
     try {
       await ipcRenderer.invoke('mqtt-connect', { brokerUrl, options });
-      console.log('✅ Conectado ao MQTT');
+      console.log('✅ Conectado ao MQTT',options);
     } catch (err) {
       console.error('❌ Erro ao conectar MQTT:', err);
     }

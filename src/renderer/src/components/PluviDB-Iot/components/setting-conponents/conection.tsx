@@ -116,7 +116,7 @@ export function Conection({
   }, [receivedSettingsConection])
 
   useEffect(() => {
-    console.log('Form data updated:', formData)
+    //console.log('Form data updated:', formData)
   }, [formData])
 
   useEffect(() => {
@@ -241,7 +241,7 @@ export function Conection({
         <Button
           onClick={() => {
             if (isEnabled) {
-              handleSendSettingsConection([formData[0], formData[0], 'null', 'null', '0000'])
+              handleSendSettingsConection([formData[0], formData[1], 'null', 'null', '0000'])
             } else {
               handleSendSettingsConection(formData)
             }

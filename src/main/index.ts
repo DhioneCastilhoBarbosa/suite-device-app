@@ -8,6 +8,7 @@ import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
 import '../db/db'
 import { setupMQTTHandlers } from './mqttHandler'
+import { initSerialHandles } from './serialHandles'
 import express from 'express'
 
 import {
@@ -56,6 +57,7 @@ function createWindow(): void {
   })
 
   setupMQTTHandlers(mainWindow)
+  initSerialHandles(mainWindow)
 
   // 🌐 Servidor local ou prod com express
   const server = express()

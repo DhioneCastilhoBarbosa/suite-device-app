@@ -1,6 +1,6 @@
 {
   "name": "suite-device-app",
-  "version": "2.1.3",
+  "version": "2.1.9",
   "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
@@ -51,8 +51,10 @@
     "file-saver": "^2.0.5",
     "modbus-serial": "^8.0.16",
     "mqtt": "^5.13.0",
+    "react-toastify": "^11.0.5",
     "rimraf": "^6.0.1",
     "serialport": "^10.5.0",
+    "sonner": "^2.0.6",
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.2.2",
     "update-electron-app": "^3.0.0",
