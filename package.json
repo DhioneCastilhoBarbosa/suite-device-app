@@ -31,8 +31,8 @@
     "make-linux": "electron-forge make --platform=linux",
     "make-deb": "electron-forge make --target=@electron-forge/maker-deb",
     "make-rpm": "electron-forge make --target=@electron-forge/maker-rpm",
-    "publish": "electron-forge publish",
-    "package": "electron-forge package",
+    "publish-forge": "electron-forge publish",
+    "publish": "electron-builder --publish always --config=electron-builder.yml",
     "start-forge": "electron-forge start",
     "rebuild": "electron-rebuild -f -w better-sqlite3"
   },
