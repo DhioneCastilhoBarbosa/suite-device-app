@@ -9,6 +9,7 @@ import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import Measure from './components/measure'
 import UpdateModubus from '../updateModbus/updateModbus'
+import { t } from 'i18next'
 
 interface LinnimDbCapProps {
   isConect: boolean
@@ -40,11 +41,11 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
     setMenuName(menu)
   }
 
-  console.log('LinnimDB-Borbulha', props.isConect)
+  //console.log('LinnimDB-Borbulha', props.isConect)
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'LinnimDB-Borbulha'}>
+      <HeaderDevice DeviceName={t('LinnimDB-Borbulha')}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -57,7 +58,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('info')}
             >
-              Informações
+              {t('Informações')}
             </button>
             <button
               className={`border-b-2 border-transparent ${
@@ -65,7 +66,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configurações
+              {t('Configurações')}
             </button>
             <button
               className={`border-b-2 border-transparent ${
@@ -73,7 +74,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('update')}
             >
-              Atualização
+              {t('Atualização')}
             </button>
           </div>
         </header>
@@ -99,26 +100,30 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
       <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-borbulha/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg ">
-        <CardInformation title="VISÃO GERAL">
+        <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            Evite prejuízos em redes de monitoramento hidrológico. Conheça o sensor de nível por
-            borbulhamento , LimniDB-Borbulha, que não fica em contato com a água, reduzindo os
-            custos de operação e manutenção.
+            {t(
+              'Evite prejuízos em redes de monitoramento hidrológico. Conheça o sensor de nível por borbulhamento, LimniDB-Borbulha, que não fica em contato com a água, reduzindo os custos de operação e manutenção.'
+            )}
           </p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
-          <p>Corpo em ABS.</p>
+        <CardInformation title={t('CARACTERÍSTICAS')}>
+          <p>{t('Corpo em ABS.')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
-          <p>Faixa de medição: 0 a 20 mca (metro de coluna d'água).</p>
-          <p>Resolução: 0,001 mca (1 mm)</p>
-          <p>Alimentação: 12 Vcc</p>
-          <p>Consumo: 5A máx</p>
-          <p>Sinal de saída digital: RS-485</p>
-          <p>Sinal de saída: SDI-12</p>
-          <p>Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI</p>
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
+          <p>{t("Faixa de medição: 0 a 20 mca (metro de coluna d'água).")}</p>
+          <p>{t('Resolução: 0,001 mca (1 mm)')}</p>
+          <p>{t('Alimentação: 12 Vcc')}</p>
+          <p>{t('Consumo: 5A máx')}</p>
+          <p>{t('Sinal de saída digital: RS-485')}</p>
+          <p>{t('Sinal de saída: SDI-12')}</p>
+          <p>
+            {t(
+              "Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI"
+            )}
+          </p>
         </CardInformation>
       </div>
     </ContainerDevice>

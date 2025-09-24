@@ -8,6 +8,7 @@ import { ModalUpdate } from '../modal/modalUpdate'
 import { ModalSucess } from '../modal/modalSucces'
 import { ModalFailUpdate } from '../modal/modalFailUpdate'
 import { SerialManager } from '@renderer/utils/serialManager'
+import { t } from 'i18next'
 
 export default function UpdateModubus() {
   const [fileContent, setFileContent] = useState<string>('')
@@ -31,19 +32,19 @@ export default function UpdateModubus() {
     //console.log("Sincronizado com o sensor concluida")
     setStatus(
       (status) =>
-        status + 'Sincronizado com o sensor concluida!\nAtualização em andamento aguarde... \n'
+        status + t('Sincronizado com o sensor concluida!\nAtualização em andamento aguarde... \n')
     )
   }
 
   const fail = () => {
     //console.log('Erro durante a atualização')
-    setStatus((status) => status + 'Erro durante a atualização. \n')
+    setStatus((status) => status + t('Erro durante a atualização. \n'))
     setShowModalFail(true)
     SerialManager.setIdle()
   }
 
   const finished = () => {
-    setStatus((status) => status + 'Atualização concluida com sucesso! \n')
+    setStatus((status) => status + t('Atualização concluida com sucesso! \n'))
     //SetPortOpen({state:false})
     setShowModalSucess(true)
     SerialManager.setIdle()
@@ -51,7 +52,7 @@ export default function UpdateModubus() {
 
   const handleUpdate = () => {
     SerialManager.setBusy()
-    setStatus('Aguardando sincronizar com o sensor... \n')
+    setStatus(t('Aguardando sincronizar com o sensor... \n'))
     setShowModal(false)
     atualizaFirmware({
       file: fileContent,
@@ -90,13 +91,13 @@ export default function UpdateModubus() {
   return (
     <div className="flex flex-col items-center  w-full h-96 ">
       <div className="flex flex-col w-2/3 mt-8">
-        <label>Status</label>
+        <label>{t('Status')}</label>
         <textarea
           className=" h-36 leading-relaxed border border-[2px] border-zinc-200 resize-none whitespace-pre-wrap outline-none text-black text-sm rounded-md pl-4 pt-4"
           value={status}
           readOnly
         />
-        <label className="mt-4">BaudRate</label>
+        <label className="mt-4">{t('BaudRate')}</label>
         <select
           onChange={handleBaudSelect}
           value={baudRateSelect}
@@ -110,11 +111,11 @@ export default function UpdateModubus() {
       <div className="flex flex-row gap-8 mt-10">
         <Button size={'large'} onClick={handleSelectFile}>
           <FolderOpen size={24} />
-          Selecionar arquivo
+          {t('Selecionar arquivo')}
         </Button>
         <Button size={'large'} onClick={openModal} disabled={enable}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
       </div>
       <ModalUpdate show={showModal} onUpdate={handleUpdate} onClose={handleClose} />

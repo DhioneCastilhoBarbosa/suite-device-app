@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { Device } from '../../Context/DeviceContext'
 import { saveAs } from 'file-saver'
+import { t } from 'i18next'
 
 interface TecladoSDI12Props {
   isConect: boolean
@@ -201,7 +202,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'Teclado-SDI12'}>
+      <HeaderDevice DeviceName={t('Teclado-SDI12')}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -214,7 +215,7 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configurações
+              {t('Configurações')}
             </button>
           </div>
         </header>
@@ -256,40 +257,45 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'Teclado-SDI12'}>
+      <HeaderDevice DeviceName={t('Teclado-SDI12')}>
         <Drop size={30} />
       </HeaderDevice>
 
       <ImageDevice image={ImgTeclado} link="https://dualbase.com.br/produto" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
-        <CardInformation title="VISÃO GERAL">
+        <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            Dispositivo que permite a entrada manual de dados e a comunicação com um datalogger
-            utilizando protocolo de comunicação serial SDI-12.
+            {t(
+              'Dispositivo que permite a entrada manual de dados e a comunicação com um datalogger utilizando protocolo de comunicação serial SDI-12.'
+            )}
           </p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
-          <p>Caixa de proteção IP65.</p>
-          <p>Display 12 Digitos 2 linhas.</p>
-          <p>Entrada de dados via teclado de membrana.</p>
+        <CardInformation title={t('CARACTERÍSTICAS')}>
+          <p>{t('Caixa de proteção IP65.')}</p>
+          <p>{t('Display 12 Digitos 2 linhas.')}</p>
+          <p>{t('Entrada de dados via teclado de membrana.')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
           <p>
-            Possuir membrana de 16 teclas produzido com base nas recomendações NBR 13173 de agosto
-            de 2012.
+            {t(
+              'Possuir membrana de 16 teclas produzido com base nas recomendações NBR 13173 de agosto de 2012.'
+            )}
           </p>
-          <p>Faixa de temperatura de operação: -40º a +80ºC</p>
-          <p>Grau de proteção: IP65</p>
-          <p>Alimentação: 10 a 16 Vcc</p>
-          <p>Sinal de saída digital: SDI-12</p>
-          <p>Comunicação de configuração: RS232/USB</p>
-          <p>Display LCD alfanumérico com 02 linhas de 12 dígitos cada linha e 16 segmentos.</p>
+          <p>{t('Faixa de temperatura de operação: -40º a +80ºC')}</p>
+          <p>{t('Grau de proteção: IP65')}</p>
+          <p>{t('Alimentação: 10 a 16 Vcc')}</p>
+          <p>{t('Sinal de saída digital: SDI-12')}</p>
+          <p>{t('Comunicação de configuração: RS232/USB')}</p>
           <p>
-            Configurável a partir de aplicativo externo compatível com sistema operacional Windows
-            10.
+            {t('Display LCD alfanumérico com 02 linhas de 12 dígitos cada linha e 16 segmentos.')}
+          </p>
+          <p>
+            {t(
+              'Configurável a partir de aplicativo externo compatível com sistema operacional Windows 10.'
+            )}
           </p>
         </CardInformation>
       </div>

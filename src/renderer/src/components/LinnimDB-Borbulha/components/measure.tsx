@@ -2,6 +2,7 @@ import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
 import { readModbusData } from '../../../utils/modbusRTU'
 import { useState } from 'react'
+import { t } from 'i18next'
 
 export default function Measure() {
   const [readPressure, setReadPressure] = useState<number>(0)
@@ -24,11 +25,11 @@ export default function Measure() {
   return (
     <>
       <div className="flex items-start justify-between  mb-4 border-b-[1px] border-sky-500 mr-8 ml-8 ">
-        <label>Leitura</label>
+        <label>{t('Leitura')}</label>
       </div>
       <div className="flex flex-row justify-center gap-20 items-end mr-auto ml-auto mt-1 mb-8">
         <div className="flex flex-col mt-1">
-          <label>Pressão</label>
+          <label>{t('Pressão')}</label>
           <input
             type="text"
             value={readPressure.toString()}
@@ -38,10 +39,10 @@ export default function Measure() {
           />
         </div>
         <Button filled={true} size={'medium'} onClick={handleModbus}>
-          Medir
+          {t('Medir')}
         </Button>
       </div>
-      <LoadingData visible={isLoading} title="Solicitando dados de medição ao dispositivo!" />
+      <LoadingData visible={isLoading} title={t('Solicitando dados de medição ao dispositivo!')} />
     </>
   )
 }

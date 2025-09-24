@@ -3,6 +3,7 @@ import LoadingData from '@renderer/components/loading/loadingData'
 import { FolderOpen, FloppyDisk, Broom, DownloadSimple, UploadSimple } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { selectFile } from '@renderer/utils/fileUtils'
+import { t } from 'i18next'
 
 interface SendProps {
   handleDownInformation: (newValue: string) => void
@@ -60,7 +61,7 @@ export default function ButtonSet({
           onClick={handleSelectFile}
         >
           <FolderOpen size={36} />
-          Selecionar o Arquivo
+          {t('Selecionar o Arquivo')}
         </Button>
         <Button
           filled={false}
@@ -69,19 +70,19 @@ export default function ButtonSet({
           onClick={handleSaveToFile}
         >
           <FloppyDisk size={24} />
-          Salvar
+          {t('Salvar')}
         </Button>
         <Button filled={false} size={'medium'} className="text-[12px] p-6" onClick={handleClear}>
           <Broom size={24} />
-          Limpar
+          {t('Limpar')}
         </Button>
         <Button filled={false} size={'medium'} onClick={handleDown} className="text-[12px] p-6">
           <DownloadSimple size={24} />
-          Baixar informação
+          {t('Baixar informação')}
         </Button>
         <Button filled={false} size={'medium'} className="text-[12px] p-6" onClick={handleSend}>
           <UploadSimple size={24} />
-          Enviar configuração
+          {t('Enviar configuração')}
         </Button>
       </div>
     </>

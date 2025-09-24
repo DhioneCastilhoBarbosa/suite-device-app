@@ -9,6 +9,7 @@ import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
 import Measure from './components/measure'
 import UpdateModubus from '../updateModbus/updateModbus'
+import { t } from 'i18next'
 
 interface LinnimDbCapProps {
   isConect: boolean
@@ -42,7 +43,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'LinnimDB-Cap'}>
+      <HeaderDevice DeviceName={t('LinnimDB-Cap')}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -55,7 +56,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('info')}
             >
-              Informações
+              {t('Informações')}
             </button>
             <button
               className={`border-b-2 border-transparent ${
@@ -63,7 +64,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configurações
+              {t('Configurações')}
             </button>
             <button
               className={`border-b-2 border-transparent ${
@@ -71,7 +72,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('update')}
             >
-              Atualização
+              {t('Atualização')}
             </button>
           </div>
         </header>
@@ -97,32 +98,37 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
       <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-cap/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
-        <CardInformation title="VISÃO GERAL">
+        <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico o que o
-            deixa muito robusto sem perder as qualidades metrológicas.
+            {t(
+              'O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico o que o deixa muito robusto sem perder as qualidades metrológicas.'
+            )}
           </p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
-          <p>Corpo em aço inox 316L.</p>
-          <p>Elemento do sensor capacitivo cerâmico com compensação de temperatura.</p>
-          <p>Cabo em poliuretano com filtro contra radiação UV com Kevlar (opcional).</p>
-          <p>Tipo de medição disponível: absoluto ou diferencial.</p>
+        <CardInformation title={t('CARACTERÍSTICAS')}>
+          <p>{t('Corpo em aço inox 316L.')}</p>
+          <p>{t('Elemento do sensor capacitivo cerâmico com compensação de temperatura.')}</p>
+          <p>{t('Cabo em poliuretano com filtro contra radiação UV com Kevlar (opcional).')}</p>
+          <p>{t('Tipo de medição disponível: absoluto ou diferencial.')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
-          <p>Faixa de medição: 0 a 20 mca (metro de coluna d'água).</p>
-          <p>Resolução: 0,001 mca (1 mm)</p>
-          <p>Faixa de temperatura compensada: -20º a +80ºC</p>
-          <p>Faixa de temperatura de operação: -40º a +80ºC</p>
-          <p>Incerteza máxima associada: ± 0,1% F.E. @ -10º a +60ºC</p>
-          <p>Grau de proteção: IP68</p>
-          <p>Alimentação: 8 a 28 Vcc</p>
-          <p>Consumo: 5 mA máx</p>
-          <p>Sinal de saída digital: RS-485</p>
-          <p>Sinal de saída (opcional): SDI-12</p>
-          <p>Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI</p>
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
+          <p>{t("Faixa de medição: 0 a 20 mca (metro de coluna d'água).")}</p>
+          <p>{t('Resolução: 0,001 mca (1 mm)')}</p>
+          <p>{t('Faixa de temperatura compensada: -20º a +80ºC')}</p>
+          <p>{t('Faixa de temperatura de operação: -40º a +80ºC')}</p>
+          <p>{t('Incerteza máxima associada: ± 0,1% F.E. @ -10º a +60ºC')}</p>
+          <p>{t('Grau de proteção: IP68')}</p>
+          <p>{t('Alimentação: 8 a 28 Vcc')}</p>
+          <p>{t('Consumo: 5 mA máx')}</p>
+          <p>{t('Sinal de saída digital: RS-485')}</p>
+          <p>{t('Sinal de saída (opcional): SDI-12')}</p>
+          <p>
+            {t(
+              "Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI"
+            )}
+          </p>
         </CardInformation>
       </div>
     </ContainerDevice>

@@ -10,6 +10,7 @@ import { ClosePortTSatDB, OpenPortTSatDB } from '../TSatDB/TSatDB'
 import { ClosePortPluviIoT, OpenPortPluviIoT } from '../PluviDB-Iot/PluviDBIot'
 import { toast } from 'react-toastify'
 import { SerialManager } from '../../utils/serialManager'
+import { t } from 'i18next'
 
 interface ConectorProps {
   portDevice: (port: string) => void
@@ -295,7 +296,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
           <form>
             <div className="flex items-center justify-between pr-2 pl-2">
               <label className=" text-[10px] text-blue-950" htmlFor="airplane-mode">
-                Modo offline
+                {t('Modo offline')}
               </label>
               <Switch.Root
                 className="w-[49px] h-[22px] bg-gray-200 border-[1px] border-gray-300 rounded-full relative data-[state=checked]:bg-green-500 outline-none cursor-default"
@@ -318,12 +319,12 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
                 isActive ? 'bg-red-600 hover:bg-red-500' : 'bg-green-500 hover:bg-green-400'
               } ${isConnected ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              {isActive ? 'Conectar local' : 'Conectar remoto'}
+              {isActive ? t('Conectar local') : t('Conectar remoto')}
             </button>
           )}
 
           <span className=" text-[#336B9E] text-[10px] font-bold pl-2 pr-2">
-            Selecionar a porta COM:
+            {t('Selecionar a porta COM:')}
           </span>
           <select
             className={`w-full mt-2 text-[#336B9E] text-center mt-1 p-1 border-[1px] border-[#336B9E] rounded-lg outline-none ${isActive ? 'cursor-not-allowed' : 'cursor-pointer'}`}
@@ -331,7 +332,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
             onChange={handleChange}
             disabled={OfflineMode || isActive}
           >
-            <option value={'Selecione'}>Selecione</option>
+            <option value={t('Selecione')}>{t('Selecione')}</option>
             {availablePorts.map((port, index) => (
               <option key={index} value={port}>
                 {port}
@@ -350,7 +351,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
             onClick={handleClickDisconect}
             disabled={disconnectDisabled}
           >
-            Desconectar
+            {t('Desconectar')}
           </button>
         ) : (
           <button
@@ -360,7 +361,7 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
             onClick={handleClickConect}
             disabled={connectDisabled}
           >
-            Conectar
+            {t('Conectar')}
           </button>
         )}
       </div>

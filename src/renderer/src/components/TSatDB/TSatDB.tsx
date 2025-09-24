@@ -16,6 +16,7 @@ import { Terminal } from './components/terminal'
 import LoadingData from '../loading/loadingData'
 import { AntenaPointing } from './components/antennapointing'
 import { RFAdvanced } from './components/RFAdvanced'
+import { t } from 'i18next'
 //import { set } from 'zod'
 
 interface TSatDBProps {
@@ -68,7 +69,7 @@ export default function TSatDB(props: TSatDBProps) {
   const [dataReceivedComandRCFG, setDataReceivedComandRCFG] = useState<string>('')
   const [dataReceivedComandTerminal, setDataReceivedComandTerminal] = useState<string>('')
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
-    'Baixando informações do dispositivo!'
+    t('Baixando informações do dispositivo!')
   )
 
   //FIM
@@ -142,7 +143,7 @@ export default function TSatDB(props: TSatDBProps) {
 
     const timeoutPromise = new Promise<string>((_, reject) =>
       setTimeout(() => {
-        reject(new Error('Tempo limite excedido (20s) para resposta do comando'))
+        reject(new Error(t('Tempo limite excedido (20s) para resposta do comando')))
       }, 20000)
     )
 
@@ -179,7 +180,7 @@ export default function TSatDB(props: TSatDBProps) {
 
   function handleSettingsComandTx(): void {
     if (props.isConect && !mode.state) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       setDataReceivedComandPowerTx('')
 
@@ -204,7 +205,7 @@ export default function TSatDB(props: TSatDBProps) {
 
   function handleSettingsComand(): void {
     if (props.isConect && !mode.state) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       setDataReceivedComandRCFG('')
 
@@ -414,7 +415,7 @@ export default function TSatDB(props: TSatDBProps) {
     const time = 200
     if (props.isConect && !mode.state) {
       setIsLoading(true)
-      setMessageIsLoading('Enviando configurações iniciais para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações iniciais para o dispositivo!'))
 
       handleComandSend(settings[3]).then(() => {
         setTimeout(() => {
@@ -440,7 +441,7 @@ export default function TSatDB(props: TSatDBProps) {
     const time = 200
     if (props.isConect && !mode.state) {
       setIsLoading(true)
-      setMessageIsLoading('Enviando informações para o dispositivo!')
+      setMessageIsLoading(t('Enviando informações para o dispositivo!'))
 
       handleComandSend('NESID=' + settings[0]).then(() => {
         setTimeout(() => {
@@ -535,7 +536,7 @@ export default function TSatDB(props: TSatDBProps) {
     try {
       const loadedDataSettings = fileContent.split('\r\n').map((item) => item.trim())
       if (loadedDataSettings.length < 2) {
-        throw new Error('Conteúdo do arquivo insuficiente')
+        throw new Error(t('Conteúdo do arquivo insuficiente'))
       }
 
       let groupData = ''
@@ -607,13 +608,13 @@ export default function TSatDB(props: TSatDBProps) {
   }*/
 
   function handleClickUpdateGPS(): void {
-    setMessageIsLoading('Baixando informações do dispositivo!')
+    setMessageIsLoading(t('Baixando informações do dispositivo!'))
     setIsLoading(true)
     handleComandUdateGPS()
     //console.log('Atualizando informações do GPS')
   }
   function handleClickUpdateStatus(): void {
-    setMessageIsLoading('Baixando informações do dispositivo!')
+    setMessageIsLoading(t('Baixando informações do dispositivo!'))
     setIsLoading(true)
     executeListCommand()
   }
@@ -621,7 +622,7 @@ export default function TSatDB(props: TSatDBProps) {
   useEffect(() => {
     if (props.isConect && !mode.state) {
       setIsLoading(true)
-      setMessageIsLoading('Procurando dispositivo!')
+      setMessageIsLoading(t('Procurando dispositivo!'))
 
       const timer = setTimeout(() => {
         const commandPromise = handleComandSend('time') //'\n\r'
@@ -682,7 +683,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('status')}
             >
-              Status
+              {t('Status')}
             </button>
 
             <button
@@ -691,7 +692,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('gps')}
             >
-              GPS
+              {t('GPS')}
             </button>
 
             <button
@@ -700,7 +701,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configuração
+              {t('Configuração')}
             </button>
 
             <button
@@ -709,7 +710,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('apontamento')}
             >
-              Apontamento de Antena
+              {t('Apontamento de Antena')}
             </button>
 
             <button
@@ -718,7 +719,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('rf')}
             >
-              RF Avançado
+              {t('RF Avançado')}
             </button>
 
             <button
@@ -727,7 +728,7 @@ export default function TSatDB(props: TSatDBProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('terminal')}
             >
-              Terminal
+              {t('Terminal')}
             </button>
           </div>
         </header>

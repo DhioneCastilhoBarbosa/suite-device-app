@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import VariableInput from './variableInput'
+import { t } from 'i18next'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 
@@ -104,7 +105,7 @@ export default function VariableMain({
     <div className="flex flex-col">
       <header className="flex items-start justify-between mr-8 ml-8 mt-10 border-b-[1px] border-sky-500 ">
         <div className="flex gap-4">
-          <label>Variáveis Principais</label>
+          <label>{t('Variáveis Principais')}</label>
         </div>
       </header>
 
@@ -121,7 +122,7 @@ export default function VariableMain({
       </div>
 
       <div className="flex items-center justify-end mt-6 mr-10 gap-1">
-        <label> Variáveis principais em uso:</label>
+        <label>{t('Variáveis principais em uso:')}</label>
         <input
           className=" text-center text-white w-10 bg-sky-500 border rounded-md"
           type="text"

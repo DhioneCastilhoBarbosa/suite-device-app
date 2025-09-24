@@ -5,6 +5,7 @@ import LoadingData from '@renderer/components/loading/loadingData'
 import { selectFile } from '@renderer/utils/fileUtils'
 import { IdModBus, WriteModbus, readModbusData } from '../../../utils/modbusRTU'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 export default function Settings() {
   const [modbusData, setModbusData] = useState<string[]>([])
@@ -17,11 +18,11 @@ export default function Settings() {
   const [inptsData, setInptsData] = useState<number[]>([1, 7, 0, 0])
   const [sendData, setSendData] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [titleLoading, setTitleLoading] = useState('Baixando informações do dispositivo!')
+  const [titleLoading, setTitleLoading] = useState(t('Baixando informações do dispositivo!'))
 
   const fetchData = async () => {
     setModbusData([])
-    setTitleLoading('Baixando informações do dispositivo!')
+    setTitleLoading(t('Baixando informações do dispositivo!'))
     setIsLoading(true)
     try {
       // Espera 500 millsegundo antes de fazer a chamada Modbus
@@ -56,7 +57,7 @@ export default function Settings() {
   const WriteCoil = async () => {
     try {
       setIsLoading(true)
-      setTitleLoading('Enviando informações para o dispositivo!')
+      setTitleLoading(t('Enviando informações para o dispositivo!'))
       // Espera 500 milissegundos antes de fazer a chamada Modbus
       await new Promise((resolve) => setTimeout(resolve, 500))
       //console.log(inptsData[0], inptsData[1], inptsData[2], inptsData[3])
@@ -166,7 +167,7 @@ export default function Settings() {
     <div className="flex flex-col items-center justify-center ">
       <div className="grid grid-cols-2  gap-2 h-full mt-4">
         <div className="flex flex-col w-52">
-          <label>Endereço MODBUS</label>
+          <label>{t('Endereço MODBUS')}</label>
           <input
             type="number"
             className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
@@ -178,7 +179,7 @@ export default function Settings() {
         </div>
 
         <div className="flex flex-col w-56">
-          <label>Unidade</label>
+          <label>{t('Unidade')}</label>
           <select
             name="unidade"
             id="unidade"
@@ -202,7 +203,7 @@ export default function Settings() {
         </div>
 
         <div className="flex flex-col">
-          <label>Coeficiente</label>
+          <label>{t('Coeficiente')}</label>
           <div className=" flex flex-row w-52 items-center justify-center border border-zinc-400 rounded-md p-2 gap-2">
             <div className="w-auto flex flex-col items-center pb-5">
               <label>Ax</label>
@@ -237,11 +238,11 @@ export default function Settings() {
   </Button>*/}
         <Button size={'large'} onClick={fetchData}>
           <DownloadSimple size={24} />
-          Baixa informações
+          {t('Baixar informações')}
         </Button>
         <Button size={'large'} onClick={handleSendSettings}>
           <UploadSimple size={24} />
-          Enviar configurações
+          {t('Enviar configurações')}
         </Button>
       </div>
       <LoadingData visible={isLoading} title={titleLoading} />

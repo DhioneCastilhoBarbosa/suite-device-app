@@ -9,6 +9,7 @@ import { ImageDevice } from '../imageDevice/ImageDevice'
 import { Device } from '../../Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
+import { t } from 'i18next'
 
 import { z } from 'zod'
 
@@ -199,7 +200,7 @@ export function Terminal(props: TerminalProps): JSX.Element {
       <div className="bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl">
         <header className="flex items-center justify-between mr-8 ml-8 pt-4 border-b-[1px] border-sky-500">
           <div className=" mb-2">
-            <span className="pr-2">Endereço:</span>
+            <span className="pr-2">{t('Endereço:')}</span>
             <input
               type="number"
               defaultValue={firstAddress}
@@ -212,10 +213,10 @@ export function Terminal(props: TerminalProps): JSX.Element {
             />
           </div>
 
-          <div className="flex items-center justify-betwee">
-            <span className="pr-2 pl-4">Auto-Retry</span>
+          <div className="flex items-center justify-between">
+            <span className="pr-2 pl-4">{t('Auto-Retry')}</span>
             <input type="checkbox" checked={autoRetry} onChange={handleCheckboxAutoRetry} />
-            <span className="pr-2 pl-4">timerStamp</span>
+            <span className="pr-2 pl-4">{t('timerStamp')}</span>
             <input
               type="checkbox"
               checked={timeStapActive}
@@ -225,16 +226,16 @@ export function Terminal(props: TerminalProps): JSX.Element {
         </header>
         <div className="flex flex-row items-center justify-end mr-8 mt-4 gap-2">
           <Button size={'small'} onClick={handleSaveToFile}>
-            Salvar
+            {t('Salvar')}
           </Button>
           <Button size={'small'} onClick={handleClearTextArea}>
             {' '}
-            Limpar
+            {t('Limpar')}
           </Button>
         </div>
         <div className="w-full pr-8 pl-8 pt-4 flex">
           <div className="flex flex-col items-center mr-4 w-36">
-            <span className="mb-2 mr-1 font-light">Comandos</span>
+            <span className="mb-2 mr-1 font-light">{t('Comandos')}</span>
             <Button
               size={'small'}
               onClick={() => {
@@ -299,47 +300,50 @@ export function Terminal(props: TerminalProps): JSX.Element {
             type="text"
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            placeholder="Digite o comando"
+            placeholder={t('Digite o comando')}
           />
           <Button size={'small'} onClick={() => handleClickSendComand(inputValue)}>
-            Enviar
+            {t('Enviar')}
           </Button>
         </div>
       </div>
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'Terminal SDI12'}>
+      <HeaderDevice DeviceName={t('Terminal SDI12')}>
         <TerminalWindow size={30} />
       </HeaderDevice>
       <ImageDevice image={TerminalImagem} />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
-        <CardInformation title="VISÃO GERAL">
+        <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de
-            verificar o funcionamento e acessar configurações.
+            {t(
+              'Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de verificar o funcionamento e acessar configurações.'
+            )}
           </p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
+        <CardInformation title={t('CARACTERÍSTICAS')}>
           <p>
-            Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir
-            alguns atalhos para comandos pré-definidos.
+            {t(
+              'Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir alguns atalhos para comandos pré-definidos.'
+            )}
           </p>
-          <p>Aceita múltiplos sensores ligados simultaneamente.</p>
+          <p>{t('Aceita múltiplos sensores ligados simultaneamente.')}</p>
           <p>
-            Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor
-            no barramento).
+            {t(
+              'Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor no barramento).'
+            )}
           </p>
-          <p>Pode salvar LOG de comunicação.</p>
+          <p>{t('Pode salvar LOG de comunicação.')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
-          <p>Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).</p>
-          <p>Compatível com todas as versões do SDI-12 (incluindo v1.4).</p>
-          <p> Compatível com USB2.0.</p>
-          <p>Alimentação pela porta USB (5V).</p>
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
+          <p>{t('Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).')}</p>
+          <p>{t('Compatível com todas as versões do SDI-12 (incluindo v1.4).')}</p>
+          <p>{t('Compatível com USB2.0.')}</p>
+          <p>{t('Alimentação pela porta USB (5V).')}</p>
         </CardInformation>
       </div>
     </ContainerDevice>

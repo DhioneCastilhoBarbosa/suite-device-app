@@ -3,6 +3,7 @@ import logo from '../assets/logo.svg'
 import SelectLanguage from './Select/SelectLanguage'
 import { useState } from 'react'
 import About from './about/about'
+import { t } from 'i18next'
 
 export function Header() {
   const [isVisible, setIsVisible] = useState(false)
@@ -20,7 +21,7 @@ export function Header() {
         <img className="w-44" src={logo} alt="Logotipo da empresa dualbase" />
       </div>
       <div className="flex items-center space-x-2 text-blue-950">
-        <button onClick={handleAbout}>Sobre</button>
+        <button onClick={handleAbout}>{t('Sobre')}</button>
         <button>
           <Bell width={24} height={24} />
         </button>

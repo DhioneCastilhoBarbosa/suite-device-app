@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '../Context/DeviceContext'
 import { useEffect, useRef } from 'react'
+import { t } from 'i18next'
 import Footer from './Footer'
 
 export default function Menu() {
@@ -28,7 +29,7 @@ export default function Menu() {
     <div className="flex max-h-screen flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
       <div>
         <div className="flex items-center justify-center border-b-[2px] border-sky-500 pt-1 pb-3">
-          <span className="text-white text-sm font-bold">Dispostivos</span>
+          <span className="text-white text-sm font-bold">{t('Dispositivos')}</span>
         </div>
 
         <div className="flex items-center justify-center pt-4 text-white font-bold">

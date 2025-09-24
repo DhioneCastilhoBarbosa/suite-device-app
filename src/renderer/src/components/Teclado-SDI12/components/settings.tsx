@@ -3,6 +3,7 @@ import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
 import NoDeviceFoundModbus from '@renderer/components/modal/noDeviceFoundModbus'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 type Props = {
   informations: string | undefined
@@ -95,7 +96,7 @@ export default function Settings({
     <div className="flex flex-col items-center justify-center ">
       <div className="grid grid-cols-3 gap-2 h-full mt-4">
         <div className="flex flex-col w-52">
-          <label>Endereço SDI-12</label>
+          <label>{t('Endereço SDI-12')}</label>
           <input
             type="text"
             className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
@@ -108,7 +109,7 @@ export default function Settings({
         </div>
 
         <div className="flex flex-col w-52">
-          <label>Tempo de Display</label>
+          <label>{t('Tempo de Display')}</label>
           <select
             className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
             value={inputValueDisplay}
@@ -123,7 +124,7 @@ export default function Settings({
         </div>
 
         <div className="flex flex-col w-52">
-          <label>Tempo de Dados (min)</label>
+          <label>{t('Tempo de Dados (min)')}</label>
           <input
             type="number"
             className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
