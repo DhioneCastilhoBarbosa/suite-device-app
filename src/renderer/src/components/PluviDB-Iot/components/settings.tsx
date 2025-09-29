@@ -6,6 +6,7 @@ import { Conection } from './setting-conponents/conection'
 import { ReadingPorts } from './setting-conponents/readingPorts'
 import { Transmition } from './setting-conponents/transmition'
 import { General } from './setting-conponents/general'
+import { t } from 'i18next'
 
 type Props = {
   receiverSettingsReport: string | undefined
@@ -72,7 +73,7 @@ export default function Settings({
 
   handleUpdateSettingsTransmition
 }: Props): JSX.Element {
-  const [selected, setSelected] = useState('Geral')
+  const [selected, setSelected] = useState(t('Geral'))
   const [ArraySelectedReport, setArraySelectedReport] = useState<string | undefined>()
   const [ArraySelectedConection, setArraySelectedConection] = useState<string | undefined>()
   const [GeneralName, setGeneralName] = useState<string | undefined>()
@@ -93,12 +94,12 @@ export default function Settings({
   const [ProtocolDataFTP, setProtocolDataFTP] = useState<string | undefined>()
 
   const menuItems = [
-    { name: 'Geral', icon: <Gear size={20} />, key: 'Geral' },
-    { name: 'Conexão', icon: <CellTower size={20} />, key: 'Conexão' },
-    { name: 'Transmissão', icon: <Broadcast size={20} />, key: 'Transmissão' },
-    { name: 'Relatório', icon: <File size={20} />, key: 'Relatório' },
-    { name: 'Senha', icon: <Key size={20} />, key: 'Senha' },
-    { name: 'Portas de leitura', icon: <Faders size={20} />, key: 'Portas de leituras' }
+    { name: t('Geral'), icon: <Gear size={20} />, key: t('Geral') },
+    { name: t('Conexão'), icon: <CellTower size={20} />, key: t('Conexão') },
+    { name: t('Transmissão'), icon: <Broadcast size={20} />, key: t('Transmissão') },
+    { name: t('Relatório'), icon: <File size={20} />, key: t('Relatório') },
+    { name: t('Senha'), icon: <Key size={20} />, key: t('Senha') },
+    { name: t('Portas de leitura'), icon: <Faders size={20} />, key: t('Portas de leitura') }
   ]
 
   const handleClick = (key: string): void => {
@@ -261,7 +262,7 @@ export default function Settings({
         </div>
         {
           <div className=" h-auto overflow-y-auto mr-8 ml-8 flex flex-col justify-center">
-            {selected === 'Geral' ? (
+            {selected === t('Geral') ? (
               <General
                 handleSendSettingsGeneral={handleSendSettingsGeneral}
                 handleUpdateSettingsGeneral={handleUpdateGeneral}
@@ -273,13 +274,13 @@ export default function Settings({
                 receivedRepeatSync={GeneralRepeatSync}
                 receivedNtp={GeneralNPT}
               />
-            ) : selected === 'Conexão' ? (
+            ) : selected === t('Conexão') ? (
               <Conection
                 handleUpdateSettingsConection={handleUpdateConection}
                 receivedSettingsConection={ArraySelectedConection}
                 handleSendSettingsConection={handleSendSettingsConection}
               />
-            ) : selected === 'Transmissão' ? (
+            ) : selected === t('Transmissão') ? (
               <Transmition
                 handleSendSettingsTransmition={handleSendSettingsTransmition}
                 handleUpdateSettingsTransmition={handleUpdateTransmition}
@@ -290,16 +291,16 @@ export default function Settings({
                 receivedDataProtocolFTP={ProtocolDataFTP}
                 receivedTimerMaintenance={TimerMaintenance}
               />
-            ) : selected === 'Relatório' ? (
+            ) : selected === t('Relatório') ? (
               <Report
                 handleUpdateSettingsReport={handleUpdateReport}
                 receivedSettingsReport={ArraySelectedReport}
                 handleSendSettingsReport={handleSendSettingsReport}
               />
-            ) : selected === 'Senha' ? (
+            ) : selected === t('Senha') ? (
               <ChangePassword handleSendChargePassword={handleSendChargePassword} />
             ) : (
-              selected === 'Portas de leituras' && (
+              selected === t('Portas de leitura') && (
                 <ReadingPorts
                   handleSendSettingsPort={handleSendSettingsPorts}
                   handleUpdateSettingsPort={handleUpdatePorts}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import ButtonSet from './buttonSet'
 import { saveAs } from 'file-saver'
 import { selectFile } from '@renderer/utils/fileUtils'
+import { t } from 'i18next'
 
 type Props = {
   receiverSettings: string | undefined
@@ -200,11 +201,11 @@ export default function Settings({
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = 'Dados de configuração do Trasmissor TSatDB - '
+    const headerFile = t('Dados de configuração do Trasmissor TSatDB - ')
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\r\n' + dataSaveSettings.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
-    saveAs(blob, 'Configuracao-TSatDB.txt')
+    saveAs(blob, t('Configuracao-TSatDB.txt'))
   }
 
   function loadVariables(settings: string): void {
@@ -256,7 +257,7 @@ export default function Settings({
     <div className="flex flex-col gap-6 mt-6 w-full pr-2 h-auto ">
       <div className="flex gap-8 border-[1px] border-sky-500 rounded-md p-5">
         <div className="flex flex-col gap-2">
-          <label className="text-gray-700 font-bold"> ID da plataforma</label>
+          <label className="text-gray-700 font-bold"> {t('ID da plataforma')}</label>
           <input
             id="NESID"
             className="border border-gray-500 rounded-md p-2 text-center h-7 w-52"
@@ -269,7 +270,7 @@ export default function Settings({
         <div className="flex flex-col gap-2 ">
           <label className="text-gray-700 font-bold">
             {' '}
-            Substituição de caractere proíbido(IRC)
+            {t('Substituição de caractere proíbido(IRC)')}
           </label>
           <input
             id="IRC"
@@ -283,10 +284,10 @@ export default function Settings({
 
       <div className="flex gap-8">
         <div className=" w-full flex flex-col">
-          <label className="w-full mb-1 font-semibold">Transmissão Temporizada</label>
+          <label className="w-full mb-1 font-semibold">{t('Transmissão Temporizada')}</label>
           <div className="flex flex-col gap-4 border-[1px] border-sky-500 rounded-md p-5">
             <div className="flex flex-col gap-2">
-              <label> Número do canal da transmissão</label>
+              <label> {t('Número do canal da transmissão')}</label>
               <input
                 id="TCH"
                 className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
@@ -297,7 +298,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Taxa de bit para transmissão</label>
+              <label> {t('Taxa de bit para transmissão')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -315,7 +316,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Intervalo de transmissão</label>
+              <label> {t('Intervalo de transmissão')}</label>
               <div className="flex flex-row gap-2 items-center">
                 <input
                   id="TIN"
@@ -329,7 +330,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Primeiro horário de transmissão</label>
+              <label> {t('Primeiro horário de transmissão')}</label>
               <div className="flex flex-row gap-2 items-center">
                 <input
                   id="FTT"
@@ -343,7 +344,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Tamanho da janela de transmissão</label>
+              <label> {t('Tamanho da janela de transmissão')}</label>
               <input
                 id="TWL"
                 className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
@@ -354,7 +355,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Centralização de mensagem em trasmissões</label>
+              <label> {t('Centralização de mensagem em trasmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -363,14 +364,14 @@ export default function Settings({
                   value={CMSG}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 >
-                  <option value="Y">Sim</option>
-                  <option value="N">Não</option>
+                  <option value="Y">{t('Sim')}</option>
+                  <option value="N">{t('Não')}</option>
                 </select>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Formato de dados das trasmissões</label>
+              <label> {t('Formato de dados das trasmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -379,15 +380,15 @@ export default function Settings({
                   value={TDF}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 >
-                  <option value="A">ASCII</option>
-                  <option value="P">PSEUD-Binário</option>
-                  <option value="B">Binário</option>
+                  <option value="A">{t('ASCII')}</option>
+                  <option value="P">{t('PSEUD-Binário')}</option>
+                  <option value="B">{t('Binário')}</option>
                 </select>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Mensagem de buffer vazio</label>
+              <label> {t('Mensagem de buffer vazio')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -396,8 +397,8 @@ export default function Settings({
                   value={EBM}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 >
-                  <option value="Y">Sim</option>
-                  <option value="N">Não</option>
+                  <option value="Y">{t('Sim')}</option>
+                  <option value="N">{t('Não')}</option>
                 </select>
               </div>
             </div>
@@ -405,10 +406,10 @@ export default function Settings({
         </div>
 
         <div className=" w-full flex flex-col">
-          <label className=" w-full mb-1 font-semibold">Transmissão Aleatória</label>
+          <label className=" w-full mb-1 font-semibold">{t('Transmissão Aleatória')}</label>
           <div className=" h-full flex flex-col gap-4 border-[1px] border-sky-500 rounded-md p-5 ">
             <div className="flex flex-col gap-2">
-              <label> Número do canal da transmissão</label>
+              <label> {t('Número do canal da transmissão')}</label>
               <input
                 id="RCH"
                 className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
@@ -419,7 +420,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Taxa de bit para transmissão</label>
+              <label> {t('Taxa de bit para transmissão')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -437,7 +438,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Intervalo de transmissão</label>
+              <label> {t('Intervalo de transmissão')}</label>
               <div className="flex flex-row gap-2 items-center">
                 <input
                   id="RIN"
@@ -446,12 +447,12 @@ export default function Settings({
                   value={RIN}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 />
-                <label>minutos</label>
+                <label>{t('minutos')}</label>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Porcentagem da transmissão</label>
+              <label> {t('Porcentagem da transmissão')}</label>
               <div className="flex flex-row gap-2 items-center">
                 <input
                   id="RPC"
@@ -464,7 +465,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Repetiçao da transmissão</label>
+              <label> {t('Repetição da transmissão')}</label>
               <input
                 id="RRC"
                 className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
@@ -475,7 +476,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Formato de dados das trasmissões</label>
+              <label> {t('Formato de dados das transmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -484,15 +485,15 @@ export default function Settings({
                   value={RDF}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 >
-                  <option value="A">ASCII</option>
-                  <option value="P">PSEUD-Binário</option>
-                  <option value="B">Binário</option>
+                  <option value="A">{t('ASCII')}</option>
+                  <option value="P">{t('PSEUD-Binário')}</option>
+                  <option value="B">{t('Binário')}</option>
                 </select>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> Contagem de Mensagem</label>
+              <label> {t('Contagem de Mensagem')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -501,8 +502,8 @@ export default function Settings({
                   value={RMC}
                   onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 >
-                  <option value="Y">Sim</option>
-                  <option value="N">Não</option>
+                  <option value="Y">{t('Sim')}</option>
+                  <option value="N">{t('Não')}</option>
                 </select>
               </div>
             </div>

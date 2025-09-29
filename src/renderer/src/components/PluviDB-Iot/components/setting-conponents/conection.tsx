@@ -1,6 +1,7 @@
 import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 interface InputFieldProps {
   id: string
@@ -130,7 +131,7 @@ export function Conection({
     <div className="flex flex-col  justify-center items-center gap-2 mt-12">
       <div className="flex flex-col  justify-evenly items-start gap-4">
         <div className="flex flex-row justify-between items-center gap-6 mb-4 mt-4">
-          <span className="text-gray-600 font-semibold">Tipo:</span>
+          <span className="text-gray-600 font-semibold">{t('Tipo:')}</span>
 
           {/* Radio buttons para os tipos */}
           <div className="flex gap-4">
@@ -176,15 +177,15 @@ export function Conection({
                 }}
                 className="mr-2 peer h-4 w-4 border-gray-300 text-sky-500 focus:ring-sky-500"
               />
-              Ambos
+              {t('Ambos')}
             </label>
           </div>
         </div>
         <div className="flex flex-col gap-4 border-[1px] border-gray-200 p-2 rounded-lg w-full">
           <div className="flex flex-row justify-between items-center gap-3  w-64 bg-gray-100 p-2 rounded-lg w-full">
-            <span className="text-gray-600 font-semibold ">Autenticação:</span>
+            <span className="text-gray-600 font-semibold ">{t('Autenticação:')}</span>
             <div className="flex gap-1">
-              <span>Auto:</span>
+              <span>{t('Auto:')}</span>
               <button
                 onClick={toggleSwitch}
                 className={`relative w-12 h-6 flex items-center rounded-full transition-colors ${
@@ -210,14 +211,14 @@ export function Conection({
               />
               <InputField
                 id="usuario"
-                label="Usuario"
+                label={t('Usuário')}
                 type="text"
                 value={formData[2]}
                 onChange={handleInputChange}
               />
               <InputField
                 id="senha"
-                label="Senha"
+                label={t('Senha')}
                 type="text"
                 value={formData[3]}
                 onChange={handleInputChange}
@@ -236,7 +237,7 @@ export function Conection({
       <div className="flex justify-end mt-10 border-t-[1px] border-gray-200 pt-4 w-full gap-4">
         <Button onClick={handleUpdateSettingsConection}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
         <Button
           onClick={() => {
@@ -248,7 +249,7 @@ export function Conection({
           }}
         >
           <UploadSimple size={24} />
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

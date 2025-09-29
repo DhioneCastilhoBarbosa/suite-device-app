@@ -3,6 +3,7 @@ import Antenna from './../../../assets/antenna.png'
 import AntennaUP from './../../../assets/antennaUP.png'
 import { useEffect, useState } from 'react'
 import satellite from '../../../assets/satellite.svg'
+import { t } from 'i18next'
 
 type Props = {
   handlePositiom: () => void
@@ -158,7 +159,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
     <div className=" flex flex-col w-full justify-center items-center mt-4 mb-4">
       <div className=" flex w-full ">
         <label className="bg-sky-500 text-white w-full text-center font-bold text-xl rounded-t-md">
-          Apontamento da antena
+          {t('Apontamento da antena')}
         </label>
       </div>
       <div className="flex flex-col w-full gap-2 border-[1px] border-sky-500 pt-8 items-start rounded-b-md">
@@ -166,14 +167,14 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
           <div className="flex flex-row  items-center gap-2 mr-6 border-[1px] border-sky-500 rounded-md p-1">
             <img src={satellite} alt="satellite" />
             <span className="font-semibold">-</span>
-            <span className="font-semibold">GOES-16 EAST 75W</span>
+            <span className="font-semibold">{t('GOES-16 EAST 75W')}</span>
           </div>
         </div>
         <div className="flex flex-row justify-around items-center w-full">
           <div className="flex flex-row gap-1 justify-center items-center">
             <img src={Antenna} alt="" className="w-64" />
             <div className="flex flex-row gap-1 mb-14">
-              <span className="font-semibold">Elevação:</span>
+              <span className="font-semibold">{t('Elevação')}:</span>
               <span className="bg-sky-500 text-white px-2 rounded-sm">{Elevation}°</span>
             </div>
           </div>
@@ -181,7 +182,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
           <div className="flex flex-row gap-1 justify-center items-center">
             <img src={AntennaUP} alt="" className="w-[270px]" />
             <div className="flex flex-row gap-1 mb-14">
-              <span className="font-semibold">Azimute:</span>
+              <span className="font-semibold">{t('Azimute')}:</span>
               <span className="bg-sky-500 text-white px-2 rounded-sm">{Azimute}°</span>
             </div>
           </div>
@@ -191,12 +192,12 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
             <div className="flex flex-row w-full ">
               {isVisible && (
                 <span className="text-black bg-yellow-200 font-semibold px-2 rounded-sm">
-                  GPS não esta sincronizado, aguarde...
+                  {t('GPS não está sincronizado, aguarde...')}
                 </span>
               )}
             </div>
             <div className="flex flex-row gap-2 w-1/3">
-              <label className="text-white w-20">Latitude:</label>
+              <label className="text-white w-20">{t('Latitude')}:</label>
               <input
                 id="Latitude"
                 className="w-24 text-center"
@@ -206,7 +207,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
               />
             </div>
             <div className="flex flex-row gap-2 w-1/3">
-              <label className="text-white w-20">Longitude:</label>
+              <label className="text-white w-20">{t('Longitude')}:</label>
               <input
                 id="Longitude"
                 className="w-24 text-center"
@@ -225,7 +226,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
             onClick={handleUpdateCoordinates}
             disabled={isVisible}
           >
-            Atualizar coordenada
+            {t('Atualizar coordenada')}
           </Button>
           {/*<Button
             filled={false}

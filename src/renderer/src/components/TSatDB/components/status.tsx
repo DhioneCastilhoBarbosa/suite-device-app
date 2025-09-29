@@ -1,6 +1,7 @@
 import { ArrowsClockwise } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useEffect, useRef, useState } from 'react'
+import { t } from 'i18next'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 type Props = {
@@ -62,7 +63,7 @@ export default function Status({
       <div className="flex flex-col border border-sky-500 rounded-md py-4 mt-16 px-5">
         <div className="flex flex-row gap-6 flex-wrap items-end justify-center ">
           <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">Número de série</label>
+            <label className="text-md mb-1">{t('Número de série')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -72,7 +73,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">Versão do hardware</label>
+            <label className="text-md mb-1">{t('Versão do hardware')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -82,7 +83,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">Versão do firmware</label>
+            <label className="text-md mb-1">{t('Versão do firmware')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -92,7 +93,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">Data e hora</label>
+            <label className="text-md mb-1">{t('Data e hora')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -102,7 +103,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">Fail Safe</label>
+            <label className="text-sm mb-1">{t('Fail Safe')}</label>
             <input
               className={`border border-sky-500 rounded-md p-2 text-center h-7 ${FailSafe != ' OK' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
               type="text"
@@ -112,7 +113,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">Habilitar transmissão</label>
+            <label className="text-md mb-1">{t('Habilitar transmissão')}</label>
             <input
               className={`border border-sky-500 rounded-md p-2 text-center h-7 ${Tx != 'ENABLE' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
               type="text"
@@ -122,7 +123,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">Tensão de alimentação</label>
+            <label className="text-sm mb-1">{t('Tensão de alimentação')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -132,7 +133,7 @@ export default function Status({
           </div>
 
           <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">Temperatura</label>
+            <label className="text-sm mb-1">{t('Temperatura')}</label>
             <input
               className="border border-sky-500 rounded-md p-2 text-center h-7"
               type="text"
@@ -145,7 +146,7 @@ export default function Status({
           <div className="flex flex-row  items-center justify-center gap-6 w-full">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col w-40 ">
-                <label className="text-md mb-1">Próxima transmissão temporizada</label>
+                <label className="text-md mb-1">{t('Próxima transmissão temporizada')}</label>
                 <input
                   className="border border-sky-500 rounded-md p-2 text-center h-7"
                   type="text"
@@ -155,7 +156,7 @@ export default function Status({
               </div>
 
               <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">Próxima transmissão aleatória</label>
+                <label className="text-sm mb-1">{t('Próxima transmissão aleatória')}</label>
                 <input
                   className="border border-sky-500 rounded-md p-2 text-center h-7"
                   type="text"
@@ -166,7 +167,7 @@ export default function Status({
             </div>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">Contagem do buffer módulo temporizado</label>
+                <label className="text-sm mb-1">{t('Contagem do buffer módulo temporizado')}</label>
                 <input
                   className="border border-sky-500 rounded-md p-2 text-center h-7"
                   type="text"
@@ -176,7 +177,7 @@ export default function Status({
               </div>
 
               <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">Contagem do buffer módulo aleatório</label>
+                <label className="text-sm mb-1">{t('Contagem do buffer módulo aleatório')}</label>
                 <input
                   className="border border-sky-500 rounded-md p-2 text-center h-7"
                   type="text"
@@ -187,7 +188,7 @@ export default function Status({
             </div>
           </div>
           <div className="flex flex-col gap-2 justify-start items-start w-full">
-            <label className="text-sm mb-1">Status da útima transmissão</label>
+            <label className="text-sm mb-1">{t('Status da última transmissão')}</label>
             <textarea
               ref={textareaRef}
               className="border border-sky-500 rounded-md p-2 text-justify h-36 w-[347px] resize-none"
@@ -200,7 +201,7 @@ export default function Status({
       <div className="flex flex-row justify-end items-end w-full">
         <Button onClick={refreshInformation}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
       </div>
     </div>

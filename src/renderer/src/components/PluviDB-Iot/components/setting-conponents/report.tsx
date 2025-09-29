@@ -1,6 +1,7 @@
 import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 type Props = {
   handleUpdateSettingsReport: () => void
@@ -23,13 +24,13 @@ export function Report({
     'off'
   ])
   const options = [
-    'Pulso1',
-    'Pulso2',
-    'Geolocalização',
-    'Bateria',
-    'Sinal',
-    'SDI-12',
-    'Motivo da transmissão'
+    t('Pulso1'),
+    t('Pulso2'),
+    t('Geolocalização'),
+    t('Bateria'),
+    t('Sinal'),
+    t('SDI-12'),
+    t('Motivo da transmissão')
   ]
   const [switches, setSwitches] = useState<Record<string, boolean>>(
     options.reduce(
@@ -110,11 +111,11 @@ export function Report({
       <div className="flex justify-end mt-6 border-t-[1px] border-gray-200 pt-4 gap-4">
         <Button onClick={() => handleUpdateSettingsReport()}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
         <Button onClick={() => handleSendSettingsReport && handleSendSettingsReport(ArraySelected)}>
           <UploadSimple size={24} />
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

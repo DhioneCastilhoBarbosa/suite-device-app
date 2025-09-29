@@ -1,6 +1,7 @@
 import { ArrowsClockwise, Eye, EyeClosed, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 type Props = {
   receiverTxPowerLevel: string | undefined
@@ -101,7 +102,7 @@ export function RFAdvanced({
   return (
     <div className=" w-full flex flex-col mt-28 mb-8">
       <label className="bg-sky-500 text-white w-full text-center font-bold text-xl rounded-t-md">
-        Nivel de Potencia RF
+        {t('Nivel de Potencia RF')}
       </label>
       <div className="border-[1px] border-sky-500 rounded-b-md ">
         <div className="flex gap-4 p-4 mt-10">
@@ -119,8 +120,8 @@ export function RFAdvanced({
             />
             <label className="font-semibold w-36 text-white"> 100bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> Min: 32</label>
-              <label className="font-normal text-white">Max: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 32</label>
+              <label className="font-normal text-white">{t('Max')}: 38</label>
             </div>
           </div>
 
@@ -138,8 +139,8 @@ export function RFAdvanced({
             />
             <label className="font-semibold w-36 text-white"> 300 bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> Min: 32</label>
-              <label className="font-normal text-white">Max: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 32</label>
+              <label className="font-normal text-white">{t('Max')}: 38</label>
             </div>
           </div>
 
@@ -157,14 +158,14 @@ export function RFAdvanced({
             />
             <label className="font-semibold w-36 text-white"> 1200 bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> Min: 32</label>
-              <label className="font-normal text-white">Max: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 32</label>
+              <label className="font-normal text-white">{t('Max')}: 38</label>
             </div>
           </div>
         </div>
         <div className="flex justify-between items-center gap-4 mr-4 ml-4 mb-10 ">
           <div className="flex flex-col gap-2">
-            <label className="text-gray-700 font-semibold text-sm">Senha:</label>
+            <label className="text-gray-700 font-semibold text-sm">{t('Senha')}:</label>
             <div className=" flex flex-row border border-sky-500 rounded-md ">
               <input
                 id="Password"
@@ -172,7 +173,7 @@ export function RFAdvanced({
                 type={showPassword ? 'text' : 'password'}
                 value={Password}
                 onChange={(e) => handleInputChange(e.target.id, e.target.value)}
-                placeholder="Digite a senha"
+                placeholder={t('Digite a senha')}
               />
               <span
                 className="flex items-center cursor-pointer mr-2"
@@ -182,7 +183,7 @@ export function RFAdvanced({
               </span>
             </div>
             {isPasswordInvalid ? (
-              <span className=" text-red-500 ">Senha inválida</span>
+              <span className=" text-red-500 ">{t('Senha inválida')}</span>
             ) : (
               <span className="h-5 inline-block"></span>
             )}
@@ -192,11 +193,11 @@ export function RFAdvanced({
       <div className="flex flex-row justify-end mt-4 gap-2">
         <Button filled={false} size={'medium'} onClick={handleUpdateSettings}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
         <Button filled={false} size={'medium'} className="text-[12px]" onClick={handleSendSetting}>
           <UploadSimple size={24} />
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

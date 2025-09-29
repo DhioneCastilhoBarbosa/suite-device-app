@@ -1,6 +1,7 @@
 import { ArrowsClockwise, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
+import { t } from 'i18next'
 
 type Props = {
   handleUpdateSettingsPort: () => void
@@ -76,24 +77,24 @@ export function ReadingPorts({
   return (
     <div className="flex flex-col gap-2 p-2 mt-4 mb-4 items-stretch">
       <div className="w-full rounded-md border-[1px] border-gray-200">
-        <span className="w-full bg-gray-300 block pl-2">Pulso 1</span>
+        <span className="w-full bg-gray-300 block pl-2">{t('Pulso 1')}</span>
         <div className="flex flex-row items-center justify-center">
           <div className="flex flex-row justify-start items-center gap-3 p-2">
-            <span>Reset:</span>
+            <span>{t('Reset:')}</span>
             <select
               value={selectedPort1}
               onChange={(e) => setSelectedPort1(e.target.value)}
               className="mr-2 block p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
             >
               <option value="" disabled></option>
-              <option value="ano">Anual</option>
-              <option value="men">Mensal</option>
-              <option value="nun">Nunca</option>
+              <option value="ano">{t('Anual')}</option>
+              <option value="men">{t('Mensal')}</option>
+              <option value="nun">{t('Nunca')}</option>
             </select>
           </div>
 
           <div className="flex flex-row justify-start items-center gap-3 p-2">
-            <span>Resolução:</span>
+            <span>{t('Resolução:')}</span>
             <input
               step="0.001"
               min="0"
@@ -151,24 +152,24 @@ export function ReadingPorts({
       </div>
 
       <div className="w-full rounded-md border-[1px] border-gray-200">
-        <span className="w-full bg-gray-300 block pl-2">Pulso 2</span>
+        <span className="w-full bg-gray-300 block pl-2">{t('Pulso 2')}</span>
         <div className="flex flex-row items-center justify-center">
           <div className="flex flex-row justify-start items-center gap-3 p-2">
-            <span>Reset:</span>
+            <span>{t('Reset:')}</span>
             <select
               value={selectedPort2}
               onChange={(e) => setSelectedPort2(e.target.value)}
               className="mr-2 block p-1 border rounded-md bg-white text-gray-700 shadow-sm focus:ring focus:ring-blue-300 w-24"
             >
               <option value="" disabled></option>
-              <option value="ano">Anual</option>
-              <option value="men">Mensal</option>
-              <option value="nun">Nunca</option>
+              <option value="ano">{t('Anual')}</option>
+              <option value="men">{t('Mensal')}</option>
+              <option value="nun">{t('Nunca')}</option>
             </select>
           </div>
 
           <div className="flex flex-row justify-start items-center gap-3 p-2">
-            <span>Resolução:</span>
+            <span>{t('Resolução:')}</span>
             <input
               step="0.001"
               min="0"
@@ -229,7 +230,7 @@ export function ReadingPorts({
         <span className="w-full bg-gray-300 block pl-2">SDI-12</span>
         <div className="flex flex-col gap-3 p-2">
           <div className="flex flex-row justify-between items-center w-72">
-            <span>Endereço:</span>
+            <span>{t('Endereço:')}</span>
             <input
               type="text"
               value={AddressSdi}
@@ -238,7 +239,7 @@ export function ReadingPorts({
             />
           </div>
           <div className="flex flex-row justify-between items-center w-72">
-            <span>Número de campos:</span>
+            <span>{t('Número de campos:')}</span>
             <input
               type="number"
               value={FieldsSdi}
@@ -247,7 +248,7 @@ export function ReadingPorts({
             />
           </div>
           <div className="flex flex-row justify-between items-center w-72">
-            <span>Rótulos das leituras:</span>
+            <span>{t('Rótulos das leituras:')}</span>
             <input
               type="text"
               value={LabelsSdi}
@@ -261,11 +262,11 @@ export function ReadingPorts({
       <div className="flex justify-end mt-4 border-t-[1px] border-gray-200 pt-4 gap-4">
         <Button onClick={handleUpdateSettingsPort}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
         <Button onClick={handleClickSend}>
           <UploadSimple size={24} />
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

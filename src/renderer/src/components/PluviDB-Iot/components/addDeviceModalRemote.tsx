@@ -1,6 +1,7 @@
 import { X } from '@phosphor-icons/react'
 import { useState, useEffect } from 'react'
 import MqttManager from '../../../utils/mqttManager'
+import { t } from 'i18next'
 
 interface AddDeviceModalProps {
   isOpen: boolean
@@ -79,28 +80,30 @@ export default function AddDeviceModal({
 
       if (result.success) {
         setConexaoStatus(
-          device?.id ? 'Dispositivo atualizado com sucesso!' : 'Dispositivo salvo com sucesso!'
+          device?.id
+            ? t('Dispositivo atualizado com sucesso!')
+            : t('Dispositivo salvo com sucesso!')
         )
         onClose() // Fecha o modal
       } else {
-        const errorMessage = result.error ?? 'Erro desconhecido'
-        setConexaoStatus(`Erro ao salvar no banco: ${errorMessage}`)
+        const errorMessage = result.error ?? t('Erro desconhecido')
+        setConexaoStatus(`${t('Erro ao salvar no banco:')} ${errorMessage}`)
         console.error('Erro ao salvar no banco:', errorMessage)
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      setConexaoStatus(`Erro no IPC: ${errorMessage}`)
+      setConexaoStatus(`${t('Erro no IPC:')} ${errorMessage}`)
       console.error('Erro no IPC:', error)
     }
   }
 
   const testarConexaoBroker = async (): Promise<void> => {
     if (!brokerAddress || !brokerPort) {
-      setConexaoStatus('Por favor, preencha endereço e porta do broker.')
+      setConexaoStatus(t('Por favor, preencha endereço e porta do broker.'))
       return
     }
 
-    setConexaoStatus('Conectando...')
+    setConexaoStatus(t('Conectando...'))
     const mqttManager = new MqttManager()
     const brokerUrl = `mqtt://${brokerAddress}:${brokerPort}`
     const options = {
@@ -111,11 +114,11 @@ export default function AddDeviceModal({
 
     try {
       await mqttManager.connect(brokerUrl, options)
-      setConexaoStatus('Conexão bem-sucedida!')
+      setConexaoStatus(t('Conexão bem-sucedida!'))
       mqttManager.disconnect()
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err)
-      setConexaoStatus(`Erro na conexão: ${errorMessage}`)
+      setConexaoStatus(`${t('Erro na conexão:')} ${errorMessage}`)
     }
   }
 
@@ -126,7 +129,7 @@ export default function AddDeviceModal({
       <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg animate-fade-in">
         <div className="flex justify-between items-center border-b border-sky-400 pb-2 mb-4">
           <h2 className="text-lg font-bold text-sky-600">
-            {device ? 'Editar Dispositivo' : 'Novo Dispositivo'}
+            {device ? t('Editar Dispositivo') : t('Novo Dispositivo')}
           </h2>
           <button onClick={onClose} className="text-sky-600 hover:text-sky-800 transition-colors">
             <X size={22} />
@@ -137,7 +140,9 @@ export default function AddDeviceModal({
           <input type="hidden" value={device?.id || ''} />
           {/* Restante dos campos */}
           <div>
-            <label className="block text-sm font-medium text-sky-700">Nome do Dispositivo</label>
+            <label className="block text-sm font-medium text-sky-700">
+              {t('Nome do Dispositivo')}
+            </label>
             <input
               type="text"
               value={name}
@@ -147,7 +152,7 @@ export default function AddDeviceModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-sky-700">IMEI</label>
+            <label className="block text-sm font-medium text-sky-700">{t('IMEI')}</label>
             <input
               type="text"
               value={imei}
@@ -158,7 +163,9 @@ export default function AddDeviceModal({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-sky-700">Endereço do Broker</label>
+              <label className="block text-xs font-medium text-sky-700">
+                {t('Endereço do Broker')}
+              </label>
               <input
                 type="text"
                 value={brokerAddress}
@@ -168,7 +175,7 @@ export default function AddDeviceModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-sky-700">Porta</label>
+              <label className="block text-xs font-medium text-sky-700">{t('Porta')}</label>
               <input
                 type="text"
                 value={brokerPort}
@@ -180,7 +187,7 @@ export default function AddDeviceModal({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-sky-700">Usuário</label>
+              <label className="block text-xs font-medium text-sky-700">{t('Usuário')}</label>
               <input
                 type="text"
                 value={brokerUser}
@@ -189,7 +196,7 @@ export default function AddDeviceModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-sky-700">Senha</label>
+              <label className="block text-xs font-medium text-sky-700">{t('Senha')}</label>
               <input
                 type="password"
                 value={brokerPassword}
@@ -199,7 +206,7 @@ export default function AddDeviceModal({
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-sky-700">Tópico</label>
+            <label className="block text-xs font-medium text-sky-700">{t('Tópico')}</label>
             <input
               type="text"
               value={imei}
@@ -215,7 +222,7 @@ export default function AddDeviceModal({
               onClick={testarConexaoBroker}
               className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md"
             >
-              Testar Conexão
+              {t('Testar Conexão')}
             </button>
             {conexaoStatus && <span className="text-sm ml-2">{conexaoStatus}</span>}
           </div>
@@ -225,7 +232,7 @@ export default function AddDeviceModal({
               type="submit"
               className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2 rounded-md shadow-sm"
             >
-              {device ? 'Atualizar' : 'Salvar'}
+              {device ? t('Atualizar') : t('Salvar')}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import Button from '@renderer/components/button/Button'
 import { ModalSaveReport } from '@renderer/components/modal/modalSaveReport'
 import { useEffect, useState } from 'react'
 import { saveAs } from 'file-saver'
+import { t } from 'i18next'
 
 type Props = {
   receivedDataStatus: string | undefined
@@ -33,24 +34,24 @@ export default function Status({
   const [dataSave, setDataSave] = useState<string[]>([])
   const [limit, setLimit] = useState('0')
   const data = [
-    { id: 1, name: 'Nome:', value: arrayData[1] },
-    { id: 2, name: 'Patrimônio:', value: arrayData[19] },
-    { id: 3, name: 'Número de série:', value: arrayData[14] },
+    { id: 1, name: t('Nome:'), value: arrayData[1] },
+    { id: 2, name: t('Patrimônio:'), value: arrayData[19] },
+    { id: 3, name: t('Número de série:'), value: arrayData[14] },
     {
       id: 4,
-      name: 'Latitude,Longitude,Altitude:',
+      name: t('Latitude,Longitude,Altitude:'),
       value: `${arrayDataGL[0]}, ${arrayDataGL[1]}, ${arrayDataGL[2]}`
     },
-    { id: 5, name: 'Data e hora:', value: arrayData[15] },
+    { id: 5, name: t('Data e hora:'), value: arrayData[15] },
 
-    { id: 6, name: 'IP:', value: arrayData[17].replace(/^"(.*)"$/, '$1') },
-    { id: 7, name: 'ICCID:', value: arrayData[16] },
-    { id: 8, name: 'IMEI:', value: arrayData[8] },
-    { id: 9, name: 'Versão do Firmware:', value: arrayData[9] },
-    { id: 10, name: 'Versão do Hardware:', value: arrayData[10] },
-    { id: 11, name: 'ProgSig:', value: arrayData[20] },
-    { id: 12, name: 'Contador de boot:', value: arrayData[18] },
-    { id: 13, name: 'Start time:', value: arrayData[11] }
+    { id: 6, name: t('IP:'), value: arrayData[17].replace(/^"(.*)"$/, '$1') },
+    { id: 7, name: t('ICCID:'), value: arrayData[16] },
+    { id: 8, name: t('IMEI:'), value: arrayData[8] },
+    { id: 9, name: t('Versão do Firmware:'), value: arrayData[9] },
+    { id: 10, name: t('Versão do Hardware:'), value: arrayData[10] },
+    { id: 11, name: t('ProgSig:'), value: arrayData[20] },
+    { id: 12, name: t('Contador de boot:'), value: arrayData[18] },
+    { id: 13, name: t('Start time:'), value: arrayData[11] }
   ]
 
   function handleSaveReport(number: number, all: boolean): void {
@@ -72,7 +73,7 @@ export default function Status({
 
   const handleSaveToFile = (): void => {
     setShowModalSaveReport(false)
-    const headerFile = 'Dados do relatório do PluviDB-IoT - '
+    const headerFile = t('Dados do relatório do PluviDB-IoT - ')
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataSave.join('').replace(/!/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
@@ -83,7 +84,7 @@ export default function Status({
     const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getFullYear().toString().slice(-2)}-${dateObj.getHours().toString().padStart(2, '0')}${dateObj.getMinutes().toString().padStart(2, '0')}${dateObj.getSeconds().toString().padStart(2, '0')}`
     console.log(formattedDate)
 
-    saveAs(blob, `relatorio-PluviDB-IoT_${formattedDate}.txt`)
+    saveAs(blob, t(`relatorio-PluviDB-IoT_${formattedDate}.txt`))
     setDataSave([])
     handleClearDataMemory()
   }
@@ -233,17 +234,17 @@ export default function Status({
           <div className="flex flex-col justify-start  gap-1 p-1 border-2 border-sky-500 rounded-md h-full w-auto">
             <div>
               <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500 ">
-                Transmissão
+                {t('Transmissão')}
               </span>
 
               <div className="flex flex-row items-center gap-4">
                 <div className="flex flex-row justify-center items-center gap-2 text-[12px] ">
-                  <span>Protocolo utilizado:</span>
+                  <span>{t('Protocolo utilizado:')}</span>
                   <span className="font-bold">{arrayData[0].toUpperCase()}</span>
                 </div>
 
                 <div className="flex flex-row justify-center items-center gap-2 text-[12px]">
-                  <span>Última transmissão:</span>
+                  <span>{t('Última transmissão:')}</span>
                   <span className="font-bold">{arrayData[7]}</span>
                 </div>
               </div>
@@ -279,7 +280,7 @@ export default function Status({
           <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
-                <th className="py-0.5 px-4 text-left">Informações do dispositivo</th>
+                <th className="py-0.5 px-4 text-left">{t('Informações do dispositivo')}</th>
                 <th className="py-0.5 px-4 text-left"></th>
               </tr>
             </thead>
@@ -303,16 +304,16 @@ export default function Status({
       </div>
       <div className="flex flex-col justify-evenly bg-white h-auto rounded-md  border-2 border-sky-500">
         <div className="bg-sky-500 text-white p-0.5 ">
-          <span className="font-bold">Relatório:</span>
+          <span className="font-bold">{t('Relatório:')}</span>
         </div>
         <div className="flex flex-row justify-between items-center my-1 mx-2">
           <div className="flex flex-col justify-center items-start gap-2">
             <div className="flex flex-row gap-2">
-              <span className="font-bold">Número de registros:</span>
+              <span className="font-bold">{t('Número de registros:')}</span>
               <span>{arrayData[12]}</span>
             </div>
             <div className="flex flex-row gap-2">
-              <span>Memória utilizada:</span>
+              <span>{t('Memória utilizada:')}</span>
               <span>{arrayData[13]}%</span>
             </div>
           </div>
@@ -322,14 +323,14 @@ export default function Status({
             onClick={handleDowReport}
           >
             <DownloadSimple size={24} />
-            Coletar relatórios
+            {t('Coletar relatórios')}
           </Button>
         </div>
       </div>
       <div className="flex justify-end mt-1 border-t-[1px] border-gray-200 pt-2 w-full gap-4">
         <Button onClick={handleUpdateStatus}>
           <ArrowsClockwise size={24} />
-          Atualizar
+          {t('Atualizar')}
         </Button>
       </div>
       <ModalSaveReport

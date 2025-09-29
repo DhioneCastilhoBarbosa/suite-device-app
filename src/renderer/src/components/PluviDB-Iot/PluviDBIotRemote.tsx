@@ -4,6 +4,7 @@ import HeaderDevice from '../headerDevice/HeaderDevice'
 import AddDeviceModal from './components/addDeviceModalRemote'
 import React, { useState, useRef, useEffect } from 'react'
 import MqttManager from '../../utils/mqttManager'
+import { t } from 'i18next'
 
 interface Device {
   id: number
@@ -46,7 +47,10 @@ const extractReqId = (s: string): string | null => {
 
 // "Recebido de <topic>: <payload>"
 const parseSavedReceiveLine = (line: string): { topic: string; payload: string } | null => {
-  const m = String(line).match(/Recebido de\s+([^:]+):\s*(.*)$/)
+  //const m = String(line).match(/Recebido de\s+([^:]+):\s*(.*)$/)
+  const received = t('Recebido de')
+  const rx = new RegExp(`${received.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+([^:]+):\\s*(.*)$`)
+  const m = rx.exec(String(line))
   if (!m) return null
   return { topic: m[1].trim(), payload: m[2].trim() }
 }
@@ -97,7 +101,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
       const payloadKey = `${topic}|${payloadStr}`
 
       const timestamp = new Date().toLocaleString('pt-BR')
-      const responseText = `${timestamp} -> Recebido de ${topic}: ${message}`
+      //const responseText = `${timestamp} -> Recebido de ${topic}: ${message}`
+      const responseText = `${timestamp} -> ${t('Recebido de {{topic}}: {{message}}', { topic, message })}`
 
       const errorKeywords = ['error', 'denied', 'unlogged']
       const isError = errorKeywords.some((k) => payloadStr.toLowerCase().includes(k))
@@ -118,8 +123,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
             return {
               ...entry,
               text: entry.text
-                .replace(' (pendente de resposta)', '')
-                .replace(' (sem resposta 5min)', ''),
+                .replace(` ${t('(pendente de resposta)')}`, '')
+                .replace(` ${t('(sem resposta a mais de 5min)')}`, ''),
               status: 'responded' as TerminalLogEntry['status']
             }
           }
@@ -185,7 +190,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
       if (result.success) {
         setTerminalOutput((prev) => [
           ...prev,
-          { id: Date.now(), text: 'Dispositivo removido!', status: 'normal' }
+          { id: Date.now(), text: t('Dispositivo removido!'), status: 'normal' }
         ])
         await loadDevices()
       } else {
@@ -247,9 +252,9 @@ export default function PluviDBIotRemote(): React.ReactElement {
       // 3) IDs já respondidos no histórico
       const receivedIds = new Set<string>()
       for (const l of logs) {
-        const t = String(l.message).trim()
-        if (t.includes('Recebido de')) {
-          const id = extractReqId(t)
+        const lineText = String(l.message).trim()
+        if (lineText.includes(t('Recebido de')) || lineText.includes('Recebido de')) {
+          const id = extractReqId(lineText)
           if (id) receivedIds.add(id)
         }
       }
@@ -261,8 +266,11 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
       for (const l of logs) {
         const currentText = String(l.message).trim()
-        const isPublicado = currentText.includes('Publicado no tópico')
-        const isRecebido = currentText.includes('Recebido de')
+        const isPublicado =
+          currentText.includes(t('Publicado no tópico {{topic}}', { topic: '' }).split('{{')[0]) ||
+          currentText.includes('Publicado no tópico')
+        const isRecebido =
+          currentText.includes(t('Recebido de')) || currentText.includes('Recebido de')
 
         if (isPublicado) {
           if (dbSeenPublishLines.has(currentText)) continue
@@ -298,10 +306,14 @@ export default function PluviDBIotRemote(): React.ReactElement {
       }
 
       setTerminalOutput([
-        { id: Date.now(), text: `Conectado a ${device.name}`, status: 'normal' },
-        { id: Date.now(), text: '📜 Início do Histórico', status: 'highlight' },
+        {
+          id: Date.now(),
+          text: t('Conectado a {{name}}', { name: device.name }),
+          status: 'normal'
+        },
+        { id: Date.now(), text: t('📜 Início do Histórico'), status: 'highlight' },
         ...logEntries,
-        { id: Date.now(), text: '📜 Fim do Histórico', status: 'highlight' }
+        { id: Date.now(), text: t('📜 Fim do Histórico'), status: 'highlight' }
       ])
 
       // 5) Assina e abre janela de aquecimento (1 eco visual permitido)
@@ -312,7 +324,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
       setTerminalOutput([
         {
           id: Date.now(),
-          text: `Erro na conexão: ${error?.message ?? String(error)}`,
+          text: t('Erro na conexão: {{msg}}', { msg: error?.message ?? String(error) }),
           status: 'warning'
         }
       ])
@@ -339,7 +351,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
       const ID = normalizeId(`${idDevice}${timestamp}`)
 
       const fullTopic = `${connectedDevice.imei}/cmd`
-      const initialText = `${timestampFormatted}  ->Publicado no tópico ${fullTopic}: ${ID}|${command}`
+      const initialText = `${timestampFormatted}  ->${t('Publicado no tópico {{topic}}', { topic: fullTopic })}: ${ID}|${command}`
+
       const commandWithId = `${ID}|${command}`
 
       mqttManagerRef.current.publish(fullTopic, commandWithId)
@@ -359,7 +372,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
         setTerminalOutput((prev) =>
           prev.map((msg) =>
             msg.id === id && msg.status === 'pending'
-              ? { ...msg, text: `${msg.text} (pendente de resposta)`, status: 'pending' }
+              ? { ...msg, text: `${msg.text} ${t('(pendente de resposta)')}`, status: 'pending' }
               : msg
           )
         )
@@ -374,7 +387,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 ? {
                     ...msg,
                     status: 'warning',
-                    text: `${msg.text.replace(' (pendente de resposta)', '')} (sem resposta a mais de 5min)`
+                    text: `${msg.text.replace(` ${t('(pendente de resposta)')}`, '')} ${t('(sem resposta a mais de 5min)')}`
                   }
                 : msg
             )
@@ -389,7 +402,8 @@ export default function PluviDBIotRemote(): React.ReactElement {
     if (connectedDevice) {
       const result = await ipcRenderer.invoke('clear-terminal-logs', connectedDevice.id)
       if (result.success) {
-        setTerminalOutput([{ id: Date.now(), text: 'Histórico apagado!', status: 'normal' }])
+        setTerminalOutput([{ id: Date.now(), text: t('Histórico apagado!'), status: 'normal' }])
+
         seenPayloadsRef.current = new Set()
         warmupUntilRef.current = 0
         warmupEchoBudgetRef.current = 0
@@ -402,18 +416,18 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
   const handleSaveLogs = async (): Promise<void> => {
     if (!connectedDevice) {
-      alert('Nenhum dispositivo conectado para salvar o histórico.')
+      alert(t('Nenhum dispositivo conectado para salvar o histórico.'))
       return
     }
 
     const imei = connectedDevice.imei
-    const header = `Relatório de logs do Pluvi-IoT-${imei}\n\n`
+    const header = t('Relatório de logs do Pluvi-IoT-{{imei}}', { imei }) + '\n\n'
     const logs = terminalOutput.map((entry) => entry.text).join('\n')
     const content = header + logs
 
     try {
       const result = await ipcRenderer.invoke('save-logs-file', {
-        fileName: `Pluvio-Iot-${imei}.txt`,
+        fileName: t('Pluvio-IoT-{{imei}}.txt', { imei }),
         content
       })
       if (result.success) {
@@ -451,13 +465,13 @@ export default function PluviDBIotRemote(): React.ReactElement {
       <div className="flex flex-col justify-center bg-white mr-8 ml-8 mt-4 rounded-lg shadow-lg text-zinc-700 text-sm w-full max-w-5xl mb-1 pb-2">
         <header className="flex items-center justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-400 min-h-12">
           <div className="flex gap-4 text-sky-600 font-semibold text-lg">
-            <button>Dispositivos Remotos</button>
+            <button>{t('Dispositivos Remotos')}</button>
           </div>
         </header>
 
         <div className="flex h-[500px] mr-8 ml-8 mt-4 rounded-lg overflow-hidden">
           <div className="w-1/4 bg-sky-50 p-4 rounded-l-lg flex flex-col">
-            <h3 className="font-bold text-sky-700 mb-3 text-base">Dispositivos</h3>
+            <h3 className="font-bold text-sky-700 mb-3 text-base">{t('Dispositivos')}</h3>
             <ul className="flex-1 overflow-auto space-y-2">
               {devices.map((device, index) => {
                 const isConnected = connectedDevice?.name === device.name
@@ -476,7 +490,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                         }}
                         disabled={!!isAnotherConnectedOrConnected}
                         className={`text-yellow-500 hover:text-yellow-600 ${isAnotherConnectedOrConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title="Editar"
+                        title={t('Editar')}
                       >
                         <PencilSimple size={20} />
                       </button>
@@ -484,7 +498,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                         onClick={() => handleDeleteDevice(device.id)}
                         disabled={!!isAnotherConnectedOrConnected}
                         className={`text-red-500 hover:text-red-600 ${isAnotherConnectedOrConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title="Deletar"
+                        title={t('Deletar')}
                       >
                         <TrashSimple size={20} />
                       </button>
@@ -492,7 +506,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                         onClick={() => handleConnectToggle(device)}
                         disabled={!!(isAnotherConnectedOrConnected && !isConnected)}
                         className={`${isConnected ? 'text-green-600 hover:text-green-700' : 'text-green-500 hover:text-green-600'} ${isAnotherConnectedOrConnected && !isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title={isConnected ? 'Desconectar' : 'Conectar'}
+                        title={isConnected ? t('Desconectar') : t('Conectar')}
                       >
                         {isConnected ? <Plugs size={20} /> : <Plug size={20} />}
                       </button>
@@ -508,14 +522,14 @@ export default function PluviDBIotRemote(): React.ReactElement {
               }}
               className="mt-4 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg shadow-md transition"
             >
-              + Adicionar
+              {t('+ Adicionar')}
             </button>
           </div>
 
           <div className="flex-1 bg-sky-100 p-4 rounded-r-lg flex flex-col">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-sky-700 font-semibold">
-                Terminal {connectedDevice ? `- ${connectedDevice.name}` : ''}
+                {t('Terminal')} {connectedDevice ? `- ${connectedDevice.name}` : ''}
               </h3>
               {connectedDevice && (
                 <div className="flex items-center gap-2">
@@ -523,13 +537,13 @@ export default function PluviDBIotRemote(): React.ReactElement {
                     onClick={handleClearLogs}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
                   >
-                    Limpar Histórico
+                    {t('Limpar Histórico')}
                   </button>
                   <button
                     onClick={handleSaveLogs}
                     className="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-sm"
                   >
-                    Salvar Histórico
+                    {t('Salvar Histórico')}
                   </button>
                 </div>
               )}
@@ -558,7 +572,9 @@ export default function PluviDBIotRemote(): React.ReactElement {
                   </p>
                 ))
               ) : (
-                <p className="text-gray-400">Conecte a um dispositivo para usar o terminal</p>
+                <p className="text-gray-400">
+                  {t('Conecte a um dispositivo para usar o terminal')}
+                </p>
               )}
               <div ref={terminalEndRef} />
             </div>
@@ -568,7 +584,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 type="text"
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
-                placeholder="Digite o comando..."
+                placeholder={t('Digite o comando...')}
                 disabled={!connectedDevice}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -583,7 +599,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 disabled={!connectedDevice}
                 className={`${connectedDevice ? 'bg-sky-500 hover:bg-sky-600' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-r-lg shadow-md transition`}
               >
-                Enviar
+                {t('Enviar')}
               </button>
             </div>
           </div>

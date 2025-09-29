@@ -1,4 +1,5 @@
 import Button from '@renderer/components/button/Button'
+import { t } from 'i18next'
 
 import {
   FolderOpen,
@@ -61,7 +62,7 @@ export default function ButtonSet({
           onClick={handleClearFailSafe}
         >
           <Broom size={24} />
-          Limpar Failsafe
+          {t('Limpar Failsafe')}
         </Button>
         <Button
           filled={false}
@@ -70,7 +71,7 @@ export default function ButtonSet({
           onClick={handleRetornFactory}
         >
           <ArrowCounterClockwise size={24} />
-          Restaurar
+          {t('Restaurar')}
         </Button>
         <Button
           filled={false}
@@ -79,7 +80,7 @@ export default function ButtonSet({
           onClick={handleSelectFile}
         >
           <FolderOpen size={24} />
-          Selecionar Arquivo
+          {t('Selecionar Arquivo')}
         </Button>
         <Button
           filled={false}
@@ -88,7 +89,7 @@ export default function ButtonSet({
           onClick={handleSaveToFile}
         >
           <FloppyDisk size={24} />
-          Salvar
+          {t('Salvar')}
         </Button>
 
         <Button
@@ -98,7 +99,7 @@ export default function ButtonSet({
           className="text-[11px] px-1 py-6"
         >
           <DownloadSimple size={24} />
-          Baixar informação
+          {t('Baixar informação')}
         </Button>
         <Button
           filled={false}
@@ -107,7 +108,7 @@ export default function ButtonSet({
           onClick={handleSend}
         >
           <UploadSimple size={24} />
-          Enviar configuração
+          {t('Enviar configuração')}
         </Button>
       </div>
     </>

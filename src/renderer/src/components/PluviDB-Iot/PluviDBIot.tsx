@@ -18,6 +18,7 @@ import { ModalErroUnloagged } from '../modal/modalUnlogged'
 
 import { Update } from './components/update'
 import { toast } from 'react-toastify'
+import { t } from 'i18next'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -193,9 +194,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       return response
     } catch (error: any) {
       if (error.message === 'TIMEOUT') {
-        toast.warn('Tempo excedido sem resposta do dispositivo. Tente novamente.') // [CHANGE]
+        toast.warn(t('Tempo excedido sem resposta do dispositivo. Tente novamente.')) // [CHANGE]
       } else {
-        toast.error(`Erro ao receber resposta: ${error.message ?? 'desconhecido'}`)
+        toast.error(t(`Erro ao receber resposta: ${error.message ?? t('desconhecido')}`))
       }
       setIsLoading(false)
       setDeviceFound(false)
@@ -351,7 +352,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
   function handleUpdateStatus(): void {
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
 
       // Envia o primeiro comando
@@ -386,7 +387,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
   function handleUpdateConection(): void {
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       setDataReceivedComandConection('')
       handleComandSend('conex=cfg?').then((response) => {
@@ -405,7 +406,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandRepeatSync('')
     setDataReceivedComandNTP('')
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       handleComandSend('nd=cfg?').then((response) => {
         setDataReceivedComandGeneralName(response)
@@ -450,7 +451,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandPortP2('')
     setDataReceivedComandPortSdi('')
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       handleComandSend('p1=cfg?').then((response) => {
         setDataReceivedComandPortP1(response)
@@ -479,7 +480,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandTimerMaintenance('')
 
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Baixando informações do dispositivo!')
+      setMessageIsLoading(t('Baixando informações do dispositivo!'))
       setIsLoading(true)
       handleComandSend('tf=cfg?').then((response) => {
         setDataReceivedComandTimerFixed(response)
@@ -521,7 +522,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     //console.log(formattedString)
 
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(formattedString).then(() => {
         //console.log('Resposta do alterar relatorio:', response)
@@ -535,7 +536,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     //console.log('Lista de valores:', list)
     const time = 500
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(`p1=${list[0]}!`).then(() => {
         //console.log('Resposta do alterar Nome:', response)
@@ -561,7 +562,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     //console.log('Lista de valores:', list)
     const time = 200
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(`tf=${list[0]}!`).then(() => {
         //console.log('Resposta do alterar Nome:', response)
@@ -604,7 +605,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     //console.log('String de dados de conexao a se enviada:', formattedString) // Para debug
 
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(formattedString).then((response) => {
         console.log('Resposta de conexão:', response)
@@ -617,7 +618,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   function handleChangeNewPassword(password: string): void {
     //console.log('Nova Senha:', `lg=${password}!`)
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(`lg=${password}!`).then(() => {
         //console.log('Resposta do alterar senha:', response)
@@ -632,7 +633,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     //console.log('Nova Senha:', `lg=${password}!`)
     const time = 500
     if (props.isConect && !mode.state && enabledAccess) {
-      setMessageIsLoading('Enviando configurações para o dispositivo!')
+      setMessageIsLoading(t('Enviando configurações para o dispositivo!'))
       setIsLoading(true)
       handleComandSend(`nd=${list[0]}!`).then(() => {
         setTimeout(() => {
@@ -791,7 +792,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('status')}
             >
-              Status
+              {t('Status')}
             </button>
 
             <button
@@ -800,7 +801,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('instantaneous')}
             >
-              Dados Instantâneos
+              {t('Dados Instantâneos')}
             </button>
 
             <button
@@ -809,7 +810,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('config')}
             >
-              Configuração
+              {t('Configuração')}
             </button>
 
             <button
@@ -818,7 +819,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
               } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
               onClick={() => handleMenu('terminal')}
             >
-              Terminal
+              {t('Terminal')}
             </button>
             {/*<button
               className={`border-b-2 border-transparent ${
@@ -919,55 +920,65 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       <ImageDevice image={ImgPluviDBIot} link="https://dualbase.com.br/produto/pluvidb-iot/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
-        <CardInformation title="VISÃO GERAL">
+        <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            O PluviDB-IoT é um telepluviometro, sendo um medidor de chuva com tecnologia embarcada.
+            {t(
+              'O PluviDB-IoT é um telepluviometro, sendo um medidor de chuva com tecnologia embarcada.'
+            )}
           </p>
           <p>
-            Possui simultaneamente com conexão via 4G – LTE-M CAT-M1 e NB-IoT versão 2 (NB2)
-            compatível com 3GPP LTE release 14.
+            {t(
+              'Possui simultaneamente com conexão via 4G – LTE-M CAT-M1 e NB-IoT versão 2 (NB2) compatível com 3GPP LTE release 14.'
+            )}
           </p>
           <p>
-            Empregando as melhores técnicas de redução de consumo energético, o PluviDB-IoT funciona
-            com bateria não recarregável de Lítio primária que pode alcançar autonomia maior que 5
-            anos.
+            {t(
+              'Empregando as melhores técnicas de redução de consumo energético, o PluviDB-IoT funciona com bateria não recarregável de Lítio primária que pode alcançar autonomia maior que 5 anos.'
+            )}
           </p>
 
-          <p>Acompanha Certificado de Calibração rastreado a RBC conforme IEC 17025.</p>
-          <p>Homologação ANATEL: 08591-24-11455</p>
+          <p>{t('Acompanha Certificado de Calibração rastreado a RBC conforme IEC 17025.')}</p>
+          <p>{t('Homologação ANATEL: 08591-24-11455')}</p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
-          <p>Princípio de báscula instável, construído integralmente com materiais inoxidáveis</p>
-          <p>Com dispositivo regulador de vazão, sistema de nivelamento com nível de bolha</p>
-          <p>Corpo em alumínio, aço inox e pintura epóxi</p>
+        <CardInformation title={t('CARACTERÍSTICAS')}>
           <p>
-            Bordas internas em formato de ângulo reto e borda externa com formato de ângulo oblíquo,
-            que minimizam efeitos de turbulência do vento. Atende requisitos WMO.
+            {t('Princípio de báscula instável, construído integralmente com materiais inoxidáveis')}
           </p>
-          <p>2 portas de medição de pulso</p>
-          <p>ARM Cortex M33, Memória Flash de 64Mb para armazenamento de dados</p>
-          <p>Configurável via / Bluetooth (BLE) e USB-C - (Windows/Linux/Android)</p>
-          <p>Frequências LTE de 700 a 2200 Mhz</p>
           <p>
-            Cat-M1: B1, B2, B3, B4, B5, B8, B12, B13, B14, B17, B18, B19, B20, B25, B26, B28, B66
+            {t('Com dispositivo regulador de vazão, sistema de nivelamento com nível de bolha')}
           </p>
-          <p>NB1/NB2: B1, B2, B3, B4, B5, B8, B12, B13, B17, B19, B20, B25, B26, B28, B66 </p>
-          <p>Funções eDRX e PSM power saving.</p>
-          <p>Protocolos: MQTT, HTTP, NTP, FTP entre outros</p>
-          <p>Bateria interna de lítio primária Li-SOCl2 – 2D/3,6V</p>
+          <p>{t('Corpo em alumínio, aço inox e pintura epóxi')}</p>
+          <p>
+            {t(
+              'Bordas internas em formato de ângulo reto e borda externa com formato de ângulo oblíquo, que minimizam efeitos de turbulência do vento. Atende requisitos WMO.'
+            )}
+          </p>
+          <p>{t('2 portas de medição de pulso')}</p>
+          <p>{t('ARM Cortex M33, Memória Flash de 64Mb para armazenamento de dados')}</p>
+          <p>{t('Configurável via / Bluetooth (BLE) e USB-C - (Windows/Linux/Android)')}</p>
+          <p>{t('Frequências LTE de 700 a 2200 Mhz')}</p>
+          <p>
+            {t(
+              'Cat-M1: B1, B2, B3, B4, B5, B8, B12, B13, B14, B17, B18, B19, B20, B25, B26, B28, B66'
+            )}
+          </p>
+          <p>{t('NB1/NB2: B1, B2, B3, B4, B5, B8, B12, B13, B17, B19, B20, B25, B26, B28, B66')}</p>
+          <p>{t('Funções eDRX e PSM power saving.')}</p>
+          <p>{t('Protocolos: MQTT, HTTP, NTP, FTP entre outros')}</p>
+          <p>{t('Bateria interna de lítio primária Li-SOCl2 – 2D/3,6V')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
-          <p>Capacidade: 0 a 500 mm/h</p>
-          <p>Resolução: 0,2 mm</p>
-          <p>Faixa de operação: -20 a 70 °C | 0 a 100% UR</p>
-          <p>Incerteza máxima associada: 5% @ 0 a 200 mm/h</p>
-          <p>Sistema de nivelamento : Nível de bolha</p>
-          <p>Área de captação: 314 cm²</p>
-          <p>Diâmetro do funil : 200 0,5 mm</p>
-          <p>Sinal de saída : Duplo reed-switch, Pulso NA de 100 ms.</p>
-          <p>Grau de Proteção: IP 66</p>
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
+          <p>{t('Capacidade: 0 a 500 mm/h')}</p>
+          <p>{t('Resolução: 0,2 mm')}</p>
+          <p>{t('Faixa de operação: -20 a 70 °C | 0 a 100% UR')}</p>
+          <p>{t('Incerteza máxima associada: 5% @ 0 a 200 mm/h')}</p>
+          <p>{t('Sistema de nivelamento : Nível de bolha')}</p>
+          <p>{t('Área de captação: 314 cm²')}</p>
+          <p>{t('Diâmetro do funil : 200 0,5 mm')}</p>
+          <p>{t('Sinal de saída : Duplo reed-switch, Pulso NA de 100 ms.')}</p>
+          <p>{t('Grau de Proteção: IP 66')}</p>
         </CardInformation>
       </div>
     </ContainerDevice>

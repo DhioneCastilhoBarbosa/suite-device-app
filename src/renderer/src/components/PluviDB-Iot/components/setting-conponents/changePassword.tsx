@@ -1,6 +1,8 @@
 import { Eye, EyeClosed, UploadSimple } from '@phosphor-icons/react'
 import Button from '@renderer/components/button/Button'
 import { useState } from 'react'
+import { t } from 'i18next'
+
 type Props = {
   handleSendChargePassword: (settings: string) => void
 }
@@ -12,13 +14,13 @@ export function ChangePassword({ handleSendChargePassword }: Props): JSX.Element
   const [showPassword, setShowPassword] = useState(false)
   const handleSubmit = (): void => {
     if (!password.trim() || !confirmPassword.trim()) {
-      setErrorMessage('A senha não pode estar vazia!')
+      setErrorMessage(t('A senha não pode estar vazia!'))
       setMatch(false)
       return
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage('As senhas não conferem!')
+      setErrorMessage(t('As senhas não conferem!'))
       setMatch(false)
       return
     }
@@ -33,7 +35,7 @@ export function ChangePassword({ handleSendChargePassword }: Props): JSX.Element
   return (
     <div className="flex flex-col gap-2 mt-12">
       <div className="flex flex-row justify-normal items-center gap-3">
-        <span>Nova senha:</span>
+        <span>{t('Nova senha:')}</span>
         <div className=" flex flex-row border border-gray-200 rounded-md  focus-within:border-sky-500  focus-within:ring-sky-500">
           <input
             type={showPassword ? 'text' : 'password'}
@@ -50,7 +52,7 @@ export function ChangePassword({ handleSendChargePassword }: Props): JSX.Element
         </div>
       </div>
       <div className="flex flex-row  justify-normal items-center gap-2">
-        <span>Confirmação:</span>
+        <span>{t('Confirmação:')}</span>
         <div className=" flex flex-row border border-gray-200 rounded-md focus-within:border-sky-500  focus-within:ring-sky-500">
           <input
             type={showPassword ? 'text' : 'password'}
@@ -72,7 +74,7 @@ export function ChangePassword({ handleSendChargePassword }: Props): JSX.Element
       <div className="flex justify-end mt-6 border-t-[1px] border-gray-200 pt-4">
         <Button onClick={handleSubmit}>
           <UploadSimple size={24} />
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

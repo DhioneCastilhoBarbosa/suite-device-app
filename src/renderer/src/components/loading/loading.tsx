@@ -1,3 +1,5 @@
+import { t } from 'i18next'
+
 interface LoadingModalProps {
   onStop: () => void
 }
@@ -10,11 +12,11 @@ export default function LoadingModal({ onStop }: LoadingModalProps): JSX.Element
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#1E9EF4]"></div>
         </div>
         <p className="mt-4 text-center text-lg font-medium text-gray-700">
-          Procurando dispositivo.
+          {t('Procurando dispositivo')}.
         </p>
 
         <button className=" w-32 px-2 py-2 mt-6 bg-red-500 text-white rounded" onClick={onStop}>
-          Parar
+          {t('Parar')}
         </button>
       </div>
     </div>

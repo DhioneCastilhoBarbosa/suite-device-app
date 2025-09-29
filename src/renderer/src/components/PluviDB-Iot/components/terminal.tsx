@@ -1,6 +1,7 @@
 import Button from '@renderer/components/button/Button'
 import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
+import { t } from 'i18next'
 
 type Props = {
   receiverTerminal: string | undefined
@@ -33,7 +34,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = 'Dados gerado do PluviDB-IoT - '
+    const headerFile = t('Dados gerado do PluviDB-IoT - ')
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
@@ -67,10 +68,10 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
     <div className="flex flex-col w-full mt-10 mb-4">
       <div className="flex flex-row gap-2 mt-6 mx-8 justify-end">
         <Button size={'small'} onClick={handleClear}>
-          Limpar
+          {t('Limpar')}
         </Button>
         <Button size={'small'} onClick={handleSaveToFile}>
-          Salvar
+          {t('Salvar')}
         </Button>
       </div>
       <div className=" flex w-full h-72">
@@ -88,13 +89,13 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
         <input
           className="w-full border-[2px] rounded-md outline-sky-400 p-2"
           type="text"
-          placeholder="Digite o comando"
+          placeholder={t('Digite o comando')}
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyPress}
         />
         <Button size={'large'} className="h-10" filled onClick={handleSendComand}>
-          Enviar
+          {t('Enviar')}
         </Button>
       </div>
     </div>

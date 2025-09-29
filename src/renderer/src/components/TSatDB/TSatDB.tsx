@@ -799,40 +799,46 @@ export default function TSatDB(props: TSatDBProps) {
       <ImageDevice image={ImgTsatDb} link="https://dualbase.com.br/produto/tsatdb/" />
 
       <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
-        <CardInformation title="VISÃO GERAL">
-          <p>Transmissão de alta taxa de dados - Versão 2.0 (CS2)</p>
+        <CardInformation title={t('VISÃO GERAL')}>
+          <p>{t('Transmissão de alta taxa de dados - Versão 2.0 (CS2)')}</p>
           <p>
-            Sistema de Posicionamento Global (GPS) e ajuste automático do relógio.Até 28 dias de
-            funcionamento sem sinal de GPS
+            {t(
+              'Sistema de Posicionamento Global (GPS) e ajuste automático do relógio.Até 28 dias de funcionamento sem sinal de GPS'
+            )}
           </p>
-          <p>Compatível com vários registradores de dados (dataloggers)</p>
+          <p>{t('Compatível com vários registradores de dados (dataloggers)')}</p>
 
-          <p>Homologação NESDIS: 1014-000114</p>
-          <p>Homologação ANATEL: 03654-18-11455</p>
+          <p>{t('Homologação NESDIS: 1014-000114')}</p>
+          <p>{t('Homologação ANATEL: 03654-18-11455')}</p>
         </CardInformation>
 
-        <CardInformation title="CARACTERÍSTICAS">
-          <p>Gabinete metálico.</p>
-          <p>LEDs no painel frontal indicadores do estado operacional</p>
-          <p>Comunicação USB/RS232</p>
+        <CardInformation title={t('CARACTERÍSTICAS')}>
+          <p>{t('Gabinete metálico.')}</p>
+          <p>{t('LEDs no painel frontal indicadores do estado operacional')}</p>
+          <p>{t('Comunicação USB/RS232')}</p>
         </CardInformation>
 
-        <CardInformation title="ESPECIFICAÇÃO">
-          <p>Taxa de transmissão: METEOSAT: 100 bps GOES: 300 e 1200 bps</p>
+        <CardInformation title={t('ESPECIFICAÇÃO')}>
+          <p>{t('Taxa de transmissão: METEOSAT: 100 bps GOES: 300 e 1200 bps')}</p>
           <p>
-            Faixa de frequência de transmissão: METEOSAT: 402,0355 a 402,4345 MHz GOES: 401,701 a
-            402,0985 MHz
+            {t(
+              'Faixa de frequência de transmissão: METEOSAT: 402,0355 a 402,4345 MHz GOES: 401,701 a 402,0985 MHz'
+            )}
           </p>
-          <p>Potência nominal de transmissão: METEOSAT: 14 W (máximo) GOES: 6,5 W (máximo)</p>
-          <p>Antena de transmissão: 14 W (máximo) RHC (Right Hanc Circular) - Conector N</p>
-          <p>Antena de GPS: Ativa de 3,3 V - Conector SMA</p>
-          <p>Alimentação: 10,8 a 16,0 Vdc</p>
           <p>
-            Consumo: Stand-by: aprox. 3 mA /Transmissão: aprox. 2,6 A / GPS ligado: aprox. 50 mA
+            {t('Potência nominal de transmissão: METEOSAT: 14 W (máximo) GOES: 6,5 W (máximo)')}
           </p>
-          <p>Faixa de operação: -40º a + 60ºC</p>
-          <p>Protocolo de comunicação: ASCII, Binário</p>
-          <p>Comunicação:USB: Micro B RS-232: DB9 Fêmea</p>
+          <p>{t('Antena de transmissão: 14 W (máximo) RHC (Right Hanc Circular) - Conector N')}</p>
+          <p>{t('Antena de GPS: Ativa de 3,3 V - Conector SMA')}</p>
+          <p>{t('Alimentação: 10,8 a 16,0 Vdc')}</p>
+          <p>
+            {t(
+              'Consumo: Stand-by: aprox. 3 mA /Transmissão: aprox. 2,6 A / GPS ligado: aprox. 50 mA'
+            )}
+          </p>
+          <p>{t('Faixa de operação: -40º a + 60ºC')}</p>
+          <p>{t('Protocolo de comunicação: ASCII, Binário')}</p>
+          <p>{t('Comunicação:USB: Micro B RS-232: DB9 Fêmea')}</p>
         </CardInformation>
       </div>
     </ContainerDevice>
