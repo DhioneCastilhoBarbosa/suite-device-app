@@ -1,0 +1,6 @@
+# Copiado para o instalador via forge.config.js (extraResources → resources).
+# electron-updater lê em produção: process.resourcesPath/app-update.yml
+provider: github
+owner: DhioneCastilhoBarbosa
+repo: suite-device-app
+updaterCacheDirName: suite-device-app-updater

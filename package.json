@@ -14,6 +14,7 @@
     "forge": "forge.config.js"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -94,6 +95,7 @@
     "electron-vite": "^1.0.29",
     "eslint": "^8.47.0",
     "eslint-plugin-react": "^7.33.2",
+    "patch-package": "^8.0.1",
     "postcss": "^8.4.31",
     "prettier": "^3.0.2",
     "react": "^18.2.0",

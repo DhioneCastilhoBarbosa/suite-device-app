@@ -8,7 +8,12 @@ const api = {
     ipcRenderer.invoke('show-save-dialog'),
 
   // Executa o atualizador que está na pasta resources
-  runUpdater: (): Promise<void> => ipcRenderer.invoke('run-updater')
+  runUpdater: (): Promise<void> => ipcRenderer.invoke('run-updater'),
+
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
+
+  checkForUpdates: (): Promise<{ ok: boolean; reason?: 'dev' | 'disabled'; message?: string }> =>
+    ipcRenderer.invoke('check-for-updates')
 }
 
 // Expõe APIs para o renderer

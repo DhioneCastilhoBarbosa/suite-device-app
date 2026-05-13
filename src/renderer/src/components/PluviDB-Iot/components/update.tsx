@@ -1,13 +1,5 @@
 import Button from '@renderer/components/button/Button'
 
-declare global {
-  interface Window {
-    api: {
-      runUpdater: () => Promise<any> // Defina o tipo correto de retorno, se souber
-    }
-  }
-}
-
 export function Update(): JSX.Element {
   const handleRunUpdater = async (): Promise<void> => {
     try {
