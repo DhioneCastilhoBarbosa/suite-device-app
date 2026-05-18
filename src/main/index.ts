@@ -1,10 +1,10 @@
 import { app, shell, BrowserWindow, dialog, screen, ipcMain } from 'electron'
+import type { Server } from 'http'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateInfo } from 'builder-util-runtime'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import iconLinux from '../../resources/icon.png?asset'
-import iconWin from '../../resources/icon.ico?asset'
+import appIcon from '../../resources/icon.png?asset'
 import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
 import '../db/db'
@@ -66,12 +66,14 @@ updateElectronApp({
 })*/
 
 let mainWindow: BrowserWindow | null
+let localHttpServer: Server | null = null
 
 /** True after o utilizador pediu "Verificar atualizações" até tratar feedback (sem nova versão ou erro). */
 let pendingManualUpdateFeedback = false
 
 autoUpdater.autoDownload = false
 autoUpdater.autoInstallOnAppQuit = false
+autoUpdater.fullChangelog = false
 
 function getReleaseNotesText(info: UpdateInfo): string {
   const { releaseNotes } = info
@@ -80,6 +82,53 @@ function getReleaseNotesText(info: UpdateInfo): string {
     return releaseNotes.map((n) => (typeof n === 'object' && n && 'note' in n ? String(n.note) : '')).join('\n')
   }
   return ''
+}
+
+function stripHtmlToPlainText(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function formatUpdateDetail(info: UpdateInfo): string {
+  const plain = stripHtmlToPlainText(getReleaseNotesText(info))
+  const looksLikeHtml =
+    !plain || plain.includes('issue-link') || plain.includes('class=') || plain.length > 500
+  if (looksLikeHtml) {
+    return 'Deseja baixar e instalar esta atualização agora? A aplicação será fechada durante a instalação.'
+  }
+  return `${plain}\n\nA aplicação será fechada durante a instalação.`
+}
+
+function shutdownAppForUpdate(): void {
+  if (localHttpServer) {
+    localHttpServer.close()
+    localHttpServer = null
+  }
+  BrowserWindow.getAllWindows().forEach((win) => {
+    if (!win.isDestroyed()) {
+      win.removeAllListeners('close')
+      win.destroy()
+    }
+  })
+  mainWindow = null
+}
+
+function runQuitAndInstall(): void {
+  shutdownAppForUpdate()
+  autoUpdater.quitAndInstall(true, true)
 }
 
 async function showAppMessageBox(options: Electron.MessageBoxOptions): Promise<Electron.MessageBoxReturnValue> {
@@ -101,7 +150,7 @@ function createWindow(): void {
     minHeight: 800,
     show: false,
     autoHideMenuBar: true,
-    icon: process.platform === 'linux' ? iconLinux : iconWin,
+    icon: appIcon,
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
@@ -125,7 +174,7 @@ function createWindow(): void {
     res.sendFile(indexFile)
   })
 
-  server.listen(port, () => {
+  localHttpServer = server.listen(port, () => {
     console.log(`🌐 Servidor rodando em http://localhost:${port}`)
     console.log(`✅ distPath usado: ${distPath}`)
 
@@ -198,6 +247,13 @@ function handleSquirrelEvent(): boolean {
 }
 
 if (!handleSquirrelEvent()) {
+  app.on('before-quit', () => {
+    if (localHttpServer) {
+      localHttpServer.close()
+      localHttpServer = null
+    }
+  })
+
   app.on('ready', () => {
     ensureAppUpdateYml()
     createWindow()
@@ -364,7 +420,6 @@ if (!handleSquirrelEvent()) {
 
   autoUpdater.on('update-available', async (info) => {
     pendingManualUpdateFeedback = false
-    const notes = getReleaseNotesText(info)
     const { response } = await showAppMessageBox({
       type: 'info',
       buttons: ['Baixar e instalar', 'Agora não'],
@@ -372,7 +427,7 @@ if (!handleSquirrelEvent()) {
       cancelId: 1,
       title: 'Nova atualização',
       message: `A versão ${info.version} está disponível.`,
-      detail: notes || 'Deseja baixar e instalar esta atualização agora?'
+      detail: formatUpdateDetail(info)
     })
     if (response !== 0) return
     try {
@@ -399,19 +454,19 @@ if (!handleSquirrelEvent()) {
     })
   })
 
-  autoUpdater.on('update-downloaded', (info) => {
+  autoUpdater.on('update-downloaded', () => {
     void showAppMessageBox({
       type: 'info',
-      buttons: ['Reiniciar agora', 'Mais tarde'],
+      buttons: ['Reiniciar e instalar', 'Mais tarde'],
       defaultId: 0,
       cancelId: 1,
       title: 'Atualização pronta',
-      message: info.releaseName || 'Atualização descarregada',
+      message: 'A nova versão foi descarregada.',
       detail:
-        'A nova versão foi descarregada. Reinicie a aplicação para concluir a instalação da atualização.'
+        'A aplicação vai fechar para concluir a instalação. Guarde o seu trabalho antes de continuar.'
     }).then((returnValue) => {
       if (returnValue.response === 0) {
-        autoUpdater.quitAndInstall(false, true)
+        runQuitAndInstall()
       }
     })
   })

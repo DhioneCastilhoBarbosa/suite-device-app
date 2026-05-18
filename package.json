@@ -1,13 +1,13 @@
 {
   "name": "suite-device-app",
-  "version": "2.2.0",
+  "version": "2.2.4",
   "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
   "homepage": "https://www.dhionecastilho.com.br",
   "repository": "https://github.com/DhioneCastilhoBarbosa/suite-device-app",
   "publish": {
-    "provide": "github",
+    "provider": "github",
     "releaseType": "release"
   },
   "config": {
@@ -24,7 +24,8 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build && npm run copy-resources",
     "copy-resources": "cpx \"resources/**/*\" dist/resources",
-    "build:win": "dotenv electron-builder --win --config=electron-builder.yml",
+    "icons:generate": "node scripts/generate-icon.cjs",
+    "build:win": "npm run icons:generate && npm run build && node scripts/build-win.cjs",
     "build:mac": "electron-vite build && electron-builder --mac --config",
     "build:linux": "electron-vite build && electron-builder --linux --config",
     "make": "npm run build && electron-forge make",
@@ -33,7 +34,7 @@
     "make-deb": "electron-forge make --target=@electron-forge/maker-deb",
     "make-rpm": "electron-forge make --target=@electron-forge/maker-rpm",
     "publish-forge": "electron-forge publish",
-    "publish": "electron-builder --publish always --config=electron-builder.yml",
+    "publish": "npm run icons:generate && npm run build && node scripts/publish-win.cjs",
     "start-forge": "electron-forge start",
     "rebuild": "electron-rebuild -f -w better-sqlite3"
   },
@@ -96,6 +97,7 @@
     "eslint": "^8.47.0",
     "eslint-plugin-react": "^7.33.2",
     "patch-package": "^8.0.1",
+    "png-to-ico": "^2.1.8",
     "postcss": "^8.4.31",
     "prettier": "^3.0.2",
     "react": "^18.2.0",
