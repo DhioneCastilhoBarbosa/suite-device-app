@@ -40,13 +40,19 @@ Para construir o aplicativo, siga as etapas abaixo:
    npm run make
    ```
 
-4. **Distribuir o aplicativo**
-   Após a compilação, você pode acessar o pacote gerado na pasta `out` para distribuição.
+4. **Distribuir o aplicativo (Forge / Squirrel, sem auto-update)**
+   O `npm run make` gera instaladores na pasta `out` (por exemplo `Suite-Device.exe` + `RELEASES`). Esse fluxo **não** gera `latest.yml` e **não** serve para o `electron-updater`.
 
-5. **Publicar o aplicativo**
-   Para publicar o aplicativo em um servidor ou plataforma de distribuição, utilize o comando:
+5. **Publicar com atualização automática (Windows)**
+   O verificador de atualizações usa `electron-updater`, que exige release no GitHub com artefatos do **electron-builder** (NSIS + `latest.yml` + `.blockmap`), não os ficheiros Squirrel do Forge.
+
+   Configure `GH_TOKEN` no `.env` (escopo `repo`) e publique:
    ```bash
    npm run publish
    ```
+
+   No release devem aparecer ficheiros como `latest.yml` e `suite-device-app Setup X.Y.Z.exe`. Distribua o instalador NSIS aos utilizadores (instalação em `%LocalAppData%\Programs\...`, não a pasta `Suite-Device` do Squirrel).
+
+   Para publicar apenas o Forge (Linux/macOS ou instalador Squirrel legado): `npm run publish-forge`.
 
 Essas etapas garantem que o aplicativo **Suite Device** esteja pronto para ser executado, distribuído e publicado em ambientes de desenvolvimento e produção.

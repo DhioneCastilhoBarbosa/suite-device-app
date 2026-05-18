@@ -1,4 +1,3 @@
-import { Bell } from '@phosphor-icons/react'
 import logo from '../assets/logo.svg'
 import SelectLanguage from './Select/SelectLanguage'
 import { useState } from 'react'
@@ -22,9 +21,6 @@ export function Header() {
       </div>
       <div className="flex items-center space-x-2 text-blue-950">
         <button onClick={handleAbout}>{t('Sobre')}</button>
-        <button>
-          <Bell width={24} height={24} />
-        </button>
         <SelectLanguage />
       </div>
       <About visible={isVisible} onClose={handleClose} />

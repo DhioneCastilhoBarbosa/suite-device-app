@@ -1,8 +1,9 @@
 appId: com.electron.app
 productName: suite-device-app
+forceCodeSigning: false
 
 directories:
-  buildResources: build
+  buildResources: resources
 
 files:
   - dist/main/**
@@ -21,18 +22,22 @@ asarUnpack:
 
 win:
   target:
-    - nsis               # 🔥 Gera instalador NSIS (Windows)
-  icon: resources/icon.ico               # Caminho relativo ao buildResources
-  sign: false
-  signingHashAlgorithms: []  # Desativa assinatura
-  executableName: suite-device
+    - nsis
+  # .ico com vários tamanhos — embutido no .exe (atalho da área de trabalho usa o ícone do exe)
+  icon: icon.ico
+  sign: null
+  executableName: suite-device-app
 
 nsis:
-  oneClick: false                     # Permite escolher opções na instalação
-  perMachine: false                   # Opcional, instalação por usuário
-  #allowElevation: true                # Para permissões elevadas
-  allowToChangeInstallationDirectory: true # Escolher diretório
-  include: null                       # Remove custom uninstaller.nsh que depende de plugins
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  include: null
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico
+  shortcutName: Suite Device
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
 
 npmRebuild: false
 
@@ -40,5 +45,5 @@ publish:
   provider: github
   owner: DhioneCastilhoBarbosa
   repo: suite-device-app
-  releaseType: draft
+  releaseType: release
   vPrefixedTagName: true

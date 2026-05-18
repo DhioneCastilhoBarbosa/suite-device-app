@@ -1,4 +1,6 @@
 const path = require('path')
+const { version } = require('./package.json')
+
 require('dotenv').config()
 
 module.exports = {
@@ -39,11 +41,12 @@ module.exports = {
   rebuildConfig: {},
 
   makers: [
+    // Squirrel (RELEASES + .nupkg) não é suportado pelo electron-updater — use npm run publish (NSIS).
     {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'Suite-Device',
-        version: '2.0.1',
+        version,
         setupExe: 'Suite-Device.exe',
         appIconPath: path.join(__dirname, 'resources', 'icon.ico'),
         loadingGif: path.join(__dirname, 'resources', 'db.gif'),
@@ -60,7 +63,7 @@ module.exports = {
         options: {
           name: 'suite-device',
           productName: 'Suite Device',
-          version: '2.0.1',
+          version,
           arch: 'x64',
           icon: path.join(__dirname, 'resources', 'icon.png'),
           categories: ['Utility'],
@@ -78,7 +81,7 @@ module.exports = {
         options: {
           name: 'suite-device',
           productName: 'Suite Device',
-          version: '2.0.1',
+          version,
           arch: 'x86_64',
           icon: path.join(__dirname, 'resources', 'icon.png'),
           homepage: 'https://github.com/DhioneCastilhoBarbosa/suite-device-app',
