@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { X } from '@phosphor-icons/react/dist/ssr'
 import logo from '../../assets/icon.png'
 import Footer from '../Footer'
@@ -9,6 +10,47 @@ interface LoadingDataProps {
 }
 
 export default function About({ visible, onClose }: LoadingDataProps): JSX.Element | null {
+  const [appVersion, setAppVersion] = useState<string>('—')
+  const [checkingUpdates, setCheckingUpdates] = useState(false)
+  const [updateCheckHint, setUpdateCheckHint] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!visible) return
+    setUpdateCheckHint(null)
+    const api = window.api
+    if (!api?.getAppVersion) {
+      setAppVersion('—')
+      return
+    }
+    void api.getAppVersion().then(setAppVersion).catch(() => setAppVersion('—'))
+  }, [visible])
+
+  const handleCheckForUpdates = async (): Promise<void> => {
+    setUpdateCheckHint(null)
+    const api = window.api
+    if (!api?.checkForUpdates) {
+      setUpdateCheckHint(t('Não foi possível verificar atualizações neste ambiente.'))
+      return
+    }
+    setCheckingUpdates(true)
+    try {
+      const res = await api.checkForUpdates()
+      if (!res.ok) {
+        if (res.reason === 'dev') {
+          setUpdateCheckHint(t('Atualizações não estão disponíveis em modo desenvolvimento.'))
+        } else if (res.reason === 'disabled') {
+          setUpdateCheckHint(t('Atualizações não estão configuradas ou estão desativadas.'))
+        } else if (res.message) {
+          setUpdateCheckHint(res.message)
+        }
+      }
+    } catch {
+      setUpdateCheckHint(t('Ocorreu um erro ao pedir a verificação de atualizações.'))
+    } finally {
+      setCheckingUpdates(false)
+    }
+  }
+
   if (!visible) return null
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
@@ -31,8 +73,20 @@ export default function About({ visible, onClose }: LoadingDataProps): JSX.Eleme
           </p>
           <div className="flex gap-2">
             <p>{t('Versão atual:')}</p>
-            <p className="font-bold">v.2.2.0</p>
+            <p className="font-bold">v{appVersion}</p>
           </div>
+
+          <button
+            type="button"
+            disabled={checkingUpdates}
+            className="mt-3 rounded-md border border-sky-500 bg-white px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => void handleCheckForUpdates()}
+          >
+            {checkingUpdates ? t('Verificando...') : t('Verificar atualizações')}
+          </button>
+          {updateCheckHint ? (
+            <p className="mx-6 mt-2 max-w-md text-center text-sm text-amber-800">{updateCheckHint}</p>
+          ) : null}
 
           <Footer />
 

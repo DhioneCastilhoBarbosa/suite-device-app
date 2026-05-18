@@ -23,9 +23,11 @@ module.exports = {
     icon: path.join(__dirname, 'resources', 'icon'),
     extraResources: [
       {
-        from: path.join(__dirname, 'resources'), // Caminho para a pasta resources
-        to: 'resources', // Copia a pasta resources para o diretório de build
-        filter: ['**/*'] // Certifica-se de que todos os arquivos dentro de resources sejam copiados
+        from: path.join(__dirname, 'resources'),
+        // Relativo à pasta `resources` do app empacotado — NÃO uses `resources` aqui ou fica
+        // `resources/resources/...` e o electron-updater não encontra `app-update.yml`.
+        to: '.',
+        filter: ['**/*']
       },
       {
         from: './dist/renderer', // ou ajuste para o caminho real do dist

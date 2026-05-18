@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, dialog, screen, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import type { UpdateInfo } from 'builder-util-runtime'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import iconLinux from '../../resources/icon.png?asset'
@@ -23,6 +24,37 @@ import {
 
 const fs = require('fs')
 
+/** Conteúdo mínimo se o YAML não vier no pacote (Forge antigo / cópia aninhada). */
+const DEFAULT_APP_UPDATE_YML = `provider: github
+owner: DhioneCastilhoBarbosa
+repo: suite-device-app
+updaterCacheDirName: suite-device-app-updater
+`
+
+/**
+ * electron-updater lê sempre `process.resourcesPath/app-update.yml`.
+ * Com extraResources `to: 'resources'`, o ficheiro acabava em `resources/resources/app-update.yml`.
+ */
+function ensureAppUpdateYml(): void {
+  if (is.dev || !app.isPackaged) return
+  const dest = path.join(process.resourcesPath, 'app-update.yml')
+  if (fs.existsSync(dest)) return
+  const nested = path.join(process.resourcesPath, 'resources', 'app-update.yml')
+  try {
+    if (fs.existsSync(nested)) {
+      fs.copyFileSync(nested, dest)
+      return
+    }
+  } catch (e) {
+    console.warn('Não foi possível copiar app-update.yml da subpasta resources:', e)
+  }
+  try {
+    fs.writeFileSync(dest, DEFAULT_APP_UPDATE_YML, 'utf8')
+  } catch (e) {
+    console.error('Não foi possível gravar app-update.yml em resources:', e)
+  }
+}
+
 if (squirrelStartup) {
   app.quit()
 }
@@ -34,6 +66,28 @@ updateElectronApp({
 })*/
 
 let mainWindow: BrowserWindow | null
+
+/** True after o utilizador pediu "Verificar atualizações" até tratar feedback (sem nova versão ou erro). */
+let pendingManualUpdateFeedback = false
+
+autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = false
+
+function getReleaseNotesText(info: UpdateInfo): string {
+  const { releaseNotes } = info
+  if (typeof releaseNotes === 'string') return releaseNotes
+  if (Array.isArray(releaseNotes)) {
+    return releaseNotes.map((n) => (typeof n === 'object' && n && 'note' in n ? String(n.note) : '')).join('\n')
+  }
+  return ''
+}
+
+async function showAppMessageBox(options: Electron.MessageBoxOptions): Promise<Electron.MessageBoxReturnValue> {
+  if (mainWindow) {
+    return dialog.showMessageBox(mainWindow, options)
+  }
+  return dialog.showMessageBox(options)
+}
 
 const distPath = is.dev
   ? path.join(__dirname, '../renderer')
@@ -145,9 +199,39 @@ function handleSquirrelEvent(): boolean {
 
 if (!handleSquirrelEvent()) {
   app.on('ready', () => {
+    ensureAppUpdateYml()
     createWindow()
 
-    autoUpdater.checkForUpdatesAndNotify()
+    if (!is.dev) {
+      autoUpdater.checkForUpdates().catch((err) => {
+        console.error('Erro ao verificar atualizações no arranque:', err)
+      })
+    }
+
+    ipcMain.handle('get-app-version', () => app.getVersion())
+
+    ipcMain.handle(
+      'check-for-updates',
+      async (): Promise<{ ok: boolean; reason?: 'dev' | 'disabled'; message?: string }> => {
+        if (is.dev) {
+          return { ok: false, reason: 'dev' }
+        }
+        pendingManualUpdateFeedback = true
+        try {
+          const result = await autoUpdater.checkForUpdates()
+          if (result === null) {
+            pendingManualUpdateFeedback = false
+            return { ok: false, reason: 'disabled', message: 'Atualizações não estão disponíveis.' }
+          }
+          return { ok: true }
+        } catch (err) {
+          pendingManualUpdateFeedback = false
+          const message = err instanceof Error ? err.message : String(err)
+          return { ok: false, message }
+        }
+      }
+    )
+
     ipcMain.handle('save-device', async (event, device) => {
       try {
         await insertDevice(device)
@@ -278,38 +362,74 @@ if (!handleSquirrelEvent()) {
     }
   })
 
-  autoUpdater.on('update-downloaded', (info) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dialogOpts: any = {
+  autoUpdater.on('update-available', async (info) => {
+    pendingManualUpdateFeedback = false
+    const notes = getReleaseNotesText(info)
+    const { response } = await showAppMessageBox({
       type: 'info',
-      buttons: ['Restart', 'Later'],
-      title: 'Application Update',
-      message: info.releaseName || 'Atualização disponível',
-      detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-      //detail: 'Uma nova versão foi baixada. Reinicie o aplicativo para aplicar as atualizações.'
+      buttons: ['Baixar e instalar', 'Agora não'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Nova atualização',
+      message: `A versão ${info.version} está disponível.`,
+      detail: notes || 'Deseja baixar e instalar esta atualização agora?'
+    })
+    if (response !== 0) return
+    try {
+      await autoUpdater.downloadUpdate()
+    } catch (e) {
+      console.error('Falha ao baixar atualização:', e)
+      await showAppMessageBox({
+        type: 'error',
+        title: 'Erro ao baixar',
+        message: 'Não foi possível baixar a atualização.',
+        detail: e instanceof Error ? e.message : String(e)
+      })
     }
+  })
 
-    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+  autoUpdater.on('update-not-available', () => {
+    if (!pendingManualUpdateFeedback) return
+    pendingManualUpdateFeedback = false
+    void showAppMessageBox({
+      type: 'info',
+      title: 'Atualizações',
+      message: 'Não há atualizações disponíveis.',
+      detail: `A aplicação já está na versão mais recente (${app.getVersion()}).`
+    })
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    void showAppMessageBox({
+      type: 'info',
+      buttons: ['Reiniciar agora', 'Mais tarde'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Atualização pronta',
+      message: info.releaseName || 'Atualização descarregada',
+      detail:
+        'A nova versão foi descarregada. Reinicie a aplicação para concluir a instalação da atualização.'
+    }).then((returnValue) => {
       if (returnValue.response === 0) {
-        autoUpdater.quitAndInstall()
+        autoUpdater.quitAndInstall(false, true)
       }
     })
   })
 
   autoUpdater.on('checking-for-update', () => {
-    // Aqui você pode adicionar qualquer lógica necessária quando o aplicativo está verificando por atualizações
-  })
-
-  autoUpdater.on('update-available', () => {
-    // Aqui você pode adicionar qualquer lógica necessária quando uma atualização está disponível
-  })
-
-  autoUpdater.on('update-not-available', () => {
-    // Aqui você pode adicionar qualquer lógica necessária quando uma atualização não está disponível
+    // Opcional: telemetria ou estado de UI
   })
 
   autoUpdater.on('error', (err) => {
-    // Aqui você pode adicionar qualquer lógica necessária para lidar com erros de atualização
+    if (pendingManualUpdateFeedback) {
+      pendingManualUpdateFeedback = false
+      void showAppMessageBox({
+        type: 'error',
+        title: 'Erro nas atualizações',
+        message: 'Não foi possível verificar ou obter atualizações.',
+        detail: err.message
+      })
+    }
     console.error('Erro ao verificar atualizações:', err)
   })
 }
