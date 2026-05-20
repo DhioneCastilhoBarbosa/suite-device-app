@@ -1,6 +1,6 @@
 {
   "name": "suite-device-app",
-  "version": "2.2.7",
+  "version": "2.2.8",
   "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
