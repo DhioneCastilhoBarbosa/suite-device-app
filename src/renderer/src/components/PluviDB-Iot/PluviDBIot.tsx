@@ -19,6 +19,8 @@ import { ModalErroUnloagged } from '../modal/modalUnlogged'
 import { Update } from './components/update'
 import { toast } from 'react-toastify'
 import { t } from 'i18next'
+import { createPluviFirmwareService } from '@renderer/utils/pluviFirmware'
+import { SerialManager } from '@renderer/utils/serialManager'
 
 interface PluviDBIotProps {
   isConect: boolean
@@ -40,7 +42,10 @@ type PasswordValidationResult =
       message?: string
     }
 
+type AccessMode = 'none' | 'full' | 'recoveryOnly'
+
 const serialManagerPluviIoT = new SerialManagerRS232()
+export const pluviFirmware = createPluviFirmwareService(serialManagerPluviIoT)
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function OpenPortPluviIoT({ portName, bauld }: SerialProps): Promise<void> {
@@ -105,11 +110,29 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const [isModalPassWordOpen, setIsModalPassWordOpen] = useState(true)
+  const [accessMode, setAccessMode] = useState<AccessMode>('none')
   const [enabledAccess, setEnabledAccess] = useState(false)
   const [showModalErroUnloagged, setShowModalErroUnloagged] = useState(false)
   const { mode, connectorDisconnect }: any = Device()
 
-  function handleMenu(menu): void {
+  const isRecoveryOnly = accessMode === 'recoveryOnly'
+
+  function trySwitchMenu(menu: string): void {
+    if (menu === 'Atualizar' && !isRecoveryOnly) {
+      return
+    }
+    if (isRecoveryOnly && menu !== 'Atualizar') {
+      toast.info(
+        t(
+          'Modo recuperação: apenas a aba Atualização está disponível. Faça login com senha para acesso completo.'
+        )
+      )
+      return
+    }
+    handleMenu(menu)
+  }
+
+  function handleMenu(menu: string): void {
     switch (menu) {
       case 'config':
         setColorConfig(true)
@@ -154,6 +177,27 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     }
 
     setMenuName(menu)
+  }
+
+  const handleEnterRecoveryOnly = (): void => {
+    setAccessMode('recoveryOnly')
+    setEnabledAccess(false)
+    setIsModalPassWordOpen(false)
+    handleMenu('Atualizar')
+  }
+
+  const resetToLoginState = (): void => {
+    setAccessMode('none')
+    setEnabledAccess(false)
+    setIsModalPassWordOpen(false)
+    setMenuName('status')
+    setColorConfig(false)
+    setColorStatus(true)
+    setColorTerminal(false)
+    setColorInstantData(false)
+    setColorUpdade(false)
+    pluviFirmware.dispose()
+    SerialManager.setIdle()
   }
 
   /*function closeNoDeviceFoundModal(): void {
@@ -728,13 +772,16 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         const token = pickLastLoginToken(raw)
 
         if (token === 'lg=1!') {
+          setAccessMode('full')
           setEnabledAccess(true)
           setPasswordSaved(password)
           setIsModalPassWordOpen(false)
+          handleMenu('status')
           return { success: true }
         }
 
         if (token === 'lg=0!' || /wrong\s*password/i.test(raw) || /senha\s*incorreta/i.test(raw)) {
+          setAccessMode('none')
           setEnabledAccess(false)
           return { success: false, errorCode: 'wrong-password', message: String(raw).trim() }
         }
@@ -761,13 +808,25 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   }
 
   useEffect(() => {
-    if (props.isConect && !mode.state) {
-      setIsModalPassWordOpen(true)
-    } else {
-      setIsModalPassWordOpen(false)
-      setEnabledAccess(false)
+    if (!props.isConect || mode.state) {
+      resetToLoginState()
+      return
     }
-  }, [mode.state, props.isConect])
+
+    if (accessMode !== 'none') {
+      setIsModalPassWordOpen(false)
+      return
+    }
+
+    setIsModalPassWordOpen(true)
+  }, [mode.state, props.isConect, accessMode])
+
+  useEffect(() => {
+    return () => {
+      pluviFirmware.dispose()
+      SerialManager.setIdle()
+    }
+  }, [])
 
   useEffect(() => {
     if (enabledAccess) {
@@ -784,13 +843,19 @@ export default function PluviDBIot(props: PluviDBIotProps) {
       </HeaderDevice>
 
       <div className=" flex flex-col justify-center  bg-white mr-8 ml-8 mt-4 rounded-lg text-zinc-500 text-sm w-full max-w-4xl mb-1">
+        {isRecoveryOnly && (
+          <div className="mx-8 mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            {t('Modo recuperação — apenas atualização de firmware. Desconecte e reconecte para login completo.')}
+          </div>
+        )}
         <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 min-h-10">
           <div className="flex gap-4">
             <button
               className={`border-b-2 border-transparent ${
                 colorStatus ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('status')}
+              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              onClick={() => trySwitchMenu('status')}
+              disabled={isRecoveryOnly}
             >
               {t('Status')}
             </button>
@@ -798,8 +863,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
             <button
               className={`border-b-2 border-transparent ${
                 colorInstantData ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('instantaneous')}
+              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              onClick={() => trySwitchMenu('instantaneous')}
+              disabled={isRecoveryOnly}
             >
               {t('Dados Instantâneos')}
             </button>
@@ -807,8 +873,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
             <button
               className={`border-b-2 border-transparent ${
                 colorConfig ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('config')}
+              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              onClick={() => trySwitchMenu('config')}
+              disabled={isRecoveryOnly}
             >
               {t('Configuração')}
             </button>
@@ -816,19 +883,22 @@ export default function PluviDBIot(props: PluviDBIotProps) {
             <button
               className={`border-b-2 border-transparent ${
                 colorTerminal ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('terminal')}
+              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              onClick={() => trySwitchMenu('terminal')}
+              disabled={isRecoveryOnly}
             >
               {t('Terminal')}
             </button>
-            {/*<button
-              className={`border-b-2 border-transparent ${
-                colorUpdate ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('Atualizar')}
-            >
-              Atualização
-            </button>*/}
+            {isRecoveryOnly && (
+              <button
+                className={`border-b-2 border-transparent ${
+                  colorUpdate ? 'text-sky-500' : ''
+                } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+                onClick={() => trySwitchMenu('Atualizar')}
+              >
+                {t('Atualização')}
+              </button>
+            )}
           </div>
         </header>
 
@@ -887,9 +957,9 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 handleUpdateInst={handleUpdateInst}
                 receivedDataInst={dataReceivedComandInst}
               />
-            ) : (
-              MenuName === 'Atualizar' && <Update />
-            )}
+            ) : isRecoveryOnly && MenuName === 'Atualizar' ? (
+              <Update isConect={props.isConect} />
+            ) : null}
           </div>
         }
       </div>
@@ -903,10 +973,11 @@ export default function PluviDBIot(props: PluviDBIotProps) {
         <PasswordModal
           onClose={() => setIsModalPassWordOpen(false)}
           onCancel={() => {
+            resetToLoginState()
             connectorDisconnect?.()
-            setIsModalPassWordOpen(false)
           }}
           onValidatePassword={handlePasswordValidation}
+          onEnterRecoveryOnly={handleEnterRecoveryOnly}
         />
       )}
       <ModalErroUnloagged show={showModalErroUnloagged} onClose={handleCloseModalErroUnlogged} />

@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { SerialPort } from 'serialport' // mantém como você usou
+import { SerialPort } from 'serialport'
 
 let win: BrowserWindow | null = null
 let prevPorts: string[] = []
@@ -7,17 +7,25 @@ let busy = false
 let timer: NodeJS.Timeout | null = null
 const INTERVAL = 2000
 
-function now() {
+function now(): string {
   return new Date().toISOString()
 }
-function log(...a: any[]) {
-  console.log('[SERIAL:MAIN]', now(), ...a)
+
+function log(...args: unknown[]): void {
+  console.log('[SERIAL:MAIN]', now(), ...args)
 }
-function warn(...a: any[]) {
-  console.warn('[SERIAL:MAIN]', now(), ...a)
+
+function warn(...args: unknown[]): void {
+  console.warn('[SERIAL:MAIN]', now(), ...args)
 }
-function err(...a: any[]) {
-  console.error('[SERIAL:MAIN]', now(), ...a)
+
+function err(...args: unknown[]): void {
+  console.error('[SERIAL:MAIN]', now(), ...args)
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return String(error)
 }
 
 export function initSerialHandles(mainWindow: BrowserWindow): void {
@@ -28,6 +36,7 @@ export function initSerialHandles(mainWindow: BrowserWindow): void {
     busy = true
     log('BUSY → true (pausando varredura)')
   })
+
   ipcMain.on('serial:idle', () => {
     busy = false
     log('BUSY → false (retomando varredura)')
@@ -39,8 +48,8 @@ export function initSerialHandles(mainWindow: BrowserWindow): void {
       const ports = await SerialPort.list()
       log('snapshot → qtd=', ports.length, 'tempo(ms)=', (performance.now() - t0).toFixed(1))
       return ports.map((p) => p.path)
-    } catch (e: any) {
-      err('snapshot erro:', e?.message || e)
+    } catch (e: unknown) {
+      err('snapshot erro:', errorMessage(e))
       return []
     }
   })
@@ -49,8 +58,7 @@ export function initSerialHandles(mainWindow: BrowserWindow): void {
   timer = setInterval(checkPorts, INTERVAL)
   log('monitor iniciado: interval=', INTERVAL, 'ms')
 
-  // primeira leitura imediata
-  checkPorts().catch((e) => err('checkPorts initial erro:', e?.message || e))
+  checkPorts().catch((e: unknown) => err('checkPorts initial erro:', errorMessage(e)))
 }
 
 async function checkPorts(): Promise<void> {
@@ -69,7 +77,6 @@ async function checkPorts(): Promise<void> {
     const paths = ports.map((p) => p.path)
     const dt = (performance.now() - t0).toFixed(1)
 
-    // diff
     const added = paths.filter((p) => !prevPorts.includes(p))
     const removed = prevPorts.filter((p) => !paths.includes(p))
 
@@ -98,11 +105,12 @@ async function checkPorts(): Promise<void> {
     }
 
     prevPorts = paths
-  } catch (e: any) {
-    err('checkPorts erro:', e?.message || e)
-    // opcional: notificar renderer
+  } catch (e: unknown) {
+    err('checkPorts erro:', errorMessage(e))
     try {
-      win?.webContents.send('serial:error', String(e?.message || e))
-    } catch {}
+      win?.webContents.send('serial:error', errorMessage(e))
+    } catch (sendError: unknown) {
+      err('falha ao notificar renderer:', errorMessage(sendError))
+    }
   }
 }

@@ -610,6 +610,28 @@ receiveReportPluvi(): Promise<string> {
 
   // Método para fechar a porta serial
 
+  prepareRawSerialAccess(): void {
+    if (!this.port) return
+    try {
+      this.port.removeAllListeners('data')
+    } catch {}
+    try {
+      ;(this.port as { unpipe?: () => void }).unpipe?.()
+    } catch {}
+  }
+
+  getRawPort(): SerialInst | null {
+    return this.port && this.isOpen ? this.port : null
+  }
+
+  isPortOpen(): boolean {
+    return this.isOpen && this.port !== null
+  }
+
+  getCurrentPath(): string | null {
+    return this.currentPath
+  }
+
     async closePortRS232(): Promise<void> {
     await this.hardClose()
     console.log('Porta serial fechada.')
