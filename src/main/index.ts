@@ -9,6 +9,10 @@ import { spawn, execFile } from 'child_process'
 import '../db/db'
 import { setupMQTTHandlers } from './mqttHandler'
 import { initSerialHandles } from './serialHandles'
+import {
+  registerPluvidbFirmwareHandlers,
+  cleanupPluvidbFirmwareOnQuit
+} from './pluvidbFirmwareHandlers'
 import express from 'express'
 
 import {
@@ -335,6 +339,7 @@ if (!handleSquirrelEvent()) {
   }
 
   if (gotSingleInstanceLock) app.on('before-quit', () => {
+    cleanupPluvidbFirmwareOnQuit()
     if (localHttpServer) {
       localHttpServer.close()
       localHttpServer = null
@@ -344,6 +349,8 @@ if (!handleSquirrelEvent()) {
   if (gotSingleInstanceLock) app.on('ready', () => {
     ensureAppUpdateYml()
     createWindow()
+
+    registerPluvidbFirmwareHandlers()
 
     ipcMain.handle('get-app-version', () => app.getVersion())
 
