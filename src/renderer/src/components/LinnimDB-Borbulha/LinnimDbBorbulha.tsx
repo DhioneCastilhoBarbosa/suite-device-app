@@ -45,7 +45,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={t('LinnimDB-Borbulha')}>
+      <HeaderDevice DeviceName={t('LimniDB-Borbulha')}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -93,7 +93,7 @@ export default function LinnimDbBorbulha(props: LinnimDbCapProps) {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'LinnimDB-Borbulha'}>
+      <HeaderDevice DeviceName={'LimniDB-Borbulha'}>
         <Drop size={30} />
       </HeaderDevice>
 

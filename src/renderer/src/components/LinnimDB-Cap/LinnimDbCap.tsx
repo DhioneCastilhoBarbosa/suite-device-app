@@ -43,7 +43,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={t('LinnimDB-Cap')}>
+      <HeaderDevice DeviceName={t('LimniDB-Cap')}>
         <Drop size={30} />
       </HeaderDevice>
 
@@ -91,7 +91,7 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'LinnimDB-Cap'}>
+      <HeaderDevice DeviceName={'LimniDB-Cap'}>
         <Drop size={30} />
       </HeaderDevice>
 
