@@ -1,45 +1,101 @@
-# Suite Device App
+<div align="center">
 
-**Versão:** 2.3.1  
-**Autor:** Dualbase / [DhioneCastilhoBarbosa](https://github.com/DhioneCastilhoBarbosa)  
-**Repositório:** https://github.com/DhioneCastilhoBarbosa/suite-device-app
+# Suite Device
+
+### Plataforma desktop para configuração e comunicação com dispositivos Dualbase
+
+[![Version](https://img.shields.io/badge/version-2.3.1-1769A0?style=for-the-badge)](https://github.com/DhioneCastilhoBarbosa/suite-device-app/releases)
+[![Electron](https://img.shields.io/badge/Electron-25-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-Proprietary-0B3D5C?style=for-the-badge)](#)
+
+**Configure sensores · Comunique-se com transmissores · Publique dados via MQTT**
+
+[Início rápido](#início-rápido) · [Dispositivos](#dispositivos-suportados) · [Protocolos](#protocolos) · [Arquitetura](#arquitetura) · [Build](#build--distribuição)
+
+</div>
 
 ---
 
 ## Visão geral
 
-O **Suite Device** é uma aplicação desktop instalável desenvolvida com Electron que permite configurar e se comunicar com sensores ambientais e transmissores de dados remotos. O software atua como bridge entre o sistema operacional do usuário e dispositivos físicos de campo (sensores, dataloggers e transmissores), utilizando protocolos industriais padrão.
+O **Suite Device** é uma aplicação desktop instalável que conecta o computador a sensores ambientais, dataloggers e transmissores de campo. Desenvolvido pela **Dualbase**, funciona como bridge entre o sistema operacional e o hardware — com interface gráfica, persistência local e integração IoT.
 
-### Propósito principal
-
-- Configurar sensores ambientais via interface gráfica
-- Comunicar-se com transmissores de dados remotos
-- Armazenar e exportar leituras de dispositivos
-- Publicar dados via MQTT para integração com plataformas IoT
-
-### Protocolos suportados
-
-- **SDI-12** — sensores ambientais digitais
-- **Modbus** — RTU (serial) e TCP (rede)
-- **Serial** — comunicação genérica (RS-232 / USB)
-- **MQTT** — publicação para brokers IoT
+| Capacidade | Descrição |
+|:---|:---|
+| **Configuração** | Ajuste parâmetros, endereços e unidades via UI dedicada por produto |
+| **Comunicação** | SDI-12, Modbus RTU/TCP, Serial e MQTT |
+| **Firmware** | Atualização de dispositivos (ex.: PluviDB-IoT via mcumgr) |
+| **Dados** | Armazenamento local (SQLite) e exportação de leituras/logs |
+| **Idiomas** | Português, Inglês e Espanhol |
 
 ---
 
-## Requisitos
+## Dispositivos suportados
 
-- **Node.js** 18+ (recomendado LTS)
+Interfaces modulares para a linha Dualbase:
+
+| Dispositivo | Função |
+|:---|:---|
+| **Terminal-SDI12** | Terminal transparente e atalhos para sensores SDI-12 |
+| **LimniDB-Borbulha** | Sensor de nível por borbulhamento |
+| **LimniDB-CAP** | Sensor de nível capacitivo |
+| **Teclado-SDI12** | Configuração de variáveis e comandos SDI-12 |
+| **TSatDB** | Transmissor satelital (GPS, RF, apontamento de antena) |
+| **PluviDB-IoT** | Pluviômetro IoT (local e remoto, firmware, MQTT) |
+| **Modbus** | Configuração e atualização de firmware Modbus |
+
+---
+
+## Protocolos
+
+```mermaid
+flowchart LR
+    HW["Sensores e transmissores"]
+    APP["Suite Device"]
+    SDI["SDI-12 / Serial"]
+    MB["Modbus RTU/TCP"]
+    MQ["MQTT"]
+
+    HW -->|"RS-485 / USB-Serial"| APP
+    APP --> SDI
+    APP --> MB
+    APP --> MQ
+```
+
+| Protocolo | Uso |
+|:---|:---|
+| **SDI-12** | Sensores digitais ambientais (`I!`, `M!`, `D0!`, …) — half-duplex, 1200 baud |
+| **Modbus** | RTU (serial) e TCP (rede) — holding/input registers, coils |
+| **Serial** | RS-232 / USB genérico; payloads CBOR (mcumgr) |
+| **MQTT** | Publicação para brokers e plataformas IoT (QoS 0/1/2) |
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|:---|:---|
+| Desktop | Electron 25 · electron-vite · Electron Forge / Builder |
+| UI | React 18 · TypeScript · Tailwind CSS · Radix UI · Phosphor Icons |
+| Hardware | `serialport` · `modbus-serial` · `mqtt` · `cbor-x` |
+| Dados | SQLite · electron-store · Zod · file-saver |
+| i18n | i18next · react-i18next (PT · EN · ES) |
+| Updates | electron-updater + GitHub Releases |
+
+---
+
+## Início rápido
+
+### Requisitos
+
+- **Node.js** 18+ (LTS recomendado)
 - **npm** 9+
-- **Windows:** Visual Studio Build Tools (para módulos nativos como `serialport`, `better-sqlite3`)
-- **Git** (clone do repositório)
+- **Windows:** Visual Studio Build Tools (módulos nativos: `serialport`, `sqlite3`)
+- **Git**
 
----
-
-## Instalação, execução e compilação
-
-### 1. Instalar dependências
-
-Clone o repositório e instale os pacotes (o `postinstall` aplica patches via `patch-package`):
+### Instalação
 
 ```bash
 git clone https://github.com/DhioneCastilhoBarbosa/suite-device-app.git
@@ -47,395 +103,164 @@ cd suite-device-app
 npm install
 ```
 
-Se houver erro em módulos nativos após mudança de versão do Electron/Node:
+> O `postinstall` aplica patches via `patch-package`. Se módulos nativos falharem após troca de Node/Electron:
 
 ```bash
 npm run rebuild
 ```
 
-### 2. Rodar em desenvolvimento
-
-Inicia a aplicação com hot reload (main, preload e renderer):
+### Desenvolvimento
 
 ```bash
-npm run dev
+npm run dev          # hot reload (main + preload + renderer)
+npm run typecheck    # TypeScript
+npm run lint         # ESLint
+npm run format       # Prettier
 ```
 
-Outros comandos úteis em desenvolvimento:
+---
 
-```bash
-npm run typecheck    # Verifica TypeScript (main + renderer)
-npm run lint         # ESLint com correção automática
-npm run format       # Prettier em todo o projeto
-npm run start        # Preview da build (electron-vite preview)
+## Scripts
+
+| Comando | O que faz |
+|:---|:---|
+| `npm run dev` | App em modo desenvolvimento |
+| `npm run build` | Typecheck + electron-vite + cópia de `resources/` |
+| `npm run build:win` | Ícone + build + pacote Windows (NSIS) |
+| `npm run build:mac` | Build + pacote macOS |
+| `npm run build:linux` | Build + pacote Linux |
+| `npm run make` | Instaladores locais via Electron Forge (`out/`) |
+| `npm run publish` | Publica release Windows no GitHub (auto-update) |
+| `npm run icons:generate` | Gera `.ico` para Windows |
+| `npm run rebuild` | Recompila addons nativos |
+
+---
+
+## Arquitetura
+
+Arquitetura clássica Electron com isolamento de privilégios:
+
+```mermaid
+graph LR
+    HW["Hardware<br/>Sensores · Transmissores"]
+
+    subgraph Electron
+        M["Main<br/>serial · modbus · mqtt · sqlite · updater"]
+        P["Preload<br/>contextBridge"]
+        R["Renderer<br/>React · Tailwind · i18n"]
+    end
+
+    CLOUD["MQTT Broker"]
+    GH["GitHub Releases"]
+
+    HW -->|USB / RS-485| M
+    M -->|IPC| P --> R
+    M -->|publish| CLOUD
+    M -->|auto-update| GH
 ```
 
-### 3. Compilar (build de produção)
+| Processo | Responsabilidade |
+|:---|:---|
+| **Main** | Serial, Modbus, SDI-12, MQTT, SQLite, preferências, auto-update |
+| **Preload** | Expõe APIs seguras via `contextBridge` (sem Node no renderer) |
+| **Renderer** | Interface React, validação Zod, toasts, i18n |
 
-Compila TypeScript, empacota com electron-vite e copia recursos:
+**IPC:** `Renderer → invoke → ipcMain.handle → resposta assíncrona`
 
-```bash
-npm run build
+---
+
+## Estrutura do projeto
+
+```text
+suite-device-app/
+├── src/
+│   ├── main/                 # Processo principal Electron
+│   ├── preload/              # Bridge segura (contextBridge)
+│   ├── renderer/src/         # UI React
+│   │   ├── components/       # Telas e widgets por dispositivo
+│   │   ├── Context/          # Estado global (DeviceContext)
+│   │   └── utils/            # Serial, Modbus, MQTT, firmware
+│   ├── locales/              # Traduções en / es (PT = chave padrão)
+│   └── db/                   # Camada SQLite
+├── resources/                # Ícones, binários auxiliares (PluviDB-Updater)
+├── scripts/                  # build-win, publish-win, generate-icon
+├── patches/                  # patch-package
+├── electron-builder.yml
+├── electron.vite.config.ts
+└── forge.config.js
 ```
 
-Build completo para Windows (ícone + build + electron-builder):
+---
 
-```bash
-npm run build:win
+## Build & distribuição
+
+```mermaid
+flowchart LR
+    SRC[Código] --> VITE[electron-vite]
+    VITE --> DIST[dist/]
+    DIST --> EB[electron-builder]
+    DIST --> EF[electron-forge]
+    EB --> WIN[Windows NSIS + latest.yml]
+    EF --> LIN[Linux .deb / .rpm]
+    EF --> MAC[macOS .zip]
+    WIN --> GH[GitHub Releases]
 ```
 
-Build por plataforma (após `npm run build` implícito no script):
+| Plataforma | Formato | Ferramenta |
+|:---|:---|:---|
+| Windows | NSIS `.exe` + `latest.yml` | electron-builder |
+| Linux | `.deb` / `.rpm` | electron-forge |
+| macOS | `.zip` | electron-forge |
 
-```bash
-npm run build:mac
-npm run build:linux
-```
+### Publicar com auto-update (Windows)
 
-### 4. Gerar instaladores (distribuição local)
+O `electron-updater` exige artefatos do **electron-builder** (não os do Forge).
 
-Gera instaladores na pasta `out/` via **Electron Forge** (ex.: `Suite-Device.exe` no Windows). **Não** gera `latest.yml` — não serve para auto-update:
-
-```bash
-npm run make
-```
-
-Variantes Forge:
-
-```bash
-npm run make-linux
-npm run make-deb
-npm run make-rpm
-npm run publish-forge   # Publica via Electron Forge (GitHub)
-```
-
-### 5. Publicar com atualização automática (Windows)
-
-O `electron-updater` exige release no GitHub com artefatos do **electron-builder** (NSIS + `latest.yml` + `.blockmap`), não os instaladores Squirrel do Forge.
-
-1. Crie um arquivo `.env` na raiz com `GH_TOKEN` (escopo `repo` no GitHub).
+1. Crie `.env` na raiz com `GH_TOKEN` (escopo `repo`)
 2. Execute:
 
 ```bash
 npm run publish
 ```
 
-No release devem aparecer ficheiros como `latest.yml` e `suite-device-app Setup X.Y.Z.exe`. O instalador NSIS instala em `%LocalAppData%\Programs\...`.
-
-Gerar apenas o ícone Windows:
-
-```bash
-npm run icons:generate
-```
+No release devem aparecer `latest.yml`, o instalador NSIS e o `.blockmap`.  
+Instalação padrão: `%LocalAppData%\Programs\` · atalho **Suite Device**.
 
 ---
 
-## Scripts disponíveis
+## Banco de dados & segurança
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm install` | Instala dependências e aplica patches (`patch-package`) |
-| `npm run dev` | Desenvolvimento com hot reload |
-| `npm run build` | Typecheck + compilação electron-vite + cópia de resources |
-| `npm run build:win` | Ícone + build + empacotamento Windows (electron-builder) |
-| `npm run build:mac` | Build + empacotamento macOS |
-| `npm run build:linux` | Build + empacotamento Linux |
-| `npm run make` | Build + instaladores na pasta `out/` (Electron Forge) |
-| `npm run publish` | Build Windows + publicação no GitHub Releases (auto-update) |
-| `npm run publish-forge` | Publicação via Electron Forge |
-| `npm run typecheck` | Verificação TypeScript (node + web) |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier |
-| `npm run rebuild` | Recompila módulos nativos (`better-sqlite3`, etc.) |
-| `npm run icons:generate` | Gera ícone `.ico` para Windows |
-
----
-
-## Stack tecnológica
-
-| Camada | Tecnologia | Versão |
-|--------|-----------|--------|
-| Runtime desktop | Electron | ^25.9.8 |
-| Framework UI | React | ^18.2.0 |
-| Linguagem | TypeScript | ^5.1.6 |
-| Bundler | electron-vite | ^1.0.29 |
-| Empacotamento | Electron Forge + Electron Builder | ^7.3.0 / ^24.6.3 |
-| Estilização | Tailwind CSS | ^3.3.5 |
-| Banco de dados | SQLite (sqlite3) | — |
-| Serialização | CBOR-X | ^1.6.4 |
-| Validação | Zod | ^3.23.8 |
-| Notificações | react-toastify + sonner | — |
-| Ícones | @phosphor-icons/react | ^2.0.15 |
-| i18n | i18next + react-i18next | ^25.5.2 |
-
-**Tecnologias principais:** React · TypeScript · Electron · electron-vite · Tailwind CSS
-
----
-
-## Arquitetura do sistema
-
-O Suite Device segue a arquitetura padrão do Electron, dividida em três processos isolados:
-
-```mermaid
-graph TD
-    HW["Dispositivos físicos\nSensores · Transmissores"]
-
-    subgraph MAIN["Main Process — Node.js / Electron"]
-        SER["serialport\nSDI-12 · Serial"]
-        MOD["modbus-serial\nRTU · TCP"]
-        MQT["mqtt v5\npublish / subscribe"]
-        DB["SQLite"]
-        UPD["electron-updater\nauto-update"]
-        STR["electron-store\npreferências"]
-    end
-
-    subgraph PRELOAD["Preload Script — contextBridge"]
-        BRIDGE["exposeInMainWorld()\nipcRenderer.invoke()"]
-    end
-
-    subgraph RENDERER["Renderer Process — Chromium / React"]
-        UI["React 18 + TypeScript"]
-        TW["Tailwind CSS · Radix UI"]
-        I18["i18next"]
-        ZOD["Zod · Sonner"]
-    end
-
-    CLOUD["MQTT Broker / Cloud"]
-    GH["GitHub Releases\nlatest.yml"]
-
-    HW -->|RS-485 / USB-Serial| SER
-    HW -->|Modbus RTU/TCP| MOD
-    MQT -->|publish| CLOUD
-    UPD -->|verifica versão| GH
-
-    MAIN -->|IPC| PRELOAD
-    PRELOAD --> RENDERER
-```
-
-### Comunicação IPC
-
-```
-Renderer → preload.contextBridge.exposeInMainWorld()
-         → ipcRenderer.invoke('canal')
-         → ipcMain.handle('canal', handler)
-         → Resposta assíncrona
-```
-
----
-
-## Estrutura de diretórios
-
-```
-suite-device-app/
-├── src/
-│   ├── main/              # Processo principal do Electron
-│   │   └── index.ts       # Entry point do main process
-│   ├── preload/           # Scripts de bridge (preload)
-│   └── renderer/          # Interface React
-│       └── src/
-│           ├── components/ # Componentes reutilizáveis
-│           ├── Context/    # Contextos React
-│           ├── locales/    # Traduções (via src/locales na raiz)
-│           └── assets/     # Recursos estáticos
-├── src/locales/           # en / es (PT como chave padrão)
-├── resources/             # Ícones, recursos nativos
-├── scripts/               # Build e utilitários
-│   ├── generate-icon.cjs
-│   ├── build-win.cjs
-│   └── publish-win.cjs
-├── patches/               # Patches de dependências (patch-package)
-├── electron-builder.yml   # Empacotamento e publicação
-├── electron.vite.config.ts
-├── forge.config.js
-├── tailwind.config.js
-├── tsconfig.json
-├── tsconfig.node.json     # main / preload
-└── tsconfig.web.json      # renderer
-```
-
----
-
-## Camadas da aplicação
-
-### Main Process (`src/main/`)
-
-Lógica com acesso privilegiado ao sistema operacional:
-
-- **Serial:** `serialport`, baud configurável, parsers readline e byte-length
-- **Modbus:** `modbus-serial` (RTU e TCP)
-- **SDI-12:** protocolo sobre serial com lógica customizada
-- **MQTT:** cliente v5, QoS e credenciais configuráveis
-- **SQLite:** persistência local (apenas no main)
-- **Electron Store:** preferências do usuário
-- **Auto-update:** `electron-updater` + GitHub Releases
-
-### Preload (`src/preload/`)
-
-- `contextBridge.exposeInMainWorld()` — APIs seguras ao renderer
-- `@electron-toolkit/preload`
-- Não expõe Node.js diretamente ao renderer
-
-### Renderer (`src/renderer/`)
-
-- React 18 + TypeScript
-- Radix UI, Tailwind CSS, Phosphor Icons
-- i18next (PT, EN, ES)
-- Zod, react-toastify, sonner
-
----
-
-## Protocolos de comunicação
-
-### SDI-12
-
-- Half-duplex, 1200 baud
-- Endereçamento: 0–9, a–z, A–Z
-- Comandos: Identify (`I!`), Measure (`M!`), Data (`D0!`), etc.
-
-### Modbus
-
-- **RTU** (RS-485/RS-232) e **TCP** (IP)
-- Holding/input registers, coils
-- Biblioteca: `modbus-serial`
-
-### Serial
-
-- Baud, paridade, data/stop bits configuráveis
-- Parsers: readline, byte-length
-- CBOR-X para payloads binários (ex.: mcumgr no PluviDB-IoT)
-
-### MQTT
-
-- Publicação para brokers externos
-- QoS 0, 1, 2
-
----
-
-## Banco de dados
-
-- **SQLite** embarcado, arquivo `suite-device.db` em desenvolvimento
-- Acesso **somente** pelo main process
-- Uso: configurações de dispositivos, leituras e parâmetros de conexão
-- Exportação via `file-saver`
-
----
-
-## Build e distribuição
-
-### Fluxo de build
-
-```mermaid
-flowchart TD
-    SRC["Código fonte\nTypeScript · React"]
-    VITE["electron-vite build"]
-    DIST["dist/\nmain · preload · renderer"]
-
-    SRC --> VITE --> DIST
-
-    DIST --> BUILDER["electron-builder\nnpm run publish"]
-    DIST --> FORGE["electron-forge\nnpm run make"]
-
-    BUILDER --> WIN["Windows\nNSIS .exe + latest.yml"]
-    FORGE   --> LIN["Linux\n.deb · .rpm"]
-    FORGE   --> MAC["macOS\n.zip"]
-
-    WIN -->|GH_TOKEN| GHR["GitHub Releases"]
-```
-
-### Targets
-
-| Plataforma | Formato | Ferramenta |
-|-----------|---------|-----------|
-| Windows | NSIS Installer (.exe) | electron-builder |
-| Linux | .deb / .rpm | electron-forge |
-| macOS | .zip | electron-forge |
-
-### NSIS (Windows)
-
-- Assistente passo a passo (`oneClick: false`)
-- Instalação por usuário (`perMachine: false`)
-- Atalhos na área de trabalho e Menu Iniciar
-- Instalação padrão: `%LocalAppData%\Programs\`
-
----
-
-## Dependências principais
-
-| Pacote | Finalidade |
-|--------|-----------|
-| `serialport` | Comunicação serial |
-| `modbus-serial` | Modbus RTU/TCP |
-| `mqtt` | Cliente MQTT v5 |
-| `sqlite3` | Banco local |
-| `electron-store` | Preferências |
-| `electron-updater` | Atualização automática |
-| `i18next` | Internacionalização |
-| `zod` | Validação |
-| `cbor-x` | Serialização CBOR |
-| `file-saver` | Exportação de arquivos |
-
----
-
-## Fluxo de dados
-
-```
-Dispositivo físico (sensor / transmissor)
-        │
-        │  RS-485 / RS-232 / USB-Serial
-        ▼
-  Porta serial do SO
-        │
-  [Main Process] serialport / modbus-serial
-        │
-        ├── Parser → decodificação → SQLite
-        ├── IPC → Renderer → UI em tempo real
-        └── MQTT → broker → cloud / dashboard
-```
+- **SQLite** local (`suite-device.db` em desenvolvimento) — acesso só pelo main process
+- Preferências com **electron-store**
+- Renderer **sem** `nodeIntegration`; hardware e DB apenas via IPC
+- Preload expõe somente as APIs necessárias
 
 ---
 
 ## Internacionalização
 
-- `i18next` + `react-i18next`
-- Idiomas: **pt** (padrão), **en**, **es**
-- Arquivos: `src/locales/en/translation.json`, `src/locales/es/translation.json`
-- Detecção automática via `i18next-browser-languagedetector` e `localStorage`
+| Idioma | Código |
+|:---|:---|
+| Português | `pt` (padrão — chaves) |
+| English | `en` → `src/locales/en/` |
+| Español | `es` → `src/locales/es/` |
+
+Detecção automática com `i18next-browser-languagedetector` e persistência em `localStorage`.
 
 ---
 
-## Atualização automática
+## Links
 
-- Releases com `npm run publish` geram `latest.yml` + instalador NSIS + `.blockmap`
-- `electron-updater` verifica novas versões ao iniciar
-- Configuração em `electron-builder.yml`:
-
-```yaml
-publish:
-  provider: github
-  owner: DhioneCastilhoBarbosa
-  repo: suite-device-app
-  releaseType: release
-  vPrefixedTagName: true
-```
+- **Autor:** Dualbase / [Dhione Castilho Barbosa](https://github.com/DhioneCastilhoBarbosa)
+- **Site:** [dhionecastilho.com.br](https://www.dhionecastilho.com.br)
+- **Repositório:** [suite-device-app](https://github.com/DhioneCastilhoBarbosa/suite-device-app)
+- **Releases:** [GitHub Releases](https://github.com/DhioneCastilhoBarbosa/suite-device-app/releases)
 
 ---
 
-## Considerações de segurança
+<div align="center">
 
-- Renderer **sem** `nodeIntegration` — sem Node.js direto na UI
-- Hardware e banco acessados apenas pelo main process via IPC
-- Preload expõe somente APIs necessárias via `contextBridge`
-- Banco local não exposto à rede
+**Suite Device** · Dualbase  
+*Configure. Conecte. Monitore.*
 
----
-
-## Dispositivos suportados (interface)
-
-Entre outros, a aplicação inclui interfaces dedicadas para:
-
-- PluviDB-IoT (serial, login, firmware via mcumgr em modo recovery)
-- TSatDB, Teclado SDI-12, LinnimDB (Cap / Borbulha)
-- Modbus (configuração e atualização de firmware)
-
----
-
-*Documentação baseada no repositório [suite-device-app](https://github.com/DhioneCastilhoBarbosa/suite-device-app).*
+</div>
