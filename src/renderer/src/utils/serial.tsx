@@ -14,18 +14,33 @@ class SerialManagerRS232 {
 
   private wireLifecycle() {
     if (!this.port) return
-    const onClose = (err?:Error) => {
+    const boundPort = this.port
+    const onClose = () => {
+      // Ignora close de handle antigo após reopenSafe
+      if (this.port !== boundPort) return
       this.isOpen = false
       this.currentPath = null
-      try { this.port?.removeAllListeners() } catch {}
+      try {
+        boundPort.removeAllListeners()
+      } catch {}
     }
-    const onError = (e:Error) => {
-      // marca fechado para impedir usos com handle “morto”
+    const onError = (err: Error) => {
+      if (this.port !== boundPort) return
+      const msg = err?.message ?? String(err)
+      // FlushFileBuffers/drain code 1 em USB-serial no Windows — porta continua aberta.
+      if (
+        /FlushFileBuffers/i.test(msg) ||
+        (/Draining connection/i.test(msg) && /Unknown error code 1/i.test(msg)) ||
+        (/Unknown error code 1/i.test(msg) && /(drain|flush)/i.test(msg))
+      ) {
+        console.warn('[serial] erro recuperável de flush/drain ignorado:', msg)
+        return
+      }
       this.isOpen = false
       this.currentPath = null
     }
-    this.port.once('close', onClose)
-    this.port.on('error', onError)
+    boundPort.once('close', onClose)
+    boundPort.on('error', onError)
   }
 
   private async hardClose(): Promise<void> {
@@ -618,6 +633,26 @@ receiveReportPluvi(): Promise<string> {
     try {
       ;(this.port as { unpipe?: () => void }).unpipe?.()
     } catch {}
+  }
+
+  /** Limpa buffers e baixa DTR/RTS (evita hold de reset em alguns USB-UART). */
+  async prepareMcumgrSession(): Promise<void> {
+    this.prepareRawSerialAccess()
+    if (!this.port || !this.isOpen) return
+
+    await new Promise<void>((resolve) => {
+      this.port!.flush(() => resolve())
+    })
+
+    await new Promise<void>((resolve) => {
+      try {
+        this.port!.set({ dtr: false, rts: false }, () => resolve())
+      } catch {
+        resolve()
+      }
+    })
+
+    await this.sleep(250)
   }
 
   getRawPort(): SerialInst | null {

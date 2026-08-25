@@ -16,6 +16,25 @@ type SerialPortLike = {
   removeListener: (event: 'data', listener: (chunk: Buffer) => void) => void
 }
 
+/** FlushFileBuffers no Windows (ERROR_INVALID_FUNCTION=1) em alguns USB-serial. */
+export function isRecoverableFlushDrainError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  if (/FlushFileBuffers/i.test(msg)) return true
+  if (/Draining connection/i.test(msg) && /Unknown error code 1/i.test(msg)) return true
+  if (/Unknown error code 1/i.test(msg) && /(drain|flush)/i.test(msg)) return true
+  return false
+}
+
+export function classifyMcumgrProbeFailure(
+  detail: string
+): 'serial_io' | 'timeout' | 'not_recovery' {
+  if (isRecoverableFlushDrainError(detail) || /FlushFileBuffers|Draining connection/i.test(detail)) {
+    return 'serial_io'
+  }
+  if (/timeout/i.test(detail)) return 'timeout'
+  return 'not_recovery'
+}
+
 function computeXmodemCrc16(buf: Buffer): number {
   const poly = 0x1021
   let crc = 0
@@ -213,9 +232,30 @@ export class McumgrClient {
 
   private async flushPort(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this.port.flush((err) => (err ? reject(err) : resolve()))
+      this.port.flush((err) => {
+        if (!err) return resolve()
+        // No Windows, FlushFileBuffers costuma falhar em CH340/CDC; seguir sem flush.
+        if (isRecoverableFlushDrainError(err)) {
+          console.warn('[mcumgr] flush ignorado (USB-serial):', err.message)
+          return resolve()
+        }
+        reject(err)
+      })
     })
     this.reader?.clear()
+  }
+
+  private async drainPort(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      this.port.drain((err) => {
+        if (!err) return resolve()
+        if (isRecoverableFlushDrainError(err)) {
+          console.warn('[mcumgr] drain ignorado (USB-serial):', err.message)
+          return resolve()
+        }
+        reject(err)
+      })
+    })
   }
 
   private async transceive(
@@ -234,30 +274,43 @@ export class McumgrClient {
         await new Promise<void>((resolve, reject) => {
           this.port.write(packet, (err) => (err ? reject(err) : resolve()))
         })
-        await new Promise<void>((resolve, reject) => {
-          this.port.drain((err) => (err ? reject(err) : resolve()))
-        })
+        await this.drainPort()
         return await this.readFramedResponse(isFirstRequest)
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err))
+        // Falha recuperável de flush/drain não deve consumir todos os retries como se fosse mcumgr.
+        if (isRecoverableFlushDrainError(lastError)) {
+          console.warn('[mcumgr] I/O flush/drain recuperável, tentando de novo sem drain fatal')
+        }
       }
     }
 
     throw lastError ?? new Error('Falha na comunicação serial')
   }
 
-  async checkRecoveryModeQuick(): Promise<boolean> {
+  async checkRecoveryMode(options?: {
+    initialTimeoutS?: number
+  }): Promise<{ ok: true } | { ok: false; detail: string }> {
     const previousTimeout = this.specs.initialTimeoutS
-    this.specs.initialTimeoutS = 2
+    this.specs.initialTimeoutS = options?.initialTimeoutS ?? 5
     try {
       const response = await this.transceive(NmpOp.Read, NmpGroup.Image, NmpIdImage.State, {}, true)
-      if (response.body?.rc !== undefined && response.body.rc !== 0) return false
-      return true
-    } catch {
-      return false
+      if (response.body?.rc !== undefined && response.body.rc !== 0) {
+        return { ok: false, detail: `SMP rc=${String(response.body.rc)}` }
+      }
+      return { ok: true }
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err)
+      return { ok: false, detail }
     } finally {
       this.specs.initialTimeoutS = previousTimeout
     }
+  }
+
+  /** @deprecated use checkRecoveryMode — mantido por compatibilidade */
+  async checkRecoveryModeQuick(): Promise<boolean> {
+    const result = await this.checkRecoveryMode({ initialTimeoutS: 5 })
+    return result.ok
   }
 
   async resetDevice(): Promise<void> {

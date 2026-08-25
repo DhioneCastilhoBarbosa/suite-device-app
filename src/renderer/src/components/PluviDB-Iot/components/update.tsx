@@ -65,8 +65,8 @@ function StepItem({
     : failed
       ? 'border-red-300 bg-red-50 text-red-700'
       : active
-        ? 'border-sky-400 bg-sky-50 text-sky-700'
-        : 'border-zinc-200 bg-zinc-50 text-zinc-400'
+        ? 'border-sky-300 bg-sky-50 text-sky-700'
+        : 'border-sky-100 bg-[#F7FBFF] text-zinc-400'
 
   const icon = done ? (
     <CheckCircle size={18} weight="fill" />
@@ -167,14 +167,37 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
 
     try {
       SerialManager.setBusy()
-      const inRecovery = await pluviFirmware.checkRecovery()
-      if (inRecovery) {
+      const result = await pluviFirmware.checkRecovery()
+      if (result.ok) {
         setRecoveryState('ready')
         appendLogEntry('Dispositivo em modo recovery — pronto para atualizar')
       } else {
         setRecoveryState('failed')
         setFirmwarePath(null)
-        appendLogEntry('Dispositivo não está em modo recovery/bootloader')
+        if (result.reason === 'serial_io') {
+          appendLogEntry(
+            'Falha de I/O serial (flush/drain) ao verificar recovery — a porta permanece aberta'
+          )
+          appendLogEntry('Detalhe: {{detail}}', { detail: result.detail })
+          appendLogEntry('Tente Verificar recovery novamente')
+        } else if (result.reason === 'timeout') {
+          appendLogEntry('Timeout — a placa não respondeu ao probe mcumgr')
+          appendLogEntry('Detalhe: {{detail}}', { detail: result.detail })
+          appendLogEntry(
+            'Coloque a placa em recovery e clique novamente em Verificar recovery'
+          )
+        } else if (result.reason === 'port_closed') {
+          appendLogEntry('Porta serial não está aberta.')
+          appendLogEntry('Detalhe: {{detail}}', { detail: result.detail })
+        } else {
+          appendLogEntry(
+            'Conexão serial OK — a placa não está em modo recovery/bootloader'
+          )
+          appendLogEntry('Detalhe: {{detail}}', { detail: result.detail })
+          appendLogEntry(
+            'Coloque a placa em recovery e clique novamente em Verificar recovery'
+          )
+        }
         pluviFirmware.dispose()
         SerialManager.setIdle()
       }
@@ -278,12 +301,14 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
 
   return (
     <div className="flex flex-col gap-4 py-2 pb-6">
-      <div className="rounded-md border-2 border-sky-500 overflow-hidden">
-        <div className="bg-sky-500 text-white px-3 py-1.5 font-bold text-sm">
-          {t('Atualização de Firmware')}
+      <div className="overflow-hidden rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white shadow-sm">
+        <div className="border-b border-sky-600 bg-sky-500 px-3 py-1.5">
+          <span className="text-xs font-bold uppercase tracking-wide text-white">
+            {t('Atualização de Firmware')}
+          </span>
         </div>
-        <div className="p-4 flex flex-col gap-4">
-          <p className="text-xs text-zinc-500 leading-relaxed">
+        <div className="flex flex-col gap-4 p-4">
+          <p className="text-xs leading-relaxed text-zinc-500">
             {t(
               'Utiliza a conexão serial já aberta. Coloque o dispositivo em modo recovery/bootloader e conclua cada etapa em ordem.'
             )}
@@ -343,9 +368,9 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
                 <span>{t('Progresso')}</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2.5 w-full rounded-full bg-zinc-200 overflow-hidden">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-sky-100">
                 <div
-                  className="h-full rounded-full bg-sky-500 transition-all duration-300"
+                  className="h-full rounded-full bg-sky-400 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -353,9 +378,9 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
           )}
 
           <div className="flex flex-col gap-1">
-            <span className="text-zinc-400 text-xs">{t('Log')}</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-sky-700">{t('Log')}</span>
             <textarea
-              className="h-28 leading-relaxed border-2 border-zinc-200 resize-none whitespace-pre-wrap outline-none text-zinc-700 text-xs rounded-md px-3 py-2 bg-zinc-50 font-mono"
+              className="h-28 resize-none whitespace-pre-wrap rounded-md border border-sky-200 bg-white px-3 py-2 font-mono text-xs leading-relaxed text-zinc-700 outline-none focus:border-sky-400"
               value={logText}
               readOnly
             />
@@ -363,9 +388,10 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-end gap-3 border-t border-zinc-200 pt-3">
+      <div className="flex flex-wrap justify-end gap-3 border-t border-sky-100 pt-3">
         <Button
           size="medium"
+          className="shrink-0"
           onClick={() => void handleCheckRecovery()}
           disabled={!canVerifyRecovery}
         >
@@ -374,9 +400,9 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
         </Button>
         <Button
           size="large"
+          className={!canSelectFile ? disabledStepButtonClass : 'shrink-0'}
           onClick={() => void handleSelectFile()}
           disabled={!canSelectFile}
-          className={!canSelectFile ? disabledStepButtonClass : undefined}
           title={
             !recoveryReady
               ? t('Verifique o modo recovery antes de selecionar o arquivo')
@@ -388,9 +414,9 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
         </Button>
         <Button
           size="medium"
+          className={!canFlash ? disabledStepButtonClass : 'shrink-0'}
           onClick={() => setShowModal(true)}
           disabled={!canFlash}
-          className={!canFlash ? disabledStepButtonClass : undefined}
           title={
             !firmwarePath
               ? t('Selecione o arquivo de firmware antes de atualizar')
