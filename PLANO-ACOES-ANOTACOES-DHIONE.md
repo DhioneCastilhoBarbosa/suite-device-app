@@ -57,13 +57,13 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Busca geral no repo por `2025` em strings de UI / locales / footer (ignorar `package-lock`, hashes e datas de libs).
-- [ ] Atualizar `COPYRIGHT 2025...` → `COPYRIGHT 2026...` em:
+- [x] Busca geral no repo por `2025` em strings de UI / locales / footer (ignorar `package-lock`, hashes e datas de libs).
+- [x] Atualizar `COPYRIGHT 2025...` → `COPYRIGHT 2026...` em:
   - `src/renderer/src/components/Footer.tsx`
   - `src/locales/en/translation.json`
   - `src/locales/es/translation.json`
   - (e PT se a chave estiver hardcoded / em locale PT)
-- [ ] Conferir README/badges só se o time quiser alinhar ano; prioridade é o rodapé do app.
+- [x] Conferir README/badges só se o time quiser alinhar ano; prioridade é o rodapé do app.
 
 ### Validar comigo
 
