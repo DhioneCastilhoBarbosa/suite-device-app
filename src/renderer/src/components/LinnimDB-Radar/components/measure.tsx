@@ -107,10 +107,10 @@ export default function Measure() {
       <div className="rounded-md border border-zinc-200 bg-white px-3 py-3">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {readings.map((reading) => (
-            <div key={reading.key} className="flex min-w-0 items-center gap-2">
-              <div className="flex w-28 shrink-0 items-center gap-1.5 text-sky-600">
+            <div key={reading.key} className="grid min-w-0 grid-cols-[7.5rem_minmax(0,1fr)_1.5rem] items-center gap-2">
+              <div className="flex min-w-0 items-center gap-1.5 text-sky-600">
                 {reading.icon}
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+                <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
                   {reading.label}
                 </span>
               </div>
@@ -122,11 +122,11 @@ export default function Measure() {
                     : formatFloat(values[reading.key])
                 }
                 disabled={true}
-                className="h-8 min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 text-center text-sm font-semibold text-zinc-700 outline-none tabular-nums"
+                className="h-8 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-3 text-center text-sm font-semibold text-zinc-700 outline-none tabular-nums"
               />
-              {reading.unit ? (
-                <span className="w-6 shrink-0 text-xs font-semibold text-zinc-500">{reading.unit}</span>
-              ) : null}
+              <span className="w-6 shrink-0 text-xs font-semibold text-zinc-500">
+                {reading.unit ?? ''}
+              </span>
             </div>
           ))}
         </div>
