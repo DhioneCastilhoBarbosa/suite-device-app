@@ -63,14 +63,11 @@ function resolvePortName(portCom?: string | { name?: string }, fallback?: string
   return fallback ?? ''
 }
 
-function appendRxChunk(prev: string[], chunk: string): string[] {
-  const last = prev[prev.length - 1]
-  if (last?.startsWith('RX: ')) {
-    const next = [...prev]
-    next[next.length - 1] = last + chunk
-    return next
-  }
-  return [...prev, `RX: ${chunk}`]
+function consumeRxText(text: string): { lines: string[]; carry: string } {
+  const parts = text.split(/\r\n|\n|\r/)
+  const carry = parts.pop() ?? ''
+  const lines = parts.filter((line) => line.length > 0).map((line) => `RX: ${line}`)
+  return { lines, carry }
 }
 
 function formatLogForFile(lines: string[]): string {
@@ -113,7 +110,20 @@ export default function TerminalSerial(props: TerminalSerialProps): JSX.Element 
   const [dataTerminal, setDataTerminal] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const rxCarryRef = useRef('')
+  const rxFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const portName = resolvePortName(props.portCom, port?.name)
+
+  const flushRxCarry = (): void => {
+    if (rxFlushTimerRef.current) {
+      clearTimeout(rxFlushTimerRef.current)
+      rxFlushTimerRef.current = null
+    }
+    const leftover = rxCarryRef.current
+    if (!leftover) return
+    rxCarryRef.current = ''
+    setDataTerminal((prev) => [...prev, `RX: ${leftover}`])
+  }
 
   const handleBaudChange = async (nextBaud: number): Promise<void> => {
     if (nextBaud === baud) return
@@ -149,6 +159,7 @@ export default function TerminalSerial(props: TerminalSerialProps): JSX.Element 
   const handleSendComand = async (): Promise<void> => {
     const command = inputValue
     if (!command) return
+    flushRxCarry()
     const payload = command.endsWith('\n') ? command : `${command}\r\n`
     setDataTerminal((prev) => [...prev, `TX: ${command}`])
     setInputValue('')
@@ -166,6 +177,11 @@ export default function TerminalSerial(props: TerminalSerialProps): JSX.Element 
   }
 
   const handleClear = (): void => {
+    if (rxFlushTimerRef.current) {
+      clearTimeout(rxFlushTimerRef.current)
+      rxFlushTimerRef.current = null
+    }
+    rxCarryRef.current = ''
     setDataTerminal([])
   }
 
@@ -181,11 +197,34 @@ export default function TerminalSerial(props: TerminalSerialProps): JSX.Element 
 
   useEffect(() => {
     if (!props.isConect || mode?.state) return
+    rxCarryRef.current = ''
     const unsubscribe = subscribeRawDataSerialTerminal((chunk) => {
       if (!chunk) return
-      setDataTerminal((prev) => appendRxChunk(prev, chunk))
+      const { lines, carry } = consumeRxText(rxCarryRef.current + chunk)
+      rxCarryRef.current = carry
+      if (lines.length) {
+        setDataTerminal((prev) => [...prev, ...lines])
+      }
+      if (rxFlushTimerRef.current) {
+        clearTimeout(rxFlushTimerRef.current)
+        rxFlushTimerRef.current = null
+      }
+      if (carry) {
+        rxFlushTimerRef.current = setTimeout(() => {
+          const leftover = rxCarryRef.current
+          if (!leftover) return
+          rxCarryRef.current = ''
+          setDataTerminal((prev) => [...prev, `RX: ${leftover}`])
+        }, 80)
+      }
     })
-    return unsubscribe
+    return () => {
+      if (rxFlushTimerRef.current) {
+        clearTimeout(rxFlushTimerRef.current)
+        rxFlushTimerRef.current = null
+      }
+      unsubscribe()
+    }
   }, [props.isConect, mode?.state, listenKey])
 
   useEffect(() => {
