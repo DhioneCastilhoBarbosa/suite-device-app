@@ -43,7 +43,7 @@ Progresso rápido:
 - [x] Etapa 5 — Nível de potência
 - [x] Etapa 6 — Intervalo de correção
 - [x] Etapa 7 — Limites 26.00–38.50
-- [ ] Etapa 8 — Bloquear envio sem senha válida
+- [x] Etapa 8 — Bloquear envio sem senha válida
 - [ ] Etapa 9 — Restaurar vírgulas
 - [ ] Etapa 10 — Revisão TSatDB
 - [ ] Etapa 11 — Terminal Serial
@@ -221,10 +221,10 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Validar comigo
 
-- [ ] Senha vazia: UI mostra erro; **zero** bytes/comando na serial
-- [ ] Senha errada: idem
-- [ ] Senha correta: comando sai
-- [ ] Não regressar Atualizar (leitura)
+- [x] Senha vazia: UI mostra erro; **zero** bytes/comando na serial
+- [x] Senha errada: idem
+- [x] Senha correta: comando sai
+- [x] Não regressar Atualizar (leitura)
 
 **Pare aqui.** Pergunte: *“Etapa 8 ok para avançar?”*
 
@@ -236,9 +236,9 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Ações
 
-- [ ] Revisar `loadVariables` em `RFAdvanced.tsx` e o caminho que preenche `receiverTxPowerLevel` em `TSatDB.tsx`.
-- [ ] Garantir que a resposta serial com valores separados por vírgula continue sendo parseada e, se a UI/export precisar mostrar vírgulas, não stripá-las indevidamente.
-- [ ] Cuidado com `toFixed(2).replace(',', '.')` no blur: não destruir o formato esperado pelo equipamento na ida/volta.
+- [x] Revisar `loadVariables` em `RFAdvanced.tsx` e o caminho que preenche `receiverTxPowerLevel` em `TSatDB.tsx`.
+- [x] Garantir que a resposta serial com valores separados por vírgula continue sendo parseada e, se a UI/export precisar mostrar vírgulas, não stripá-las indevidamente.
+- [x] Cuidado com `toFixed(2).replace(',', '.')` no blur: não destruir o formato esperado pelo equipamento na ida/volta.
 - [ ] Reproduzir com o mesmo sniff/log que mostrou o bug.
 
 ### Validar comigo

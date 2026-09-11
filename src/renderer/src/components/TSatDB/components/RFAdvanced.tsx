@@ -6,6 +6,54 @@ import { t } from 'i18next'
 const RF_POWER_MIN = 26
 const RF_POWER_MAX = 38.5
 const RF_TECH_PASSWORD = 'techmode alpha'
+const RF_POWER_FALLBACK = '37.00'
+
+function formatRfPower(value: number): string {
+  return value.toFixed(2).replace(/,/g, '.')
+}
+
+function normalizeRfPowerInput(value: string): string {
+  const numValue = parseFloat(value.replace(',', '.'))
+  if (!Number.isFinite(numValue)) {
+    return RF_POWER_FALLBACK
+  }
+  const clamped = Math.min(RF_POWER_MAX, Math.max(RF_POWER_MIN, numValue))
+  return formatRfPower(clamped)
+}
+
+function parseRfPowerLevels(raw: string): [string, string, string] {
+  const lines = raw
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  const payloadLine =
+    lines.find((line) => /PWRLVL\s*=/i.test(line)) ??
+    lines.find((line) => line.includes(',')) ??
+    ''
+
+  const payload = payloadLine
+    .replace(/PWRLVL\s*=/i, '')
+    .replace(/>/g, '')
+    .trim()
+
+  const parts = payload
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const numeric = parseFloat(item.replace(',', '.'))
+      return Number.isFinite(numeric) ? formatRfPower(numeric) : ''
+    })
+    .filter(Boolean)
+
+  return [
+    parts[0] || RF_POWER_FALLBACK,
+    parts[1] || RF_POWER_FALLBACK,
+    parts[2] || RF_POWER_FALLBACK
+  ]
+}
 
 type Props = {
   receiverTxPowerLevel: string | undefined
@@ -57,19 +105,17 @@ export function RFAdvanced({
       return
     }
     const clamped = Math.min(RF_POWER_MAX, Math.max(RF_POWER_MIN, numValue))
-    handleInputChange(id, clamped.toFixed(2).replace(',', '.'))
+    handleInputChange(id, formatRfPower(clamped))
   }
 
   function loadVariables(TxPower: string): void {
-    if (TxPower) {
-      const loadedDataTxPowerLevel = TxPower.split('\r\n').map((item) => item.trim())
-      const DataTxPowerLevel = loadedDataTxPowerLevel[1].split(',').map((item) => item.trim())
-      //setDataTxPowerLevel(DataTxPowerLevel)
-
-      setTX100BPS(DataTxPowerLevel[0] ? DataTxPowerLevel[0].replace('PWRLVL=', '') : '37.00')
-      setTX300BPS(DataTxPowerLevel[1] ? DataTxPowerLevel[1] : '37.00')
-      setTX1200BPS(DataTxPowerLevel[2] ? DataTxPowerLevel[2].replace('>', '') : '37.00')
+    if (!TxPower) {
+      return
     }
+    const [tx100, tx300, tx1200] = parseRfPowerLevels(TxPower)
+    setTX100BPS(tx100)
+    setTX300BPS(tx300)
+    setTX1200BPS(tx1200)
   }
 
   function handleSendSetting(): void {
@@ -79,7 +125,12 @@ export function RFAdvanced({
     }
 
     setIsPasswordInvalid(false)
-    handleSendSettings([TX100BPS, TX300BPS, TX1200BPS, Password])
+    handleSendSettings([
+      normalizeRfPowerInput(TX100BPS),
+      normalizeRfPowerInput(TX300BPS),
+      normalizeRfPowerInput(TX1200BPS),
+      Password
+    ])
   }
   useEffect(() => {
     handleUpdateSettings()
