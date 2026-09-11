@@ -36,7 +36,7 @@ Legenda: `[ ]` pendente · `[x]` feito e validado
 
 Progresso rápido:
 
-- [ ] Etapa 1 — Copyright 2026
+- [x] Etapa 1 — Copyright 2026
 - [ ] Etapa 2 — Banner Saiba mais
 - [ ] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
 - [ ] Etapa 4 — GOES-19
@@ -67,8 +67,8 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] Rodapé mostra 2026 em PT / EN / ES
-- [ ] Busca por `COPYRIGHT 2025` no `src/` retorna zero
+- [x] Rodapé mostra 2026 em PT / EN / ES
+- [x] Busca por `COPYRIGHT 2025` no `src/` retorna zero
 
 **Pare aqui.** Pergunte: *“Etapa 1 ok para avançar?”*
 
@@ -86,10 +86,10 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Trocar a chave/exibição em `src/renderer/src/components/imageDevice/ImageDevice.tsx`.
-- [ ] Atualizar locales EN/ES (e PT se necessário).
-- [ ] Garantir que o `href` do produto continua o mesmo (só muda o rótulo).
-- [ ] Verificar em todos os dispositivos que usam `ImageDevice` (LimniDB-*, TSatDB, Teclado, PluviDB-IoT, etc.).
+- [x] Trocar a chave/exibição em `src/renderer/src/components/imageDevice/ImageDevice.tsx`.
+- [x] Atualizar locales EN/ES (e PT se necessário).
+- [x] Garantir que o `href` do produto continua o mesmo (só muda o rótulo).
+- [x] Verificar em todos os dispositivos que usam `ImageDevice` (LimniDB-*, TSatDB, Teclado, PluviDB-IoT, etc.).
 
 ### Validar comigo
 
