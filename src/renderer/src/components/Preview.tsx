@@ -1,5 +1,6 @@
 import LinnimDbBorbulha from './LinnimDB-Borbulha/LinnimDbBorbulha'
 import LinnimDbCap from './LinnimDB-Cap/LinnimDbCap'
+import LinnimDbRadar from './LinnimDB-Radar/LinnimDbRadar'
 import TecladoSDI12 from './Teclado-SDI12/Teclado'
 import { Terminal } from './Terminal/Terminal'
 import TerminalSerial from './Terminal-Serial/TerminalSerial'
@@ -24,6 +25,9 @@ export default function Preview(): JSX.Element | undefined {
   }
   if (device.name === 'linnimDB-cap') {
     return <LinnimDbCap isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
+  }
+  if (device.name === 'linnimDB-radar') {
+    return <LinnimDbRadar isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
   }
   if (device.name === 'teclado-sdi12') {
     return <TecladoSDI12 isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />

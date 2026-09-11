@@ -515,5 +515,16 @@
   "<b>Comunicação serial simples (TX/RX);</b>": "Comunicación serial simple (TX/RX);",
   "<b>Seleção de baudrate;</b>": "Selección de baudrate;",
   "<b>Limpar tela e salvar histórico em TXT.</b>": "Limpiar la pantalla y guardar el historial en TXT.",
-  "Testes em bancada, diagnóstico de equipamentos seriais e suporte técnico.": "Pruebas de laboratorio, diagnóstico de equipos seriales y soporte técnico."
+  "Testes em bancada, diagnóstico de equipamentos seriais e suporte técnico.": "Pruebas de laboratorio, diagnóstico de equipos seriales y soporte técnico.",
+  "LimniDB-RADAR": "LimniDB-RADAR",
+  "Distância": "Distancia",
+  "Eixo X": "Eje X",
+  "Eixo Y": "Eje Y",
+  "Umidade": "Humedad",
+  "Flag Vibração": "Flag de vibración",
+  "O <b>LimniDB-RADAR</b> é um sensor de nível <b>sem contato</b> com a água. Mede a distância até a lâmina d’água por ondas eletromagnéticas e é normalmente instalado em pontes ou estruturas seguras. É seguro, de fácil uso e baixa manutenção, com compensação de temperatura e baixa incerteza de medição.": "El <b>LimniDB-RADAR</b> es un sensor de nivel <b>sin contacto</b> con el agua. Mide la distancia hasta la lámina de agua por ondas electromagnéticas y suele instalarse en puentes o estructuras seguras. Es seguro, fácil de usar y de bajo mantenimiento, con compensación de temperatura y baja incertidumbre de medición.",
+  "<b>Sensor radar 80 GHz</b> para medição de nível de água;": "<b>Sensor radar de 80 GHz</b> para medición de nivel de agua;",
+  "<b>Corpo em alumínio anodizado</b> com proteção IP68;": "<b>Cuerpo de aluminio anodizado</b> con protección IP68;",
+  "<b>Saídas digitais SDI-12 e Modbus</b>, com compensação de temperatura.": "<b>Salidas digitales SDI-12 y Modbus</b>, con compensación de temperatura.",
+  "Hidrologia, meteorologia, monitoramento de rios e reservatórios, instalação em pontes e estruturas seguras.": "Hidrología, meteorología, monitoreo de ríos y reservorios, instalación en puentes y estructuras seguras."
 }

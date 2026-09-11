@@ -515,5 +515,16 @@
   "<b>Comunicação serial simples (TX/RX);</b>": "Simple serial communication (TX/RX);",
   "<b>Seleção de baudrate;</b>": "Baud rate selection;",
   "<b>Limpar tela e salvar histórico em TXT.</b>": "Clear the screen and save history to TXT.",
-  "Testes em bancada, diagnóstico de equipamentos seriais e suporte técnico.": "Bench testing, serial equipment diagnostics and technical support."
+  "Testes em bancada, diagnóstico de equipamentos seriais e suporte técnico.": "Bench testing, serial equipment diagnostics and technical support.",
+  "LimniDB-RADAR": "LimniDB-RADAR",
+  "Distância": "Distance",
+  "Eixo X": "Axis X",
+  "Eixo Y": "Axis Y",
+  "Umidade": "Humidity",
+  "Flag Vibração": "Vibration flag",
+  "O <b>LimniDB-RADAR</b> é um sensor de nível <b>sem contato</b> com a água. Mede a distância até a lâmina d’água por ondas eletromagnéticas e é normalmente instalado em pontes ou estruturas seguras. É seguro, de fácil uso e baixa manutenção, com compensação de temperatura e baixa incerteza de medição.": "The <b>LimniDB-RADAR</b> is a <b>non-contact</b> water level sensor. It measures the distance to the water surface using electromagnetic waves and is usually installed on bridges or secure structures. It is safe, easy to use and low-maintenance, with temperature compensation and low measurement uncertainty.",
+  "<b>Sensor radar 80 GHz</b> para medição de nível de água;": "<b>80 GHz radar sensor</b> for water level measurement;",
+  "<b>Corpo em alumínio anodizado</b> com proteção IP68;": "<b>Anodized aluminum body</b> with IP68 protection;",
+  "<b>Saídas digitais SDI-12 e Modbus</b>, com compensação de temperatura.": "<b>SDI-12 and Modbus digital outputs</b>, with temperature compensation.",
+  "Hidrologia, meteorologia, monitoramento de rios e reservatórios, instalação em pontes e estruturas seguras.": "Hydrology, meteorology, river and reservoir monitoring, installation on bridges and secure structures."
 }

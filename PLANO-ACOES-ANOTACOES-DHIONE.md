@@ -47,7 +47,7 @@ Progresso rápido:
 - [ ] Etapa 9 — Restaurar vírgulas
 - [ ] Etapa 10 — Revisão TSatDB
 - [ ] Etapa 11 — Terminal Serial
-- [ ] Etapa 12 — LimniDB-RADAR
+- [x] Etapa 12 — LimniDB-RADAR
 
 ---
 
@@ -306,12 +306,12 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Ações
 
-- [ ] Clonar pasta/fluxo `LinnimDB-Cap` → `LimniDB-RADAR` (ou grafia alinhada ao projeto).
-- [ ] Menu + `Preview` + `DeviceContext` / nomes.
-- [ ] Página inicial: textos/imagem/link do produto (usar as informações já disponíveis; placeholder se faltar asset).
-- [ ] Página conectada: espelhar CAP; adicionar leituras extras como repetições Modbus com endereços novos (**não inventar** — usar a lista de registradores fornecida / a confirmar).
-- [ ] Manter isolamento de estado vs LimniDB-CAP / Borbulha.
-- [ ] i18n das strings novas.
+- [x] Clonar pasta/fluxo `LinnimDB-Cap` → `LimniDB-RADAR` (ou grafia alinhada ao projeto).
+- [x] Menu + `Preview` + `DeviceContext` / nomes.
+- [x] Página inicial: textos/imagem/link do produto (usar as informações já disponíveis; placeholder se faltar asset).
+- [x] Página conectada: espelhar CAP; adicionar leituras extras como repetições Modbus com endereços novos (**não inventar** — usar a lista de registradores fornecida / a confirmar).
+- [x] Manter isolamento de estado vs LimniDB-CAP / Borbulha.
+- [x] i18n das strings novas.
 
 ### Validar comigo
 
@@ -320,7 +320,7 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 - [ ] Offline/mock: campos de leitura extras visíveis
 - [ ] CAP não regressou
 
-**Dúvida em aberto:** lista exata dos registradores Modbus extras do RADAR — bloquear envio de valores inventados até receber o mapa.
+**Dúvida em aberto:** lista exata dos registradores Modbus extras do RADAR — **mapa recebido** (vs CAP): 2 distância, 4 eixoX, 6 eixoY, 8 temperatura, 10 umidade, 12 flag vibração.
 
 **Pare aqui.** Esta é a última etapa do plano. Confirme: *“Etapa 12 ok — plano concluído?”*
 
@@ -337,7 +337,7 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 1. **Etapa 3 — PluviDB no TXT:** só no export de um módulo específico ou varredura ampla?
 2. **Etapa 11 — baudrates:** lista oficial desejada?
-3. **Etapa 12 — registradores Modbus** do LimniDB-RADAR.
+3. **Etapa 12 — registradores Modbus** do LimniDB-RADAR — mapa recebido (vs CAP): 2 distância, 4 eixoX, 6 eixoY, 8 temperatura, 10 umidade, 12 flag vibração.
 
 ---
 
