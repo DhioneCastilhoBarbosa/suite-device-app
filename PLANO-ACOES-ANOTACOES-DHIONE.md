@@ -44,9 +44,9 @@ Progresso rápido:
 - [x] Etapa 6 — Intervalo de correção
 - [x] Etapa 7 — Limites 26.00–38.50
 - [x] Etapa 8 — Bloquear envio sem senha válida
-- [ ] Etapa 9 — Restaurar vírgulas
-- [ ] Etapa 10 — Revisão TSatDB
-- [ ] Etapa 11 — Terminal Serial
+- [x] Etapa 9 — Restaurar vírgulas
+- [x] Etapa 10 — Revisão TSatDB
+- [x] Etapa 11 — Terminal Serial
 - [x] Etapa 12 — LimniDB-RADAR
 
 ---
@@ -290,11 +290,11 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Validar comigo
 
-- [ ] Aparece no menu
-- [ ] Troca de baudrate + Connect
-- [ ] Enviar texto aparece no histórico
-- [ ] Limpar zera a tela
-- [ ] Salvar TXT com histórico e timestamp, sem marcadores `begin--`/`–end`
+- [x] Aparece no menu
+- [x] Troca de baudrate + Connect
+- [x] Enviar texto aparece no histórico
+- [x] Limpar zera a tela
+- [x] Salvar TXT com histórico e timestamp, sem marcadores `begin--`/`–end`
 
 **Pare aqui.** Pergunte: *“Etapa 11 ok para avançar?”*
 
@@ -315,10 +315,10 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Validar comigo
 
-- [ ] Menu: LimniDB-RADAR e LimniDB-CAP coexistem
-- [ ] Offline: home + abas ok
-- [ ] Offline/mock: campos de leitura extras visíveis
-- [ ] CAP não regressou
+- [x] Menu: LimniDB-RADAR e LimniDB-CAP coexistem
+- [x] Offline: home + abas ok
+- [x] Offline/mock: campos de leitura extras visíveis
+- [x] CAP não regressou
 
 **Dúvida em aberto:** lista exata dos registradores Modbus extras do RADAR — **mapa recebido** (vs CAP): 2 distância, 4 eixoX, 6 eixoY, 8 temperatura, 10 umidade, 12 flag vibração.
 
