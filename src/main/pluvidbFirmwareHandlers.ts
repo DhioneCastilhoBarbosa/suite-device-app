@@ -1,11 +1,11 @@
 import { dialog, ipcMain } from 'electron'
 
 export function registerPluvidbFirmwareHandlers(): void {
-  ipcMain.handle('pluvidb-fw:selectFile', async () => {
+  ipcMain.handle('pluvidb-fw:selectFile', async (_event, filterName?: string) => {
     try {
       const result = await dialog.showOpenDialog({
         title: 'Selecionar firmware',
-        filters: [{ name: 'Firmware PluviDB', extensions: ['dblos'] }],
+        filters: [{ name: filterName || 'Firmware PluviDB', extensions: ['dblos'] }],
         properties: ['openFile']
       })
 

@@ -15,7 +15,7 @@ export interface SuiteDeviceApi {
 }
 
 export interface PluvidbUpdaterApi {
-  selectFile: () => Promise<PluvidbFirmwareResult>
+  selectFile: (filterName?: string) => Promise<PluvidbFirmwareResult>
 }
 
 declare global {

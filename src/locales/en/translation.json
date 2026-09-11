@@ -506,5 +506,6 @@
   "Dados gerado da PCD Pluviométrica - ": "Data generated from PCD Pluviométrica - ",
   "Dados do relatório da PCD Pluviométrica - ": "PCD Pluviométrica report data - ",
   "Relatório de logs da PCD Pluviométrica-{{imei}}": "Log report for PCD Pluviométrica-{{imei}}",
-  "PCD-Pluviometrica-{{imei}}.txt": "PCD-Pluviometrica-{{imei}}.txt"
+  "PCD-Pluviometrica-{{imei}}.txt": "PCD-Pluviometrica-{{imei}}.txt",
+  "Firmware PCD Pluviométrica": "PCD Pluviométrica Firmware"
 }

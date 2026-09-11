@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const pluvidbUpdater = {
-  selectFile: () => ipcRenderer.invoke('pluvidb-fw:selectFile')
+  selectFile: (filterName?: string) => ipcRenderer.invoke('pluvidb-fw:selectFile', filterName)
 }
 
 // Custom APIs for renderer
