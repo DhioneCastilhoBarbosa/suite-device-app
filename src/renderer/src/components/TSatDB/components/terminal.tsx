@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 import { t } from 'i18next'
 
+function formatTsatTerminalLog(chunks: string[]): string {
+  return chunks.join('').replace(/,(?!\s)/g, ', ')
+}
+
 type Props = {
   receiverTerminal: string | undefined
   handleSendComandTerminal: (valuer: string) => void
@@ -37,7 +41,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   const handleSaveToFile = (): void => {
     const headerFile = 'Dados gerado do Trasmissor TSatDB - '
     const date = new Date().toLocaleString()
-    const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
+    const Data = headerFile + date + '\n \n' + formatTsatTerminalLog(dataTerminal)
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'Terminal-TSatDB.txt')
   }
@@ -68,7 +72,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
           ref={textareaRef}
           name=""
           id=""
-          value={dataTerminal.join('').replace(/,/g, '')}
+          value={formatTsatTerminalLog(dataTerminal)}
           readOnly
           className="w-full mx-8 mt-2 border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm"
         ></textarea>
