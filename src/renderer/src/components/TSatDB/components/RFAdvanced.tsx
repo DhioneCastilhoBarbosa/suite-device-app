@@ -5,6 +5,7 @@ import { t } from 'i18next'
 
 const RF_POWER_MIN = 26
 const RF_POWER_MAX = 38.5
+const RF_TECH_PASSWORD = 'techmode alpha'
 
 type Props = {
   receiverTxPowerLevel: string | undefined
@@ -22,7 +23,6 @@ export function RFAdvanced({
   const [TX1200BPS, setTX1200BPS] = useState<string>('37.00')
   const [Password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isvalidatePassword, setIsValidatePassword] = useState(false)
   const [isPasswordInvalid, setIsPasswordInvalid] = useState(false)
 
   const handleInputChange = (id: string, value: string): void => {
@@ -42,7 +42,9 @@ export function RFAdvanced({
 
       case 'Password':
         setPassword(value)
-        validatePassword(value)
+        if (isPasswordInvalid) {
+          setIsPasswordInvalid(false)
+        }
         break
       default:
         break
@@ -58,23 +60,6 @@ export function RFAdvanced({
     handleInputChange(id, clamped.toFixed(2).replace(',', '.'))
   }
 
-  function validatePassword(value): void {
-    if (value === '' || value !== 'techmode alpha') {
-      setIsValidatePassword(true)
-    } else {
-      setIsValidatePassword(false)
-    }
-  }
-
-  const validate = (): void => {
-    if (Password !== 'techmode alpha') {
-      setIsPasswordInvalid(true)
-    } else {
-      setIsPasswordInvalid(false)
-      // Continue with the send setting logic
-    }
-  }
-
   function loadVariables(TxPower: string): void {
     if (TxPower) {
       const loadedDataTxPowerLevel = TxPower.split('\r\n').map((item) => item.trim())
@@ -88,13 +73,13 @@ export function RFAdvanced({
   }
 
   function handleSendSetting(): void {
-    validate()
-    if (isvalidatePassword) {
+    if (Password !== RF_TECH_PASSWORD) {
+      setIsPasswordInvalid(true)
       return
-    } else {
-      const settingsArray = [TX100BPS, TX300BPS, TX1200BPS, Password]
-      handleSendSettings(settingsArray)
     }
+
+    setIsPasswordInvalid(false)
+    handleSendSettings([TX100BPS, TX300BPS, TX1200BPS, Password])
   }
   useEffect(() => {
     handleUpdateSettings()

@@ -42,7 +42,7 @@ Progresso rápido:
 - [x] Etapa 4 — GOES-19
 - [x] Etapa 5 — Nível de potência
 - [x] Etapa 6 — Intervalo de correção
-- [ ] Etapa 7 — Limites 26.00–38.50
+- [x] Etapa 7 — Limites 26.00–38.50
 - [ ] Etapa 8 — Bloquear envio sem senha válida
 - [ ] Etapa 9 — Restaurar vírgulas
 - [ ] Etapa 10 — Revisão TSatDB
@@ -195,9 +195,9 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] Labels mostram Min 26.00 / Max 38.50
-- [ ] Valor &lt; 26 ou &gt; 38.50 não é aceito (ou é corrigido de forma clara)
-- [ ] Valor dentro da faixa envia normalmente (com senha válida — etapa 8)
+- [x] Labels mostram Min 26.00 / Max 38.50
+- [x] Valor &lt; 26 ou &gt; 38.50 não é aceito (ou é corrigido de forma clara)
+- [x] Valor dentro da faixa envia normalmente (com senha válida — etapa 8)
 
 **Pare aqui.** Pergunte: *“Etapa 7 ok para avançar?”*
 
@@ -213,10 +213,10 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Ações
 
-- [ ] Validar a senha **de forma síncrona** antes de montar/enviar o array.
-- [ ] Senha vazia → erro + **return** (não chama `handleSendSettings`).
-- [ ] Senha ≠ `techmode alpha` → “Senha inválida” + **return**.
-- [ ] Só então enviar `[TX100BPS, TX300BPS, TX1200BPS, Password]`.
+- [x] Validar a senha **de forma síncrona** antes de montar/enviar o array.
+- [x] Senha vazia → erro + **return** (não chama `handleSendSettings`).
+- [x] Senha ≠ `techmode alpha` → “Senha inválida” + **return**.
+- [x] Só então enviar `[TX100BPS, TX300BPS, TX1200BPS, Password]`.
 - [ ] Testar com sniff no Serial Port Monitor.
 
 ### Validar comigo
