@@ -167,7 +167,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
           <div className="flex flex-row  items-center gap-2 mr-6 border-[1px] border-sky-500 rounded-md p-1">
             <img src={satellite} alt="satellite" />
             <span className="font-semibold">-</span>
-            <span className="font-semibold">{t('GOES-16 EAST 75W')}</span>
+            <span className="font-semibold">{t('GOES-19 EAST 75W')}</span>
           </div>
         </div>
         <div className="flex flex-row justify-around items-center w-full">

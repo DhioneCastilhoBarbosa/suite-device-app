@@ -38,7 +38,7 @@ Progresso rápido:
 
 - [x] Etapa 1 — Copyright 2026
 - [x] Etapa 2 — Banner Saiba mais
-- [ ] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
+- [x] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
 - [ ] Etapa 4 — GOES-19
 - [ ] Etapa 5 — Nível de potência
 - [ ] Etapa 6 — Intervalo de correção
@@ -115,9 +115,9 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] Arquivo salvo sem `begin--` / `–end`
-- [ ] Sem a palavra PluviDB no trecho corrigido
-- [ ] Conteúdo útil (histórico/comandos) permanece
+- [x] Arquivo salvo sem `begin--` / `–end`
+- [x] Sem a palavra PluviDB no trecho corrigido
+- [x] Conteúdo útil (histórico/comandos) permanece
 
 **Pare aqui.** Pergunte: *“Etapa 3 ok para avançar?”*
 
@@ -129,10 +129,10 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Trocar `GOES-16 EAST 75W` (e similares) em UI e locales.
-- [ ] Arquivo principal: `src/renderer/src/components/TSatDB/components/antennapointing.tsx`
-- [ ] Chaves em `src/locales/en/translation.json` e `src/locales/es/translation.json`
-- [ ] Busca por `GOES-16` / `GOES16` no `src/`
+- [x] Trocar `GOES-16 EAST 75W` (e similares) em UI e locales.
+- [x] Arquivo principal: `src/renderer/src/components/TSatDB/components/antennapointing.tsx`
+- [x] Chaves em `src/locales/en/translation.json` e `src/locales/es/translation.json`
+- [x] Busca por `GOES-16` / `GOES16` no `src/`
 
 ### Validar comigo
 
