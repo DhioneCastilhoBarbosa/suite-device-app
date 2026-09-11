@@ -41,7 +41,7 @@ Progresso rápido:
 - [x] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
 - [x] Etapa 4 — GOES-19
 - [x] Etapa 5 — Nível de potência
-- [ ] Etapa 6 — Intervalo de correção
+- [x] Etapa 6 — Intervalo de correção
 - [ ] Etapa 7 — Limites 26.00–38.50
 - [ ] Etapa 8 — Bloquear envio sem senha válida
 - [ ] Etapa 9 — Restaurar vírgulas
@@ -175,8 +175,8 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] Label = **Intervalo de correção** (sem “Definir o”)
-- [ ] EN/ES equivalentes curtos
+- [x] Label = **Intervalo de correção** (sem “Definir o”)
+- [x] EN/ES equivalentes curtos
 
 **Pare aqui.** Pergunte: *“Etapa 6 ok para avançar?”*
 
@@ -188,10 +188,10 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Em `RFAdvanced.tsx`: `min={26}` `max={38.5}` (ou validação numérica equivalente).
-- [ ] Atualizar textos `Min` / `Max` exibidos ao lado.
-- [ ] Validar no blur/`handleBlur` para clamp ou rejeitar fora da faixa.
-- [ ] Defaults (ex.: `37.00`) podem permanecer se ainda forem válidos.
+- [x] Em `RFAdvanced.tsx`: `min={26}` `max={38.5}` (ou validação numérica equivalente).
+- [x] Atualizar textos `Min` / `Max` exibidos ao lado.
+- [x] Validar no blur/`handleBlur` para clamp ou rejeitar fora da faixa.
+- [x] Defaults (ex.: `37.00`) podem permanecer se ainda forem válidos.
 
 ### Validar comigo
 

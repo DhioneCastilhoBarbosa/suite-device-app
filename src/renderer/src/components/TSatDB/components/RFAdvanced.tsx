@@ -3,6 +3,9 @@ import Button from '@renderer/components/button/Button'
 import { useEffect, useState } from 'react'
 import { t } from 'i18next'
 
+const RF_POWER_MIN = 26
+const RF_POWER_MAX = 38.5
+
 type Props = {
   receiverTxPowerLevel: string | undefined
   handleSendSettings: (settings: string[]) => void
@@ -48,9 +51,11 @@ export function RFAdvanced({
 
   const handleBlur = (id: string, value: string): void => {
     const numValue = parseFloat(value)
-    if (!isNaN(numValue)) {
-      handleInputChange(id, numValue.toFixed(2).replace(',', '.'))
+    if (isNaN(numValue)) {
+      return
     }
+    const clamped = Math.min(RF_POWER_MAX, Math.max(RF_POWER_MIN, numValue))
+    handleInputChange(id, clamped.toFixed(2).replace(',', '.'))
   }
 
   function validatePassword(value): void {
@@ -113,15 +118,15 @@ export function RFAdvanced({
               type="number"
               step="0.01"
               value={TX100BPS}
-              min={32}
-              max={38}
+              min={RF_POWER_MIN}
+              max={RF_POWER_MAX}
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
             <label className="font-semibold w-36 text-white"> 100bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 32</label>
-              <label className="font-normal text-white">{t('Max')}: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
+              <label className="font-normal text-white">{t('Max')}: 38.50</label>
             </div>
           </div>
 
@@ -131,16 +136,16 @@ export function RFAdvanced({
               className="border border-sky-500 rounded-md p-2 text-center h-7 w-36"
               type="number"
               step="0.01"
-              min={32}
-              max={38}
+              min={RF_POWER_MIN}
+              max={RF_POWER_MAX}
               value={TX300BPS}
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
             <label className="font-semibold w-36 text-white"> 300 bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 32</label>
-              <label className="font-normal text-white">{t('Max')}: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
+              <label className="font-normal text-white">{t('Max')}: 38.50</label>
             </div>
           </div>
 
@@ -150,16 +155,16 @@ export function RFAdvanced({
               className="border border-sky-500 rounded-md p-2 text-center h-7 w-36"
               type="number"
               step="0.01"
-              min={32}
-              max={38}
+              min={RF_POWER_MIN}
+              max={RF_POWER_MAX}
               value={TX1200BPS}
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
             <label className="font-semibold w-36 text-white"> 1200 bps</label>
             <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 32</label>
-              <label className="font-normal text-white">{t('Max')}: 38</label>
+              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
+              <label className="font-normal text-white">{t('Max')}: 38.50</label>
             </div>
           </div>
         </div>
