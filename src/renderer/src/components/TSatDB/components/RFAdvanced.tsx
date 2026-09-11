@@ -102,7 +102,7 @@ export function RFAdvanced({
   return (
     <div className=" w-full flex flex-col mt-28 mb-8">
       <label className="bg-sky-500 text-white w-full text-center font-bold text-xl rounded-t-md">
-        {t('Nivel de Potencia RF')}
+        {t('Nível de potência RF')}
       </label>
       <div className="border-[1px] border-sky-500 rounded-b-md ">
         <div className="flex gap-4 p-4 mt-10">

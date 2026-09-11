@@ -39,7 +39,7 @@ Progresso rápido:
 - [x] Etapa 1 — Copyright 2026
 - [x] Etapa 2 — Banner Saiba mais
 - [x] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
-- [ ] Etapa 4 — GOES-19
+- [x] Etapa 4 — GOES-19
 - [ ] Etapa 5 — Nível de potência
 - [ ] Etapa 6 — Intervalo de correção
 - [ ] Etapa 7 — Limites 26.00–38.50
@@ -136,9 +136,9 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] Apontamento de antena / textos mostram GOES-19
-- [ ] EN/ES alinhados
-- [ ] Zero ocorrência de GOES-16 na UI
+- [x] Apontamento de antena / textos mostram GOES-19
+- [x] EN/ES alinhados
+- [x] Zero ocorrência de GOES-16 na UI
 
 **Pare aqui.** Pergunte: *“Etapa 4 ok para avançar?”*
 
@@ -150,10 +150,10 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Hoje aparece `Nivel de Potencia RF` (sem acentos no PT).
-- [ ] Padronizar para **Nível de potência** (ou **Nível de potência RF**, se mantiver o RF).
-- [ ] Ajustar EN/ES de forma consistente (`RF power level` / `Nivel de potencia RF` — ES já pode estar ok).
-- [ ] Arquivo: `src/renderer/src/components/TSatDB/components/RFAdvanced.tsx` + locales.
+- [x] Hoje aparece `Nivel de Potencia RF` (sem acentos no PT).
+- [x] Padronizar para **Nível de potência** (ou **Nível de potência RF**, se mantiver o RF).
+- [x] Ajustar EN/ES de forma consistente (`RF power level` / `Nivel de potencia RF` — ES já pode estar ok).
+- [x] Arquivo: `src/renderer/src/components/TSatDB/components/RFAdvanced.tsx` + locales.
 
 ### Validar comigo
 
