@@ -99,13 +99,13 @@ export default function Measure() {
   }
 
   return (
-    <div className="mx-auto mb-2 w-full max-w-2xl px-4 pt-2 sm:px-6">
-      <div className="mb-2 border-b border-sky-500 pb-0.5">
+    <div className="mx-auto mb-1 w-full max-w-2xl px-4 pt-1 sm:px-6">
+      <div className="mb-1 border-b border-sky-500 pb-0.5">
         <label className="text-sm font-semibold text-sky-700">{t('Leitura')}</label>
       </div>
 
-      <div className="rounded-md border border-zinc-200 bg-white px-3 py-3">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
+        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
           {readings.map((reading) => (
             <div key={reading.key} className="grid min-w-0 grid-cols-[7.5rem_minmax(0,1fr)_1.5rem] items-center gap-2">
               <div className="flex min-w-0 items-center gap-1.5 text-sky-600">
@@ -131,7 +131,7 @@ export default function Measure() {
           ))}
         </div>
 
-        <div className="mt-3 flex justify-end">
+        <div className="mt-2 flex justify-end">
           <Button
             filled={true}
             size="medium"

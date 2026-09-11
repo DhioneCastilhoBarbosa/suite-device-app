@@ -59,7 +59,7 @@ export default function LinnimDbRadar(props: LinnimDbRadarProps): JSX.Element {
         <Waves size={30} />
       </HeaderDevice>
 
-      <div className="mb-4 mt-4 flex w-full min-w-0 max-w-4xl flex-col justify-center rounded-lg bg-white pb-3 text-sm text-zinc-500 shadow-sm mr-4 ml-4 sm:mr-8 sm:ml-8">
+      <div className="mb-3 mt-2 flex w-full min-w-0 max-w-4xl flex-col justify-center rounded-lg bg-white pb-6 text-sm text-zinc-500 shadow-sm mr-4 ml-4 sm:mr-8 sm:ml-8">
         <header className="mx-4 mt-3 border-b border-sky-500 sm:mx-6">
           <div className="flex flex-wrap justify-start gap-1 sm:gap-2">
             {!isFirmwareOnly && (
@@ -105,7 +105,7 @@ export default function LinnimDbRadar(props: LinnimDbRadarProps): JSX.Element {
             <UpdateModubus />
           </div>
         ) : menuName === 'config' ? (
-          <div className="min-w-0 w-full overflow-x-hidden px-1 pb-4">
+          <div className="min-w-0 w-full overflow-x-hidden px-1 pb-8">
             <Settings />
             <Measure />
           </div>
