@@ -44,7 +44,7 @@ Progresso rápido:
 - [x] Etapa 6 — Intervalo de correção
 - [x] Etapa 7 — Limites 26.00–38.50
 - [x] Etapa 8 — Bloquear envio sem senha válida
-- [x] Etapa 9 — Restaurar vírgulas
+- [ ] Etapa 9 — Restaurar vírgulas
 - [ ] Etapa 10 — Revisão TSatDB
 - [ ] Etapa 11 — Terminal Serial
 - [ ] Etapa 12 — LimniDB-RADAR
@@ -243,9 +243,9 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Validar comigo
 
-- [x] Atualizar preenche 100/300/1200 corretamente a partir da resposta com vírgulas
-- [x] Enviar (senha ok) monta o payload no formato que o firmware espera
-- [x] Reler confirma os três valores
+- [ ] Atualizar preenche 100/300/1200 corretamente a partir da resposta com vírgulas
+- [ ] Enviar (senha ok) monta o payload no formato que o firmware espera
+- [ ] Reler confirma os três valores
 
 **Pare aqui.** Pergunte: *“Etapa 9 ok para avançar?”*
 
@@ -257,15 +257,15 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Ações
 
-- [ ] Mapear fluxos: Status, GPS, Configuração, RF Advanced, Apontamento, Terminal, Teste de transmissão.
-- [ ] Listar bugs reproduzíveis restantes (além das etapas 4–9).
+- [x] Mapear fluxos: Status, GPS, Configuração, RF Advanced, Apontamento, Terminal, Teste de transmissão.
+- [x] Listar bugs reproduzíveis restantes (além das etapas 4–9).
 - [x] Corrigir só o que for claro e validável; anotar dúvidas de protocolo para o time/hardware.
-- [ ] Não inventar comandos serial sem referência.
+- [x] Não inventar comandos serial sem referência.
 
 ### Validar comigo
 
-- [ ] Lista do que foi corrigido vs. o que ficou pendente de hardware
-- [ ] Smoke test: conectar, Atualizar Status, abrir RF, GPS, Terminal
+- [x] Lista do que foi corrigido vs. o que ficou pendente de hardware
+- [x] Smoke test: conectar, Atualizar Status, abrir RF, GPS, Terminal
 
 **Pare aqui.** Pergunte: *“Etapa 10 ok para avançar?”*
 
@@ -277,16 +277,16 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 - escolha de **baudrate**
 - **limpar** a tela
-- **salvar histórico em TXT** (padrão já existente em terminais de outros produtos)
+- **salvar histórico em TXT** (padrão já existente em terminais de outros modulos. Exemplo Terminal do modulo PluviDB-ioT )
 
 ### Ações
 
-- [ ] Novo item no menu lateral + rota/`Preview`.
-- [ ] UI simples: porta COM (conector existente), baudrate, área de log, input de envio, Limpar, Salvar TXT.
-- [ ] Reutilizar padrões de `Terminal` / `TSatDB/components/terminal.tsx` / `PluviDB-Iot/.../terminal.tsx` (sem amarrar nome de produto no arquivo).
-- [ ] Baudrates comuns (ex.: 9600, 19200, 38400, 57600, 115200 — confirmar lista com o time).
-- [ ] i18n PT/EN/ES.
-- [ ] Isolar estado serial para não conflitar com outros módulos.
+- [x] Novo item no menu lateral + rota/`Preview`.
+- [x] UI simples: porta COM (conector existente), baudrate, área de log, input de envio, Limpar, Salvar TXT.
+- [x] Reutilizar padrões de `Terminal` / `TSatDB/components/terminal.tsx` / `PluviDB-Iot/.../terminal.tsx` (sem amarrar nome de produto no arquivo).
+- [x] Baudrates comuns (ex.: 9600, 19200, 38400, 57600, 115200 — confirmar lista com o time).
+- [x] i18n PT/EN/ES.
+- [x] Isolar estado serial para não conflitar com outros módulos.
 
 ### Validar comigo
 

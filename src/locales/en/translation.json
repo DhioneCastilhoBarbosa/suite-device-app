@@ -507,5 +507,13 @@
   "Dados do relatório da PCD Pluviométrica - ": "PCD Pluviométrica report data - ",
   "Relatório de logs da PCD Pluviométrica-{{imei}}": "Log report for PCD Pluviométrica-{{imei}}",
   "PCD-Pluviometrica-{{imei}}.txt": "PCD-Pluviometrica-{{imei}}.txt",
-  "Firmware PCD Pluviométrica": "PCD Pluviométrica Firmware"
+  "Firmware PCD Pluviométrica": "PCD Pluviométrica Firmware",
+  "Terminal Serial": "Serial Terminal",
+  "Baudrate": "Baud rate",
+  "Dados gerado do Terminal Serial - ": "Data generated from Serial Terminal - ",
+  "O <b>Terminal Serial</b> é uma ferramenta genérica para comunicação serial RS-232/USB. Permite enviar e receber dados em texto, ajustar o baudrate, limpar a tela e salvar o histórico em arquivo TXT.": "The <b>Serial Terminal</b> is a generic tool for RS-232/USB serial communication. It lets you send and receive text data, set the baud rate, clear the screen and save the history to a TXT file.",
+  "<b>Comunicação serial simples (TX/RX);</b>": "Simple serial communication (TX/RX);",
+  "<b>Seleção de baudrate;</b>": "Baud rate selection;",
+  "<b>Limpar tela e salvar histórico em TXT.</b>": "Clear the screen and save history to TXT.",
+  "Testes em bancada, diagnóstico de equipamentos seriais e suporte técnico.": "Bench testing, serial equipment diagnostics and technical support."
 }

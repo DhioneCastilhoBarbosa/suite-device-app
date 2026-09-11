@@ -8,6 +8,11 @@ import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { ClosePortRS232, OpenPortRS232 } from '../Teclado-SDI12/Teclado'
 import { ClosePortTSatDB, OpenPortTSatDB } from '../TSatDB/TSatDB'
 import { ClosePortPluviIoT, OpenPortPluviIoT } from '../PluviDB-Iot/PluviDBIot'
+import {
+  ClosePortSerialTerminal,
+  OpenPortSerialTerminal,
+  getSerialTerminalBaud
+} from '../Terminal-Serial/TerminalSerial'
 import { toast } from 'react-toastify'
 import { SerialManager } from '../../utils/serialManager'
 import { t } from 'i18next'
@@ -65,6 +70,9 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
     } catch {}
     try {
       ClosePortPluviIoT()
+    } catch {}
+    try {
+      ClosePortSerialTerminal()
     } catch {}
     try {
       CloseModBus()
@@ -176,6 +184,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
         try {
           if (device.name === 'terminal') {
             await Openport({ portName: valorSelecionado, bauld: 1200 })
+            SetPortOpen({ state: true })
+            registerSilentDisconnect()
+          } else if (device.name === 'terminal-serial') {
+            await OpenPortSerialTerminal({
+              portName: valorSelecionado,
+              bauld: getSerialTerminalBaud()
+            })
             SetPortOpen({ state: true })
             registerSilentDisconnect()
           } else if (device.name === 'teclado-sdi12') {

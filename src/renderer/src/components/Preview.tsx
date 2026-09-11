@@ -2,6 +2,7 @@ import LinnimDbBorbulha from './LinnimDB-Borbulha/LinnimDbBorbulha'
 import LinnimDbCap from './LinnimDB-Cap/LinnimDbCap'
 import TecladoSDI12 from './Teclado-SDI12/Teclado'
 import { Terminal } from './Terminal/Terminal'
+import TerminalSerial from './Terminal-Serial/TerminalSerial'
 import { Device } from '../Context/DeviceContext'
 import TSatDB from './TSatDB/TSatDB'
 import PluviDBIot from './PluviDB-Iot/PluviDBIot'
@@ -13,6 +14,9 @@ export default function Preview(): JSX.Element | undefined {
 
   if (device.name === 'terminal') {
     return <Terminal isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
+  }
+  if (device.name === 'terminal-serial') {
+    return <TerminalSerial isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
   }
 
   if (device.name === 'linnimDB-Borbulha') {

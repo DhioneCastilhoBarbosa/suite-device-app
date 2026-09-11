@@ -659,6 +659,34 @@ receiveReportPluvi(): Promise<string> {
     return this.port && this.isOpen ? this.port : null
   }
 
+  writeRaw(data: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.port || !this.isOpen) {
+        return reject(new Error('Porta serial não está aberta.'))
+      }
+      this.port.write(data, (err?: Error) => {
+        if (err) return reject(err)
+        this.port!.drain((drainErr?: Error) => {
+          if (drainErr) return reject(drainErr)
+          resolve()
+        })
+      })
+    })
+  }
+
+  subscribeRawData(listener: (chunk: string) => void): () => void {
+    if (!this.port) return () => {}
+    const onData = (buf: Buffer) => {
+      listener(buf.toString())
+    }
+    this.port.on('data', onData)
+    return () => {
+      try {
+        this.port?.removeListener('data', onData)
+      } catch {}
+    }
+  }
+
   isPortOpen(): boolean {
     return this.isOpen && this.port !== null
   }

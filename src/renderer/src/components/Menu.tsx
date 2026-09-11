@@ -52,6 +52,20 @@ export default function Menu() {
               <button
                 className={twMerge(
                   'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
+                  device.name === 'terminal-serial'
+                    ? 'bg-white text-[#1E9EF4]'
+                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
+                )}
+                onClick={() => newDevice('terminal-serial')}
+                disabled={PortOpen.state}
+              >
+                Terminal Serial
+              </button>
+            </li>
+            <li>
+              <button
+                className={twMerge(
+                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
                   device.name === 'linnimDB-Borbulha'
                     ? 'bg-white text-[#1E9EF4]'
                     : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
