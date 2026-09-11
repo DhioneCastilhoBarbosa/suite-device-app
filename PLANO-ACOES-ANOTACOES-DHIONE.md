@@ -33,7 +33,6 @@ Legenda: `[ ]` pendente · `[x]` feito e validado
 | 10 | Revisão geral TSatDB (módulo “meio bugado”) | Investigação | Anotação 11 |
 | 11 | Novo bloco: Terminal Serial | Feature | Bloco novo 01 |
 | 12 | Novo bloco: LimniDB-RADAR (clone LimniDB-CAP) | Feature | Bloco novo 02 |
-| 13 | Servidor de atualização no domínio Dualbase | Infra / docs | Anotação 12 |
 
 Progresso rápido:
 
@@ -49,7 +48,6 @@ Progresso rápido:
 - [ ] Etapa 10 — Revisão TSatDB
 - [ ] Etapa 11 — Terminal Serial
 - [ ] Etapa 12 — LimniDB-RADAR
-- [ ] Etapa 13 — Servidor de update (orientação)
 
 ---
 
@@ -324,39 +322,13 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 **Dúvida em aberto:** lista exata dos registradores Modbus extras do RADAR — bloquear envio de valores inventados até receber o mapa.
 
-**Pare aqui.** Pergunte: *“Etapa 12 ok para avançar?”*
-
----
-
-## Etapa 13 — Como preparar o servidor de atualização no domínio
-
-**Objetivo:** responder a pergunta da anotação com um passo a passo prático (pode ser só documentação neste repo). **Não misturar com features de UI.**
-
-### Contexto atual
-
-- `electron-builder.yml` publica via **GitHub Releases** (`provider: github`).
-- `dev-app-update.yml` aponta exemplo `https://example.com/auto-updates` (generic).
-- O app usa `electron-updater` em `src/main/index.ts`.
-
-### Ações (orientação)
-
-- [ ] Decidir provider de produção: continuar **GitHub** ou migrar para **generic** no domínio Dualbase (ex.: `https://update.dualbase.com.br/...` ou path no site).
-- [ ] Se generic: hospedar `latest.yml` + instaladores NSIS no HTTPS do domínio; CORS/cache adequados; URL no `publish` / `app-update.yml`.
-- [ ] Garantir HTTPS válido e que o `autoUpdater` aponte para a mesma base em builds de release.
-- [ ] Documentar no próprio final desta etapa (checklist de DNS, pasta, upload pós-`electron-builder`, teste com build assinado/não assinado conforme política atual).
-- [ ] Não alterar produção sem confirmação do time.
-
-### Validar comigo
-
-- [ ] Documento/checklist revisado pelo time
-- [ ] (Opcional) build de teste encontra update na URL do domínio
-
-**Pare aqui.** Última etapa deste plano.
+**Pare aqui.** Esta é a última etapa do plano. Confirme: *“Etapa 12 ok — plano concluído?”*
 
 ---
 
 ## Fora de escopo
 
+- Servidor de atualização / auto-update no domínio Dualbase (removido deste plano a pedido).
 - Redesign geral da sidebar.
 - Alterar firmware dos equipamentos.
 - O plano antigo `PLANO-ACOES-26AGO2026.md` (toast i18n, HTTP PluviDB, PCD, etc.) — **não misturar** nesta execução, salvo pedido explícito.
@@ -366,7 +338,6 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 1. **Etapa 3 — PluviDB no TXT:** só no export de um módulo específico ou varredura ampla?
 2. **Etapa 11 — baudrates:** lista oficial desejada?
 3. **Etapa 12 — registradores Modbus** do LimniDB-RADAR.
-4. **Etapa 13 — URL final** do servidor de update no domínio.
 
 ---
 
@@ -378,15 +349,16 @@ Copie e cole o bloco abaixo no chat do agente (Cursor) quando for implementar. E
 Você vai EXECUTAR o plano em PLANO-ACOES-ANOTACOES-DHIONE.md (origem: anotações Dhione).
 
 REGRAS OBRIGATÓRIAS:
-1. Implemente STRICTAMENTE uma etapa por vez, na ordem 1 → 13.
+1. Implemente STRICTAMENTE uma etapa por vez, na ordem 1 → 12.
 2. Ao concluir cada etapa: mostre o que mudou, como testar, e PERGUNTE explicitamente:
    “Etapa N concluída. Está tudo ok para eu avançar para a etapa N+1?”
 3. NÃO comece a próxima etapa até eu responder que está ok (sim / pode / ok / avance).
 4. Se eu pedir ajuste na etapa atual, corrija só ela e pergunte de novo.
 5. Não misture o plano antigo PLANO-ACOES-26AGO2026.md, a menos que eu peça.
-6. Não invente endereços Modbus, comandos serial ou URL de update — se faltar dado, pare e pergunte.
-7. Commit/push por etapa (ou por grupo só se eu autorizar).
-8. Antes de codar a Etapa 1, confirme que leu o arquivo do plano e liste só o objetivo da Etapa 1.
+6. Não invente endereços Modbus ou comandos serial — se faltar dado, pare e pergunte.
+7. Não inclua servidor de update / auto-update (fora de escopo).
+8. Commit/push por etapa (ou por grupo só se eu autorizar).
+9. Antes de codar a Etapa 1, confirme que leu o arquivo do plano e liste só o objetivo da Etapa 1.
 
 Comece agora pela Etapa 1 (Copyright 2026). Ao terminar, pare e pergunte se está ok.
 ```
