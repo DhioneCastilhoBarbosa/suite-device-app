@@ -502,5 +502,9 @@
   "Deseja prosseguir com a atualização?": "Do you want to proceed with the update?",
   "O dispositivo foi desconectado ou demorou para responder!": "The device was disconnected or took too long to respond!",
   "Por favor, verifique suas conexões e tente novamente.": "Please check your connections and try again.",
-  "Selecionar idioma": "Select language"
+  "Selecionar idioma": "Select language",
+  "Dados gerado da PCD Pluviométrica - ": "Data generated from PCD Pluviométrica - ",
+  "Dados do relatório da PCD Pluviométrica - ": "PCD Pluviométrica report data - ",
+  "Relatório de logs da PCD Pluviométrica-{{imei}}": "Log report for PCD Pluviométrica-{{imei}}",
+  "PCD-Pluviometrica-{{imei}}.txt": "PCD-Pluviometrica-{{imei}}.txt"
 }

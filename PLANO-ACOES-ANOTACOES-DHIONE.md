@@ -37,7 +37,7 @@ Legenda: `[ ]` pendente · `[x]` feito e validado
 Progresso rápido:
 
 - [x] Etapa 1 — Copyright 2026
-- [ ] Etapa 2 — Banner Saiba mais
+- [x] Etapa 2 — Banner Saiba mais
 - [ ] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
 - [ ] Etapa 4 — GOES-19
 - [ ] Etapa 5 — Nível de potência
@@ -93,10 +93,10 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] PT: banner mostra **Saiba mais**
-- [ ] ES: **Más información**
-- [ ] EN: **Learn more**
-- [ ] Clique ainda abre a página do produto
+- [x] PT: banner mostra **Saiba mais**
+- [x] ES: **Más información**
+- [x] EN: **Learn more**
+- [x] Clique ainda abre a página do produto
 
 **Pare aqui.** Pergunte: *“Etapa 2 ok para avançar?”*
 
@@ -108,10 +108,10 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Localizar quem gera o TXT com esses marcadores (provável: terminais / relatório / config save — `saveAs`, headers de arquivo).
-- [ ] Remover prefixo/sufixo `begin--` e `–end` do conteúdo exportado.
-- [ ] Remover a palavra `PluviDB` do trecho indicado (confirmar no print: nome do arquivo, primeira linha, ou corpo).
-- [ ] Não renomear o módulo PluviDB-IoT inteiro nesta etapa — só o que o TXT/export estiver vazando indevidamente, salvo confirmação de escopo maior.
+- [x] Localizar quem gera o TXT com esses marcadores (provável: terminais / relatório / config save — `saveAs`, headers de arquivo).
+- [x] Remover prefixo/sufixo `begin--` e `–end` do conteúdo exportado.
+- [x] Remover a palavra `PluviDB` do trecho indicado (confirmar no print: nome do arquivo, primeira linha, ou corpo).
+- [x] Não renomear o módulo PluviDB-IoT inteiro nesta etapa — só o que o TXT/export estiver vazando indevidamente, salvo confirmação de escopo maior.
 
 ### Validar comigo
 
