@@ -138,13 +138,22 @@ export default function TSatDB(props: TSatDBProps) {
     setDeviceFound(null)
   }
 
-  async function handleComandSend(comand: string): Promise<string> {
+  async function handleComandSend(
+    comand: string,
+    options?: { optionalReply?: boolean }
+  ): Promise<string> {
     serialManagerTsatDB.sendCommandTSatDB(comand)
 
-    const timeoutPromise = new Promise<string>((_, reject) =>
+    const timeoutMs = options?.optionalReply ? 2000 : 20000
+
+    const timeoutPromise = new Promise<string>((resolve, reject) =>
       setTimeout(() => {
+        if (options?.optionalReply) {
+          resolve('')
+          return
+        }
         reject(new Error(t('Tempo limite excedido (20s) para resposta do comando')))
-      }, 20000)
+      }, timeoutMs)
     )
 
     try {
@@ -155,7 +164,6 @@ export default function TSatDB(props: TSatDBProps) {
     } catch (error) {
       //console.error(`Erro ao receber resposta do comando ${comand}:`, error)
       setIsLoading(false)
-      setDeviceFound(false)
       throw error
     }
   }
@@ -184,22 +192,26 @@ export default function TSatDB(props: TSatDBProps) {
       setIsLoading(true)
       setDataReceivedComandPowerTx('')
 
-      handleComandSend('techmode alpha').then(() => {
-        setTimeout(() => {
-          handleComandSend('PWRLVL').then((response) => {
-            setDataReceivedComandPowerTx(response)
-            setTimeout(() => {
-              handleComandSend('usermode').then(() => {
+      handleComandSend('techmode alpha')
+        .then(() => {
+          setTimeout(() => {
+            handleComandSend('PWRLVL')
+              .then((response) => {
+                setDataReceivedComandPowerTx(response)
                 setTimeout(() => {
-                  handleComandSend('save').then(() => {
-                    setIsLoading(false)
+                  handleComandSend('usermode', { optionalReply: true }).finally(() => {
+                    setTimeout(() => {
+                      handleComandSend('save', { optionalReply: true }).finally(() => {
+                        setIsLoading(false)
+                      })
+                    }, 1000)
                   })
                 }, 1000)
               })
-            }, 1000)
-          })
-        }, 1000)
-      })
+              .catch(() => setIsLoading(false))
+          }, 1000)
+        })
+        .catch(() => setIsLoading(false))
     }
   }
 
@@ -422,9 +434,9 @@ export default function TSatDB(props: TSatDBProps) {
           handleComandSend('pwrlvl=' + settings[0] + ',' + settings[1] + ',' + settings[2]).then(
             () => {
               setTimeout(() => {
-                handleComandSend('usermode').then(() => {
+                handleComandSend('usermode', { optionalReply: true }).finally(() => {
                   setTimeout(() => {
-                    handleComandSend('save').then(() => {
+                    handleComandSend('save', { optionalReply: true }).finally(() => {
                       setIsLoading(false)
                     })
                   }, time)

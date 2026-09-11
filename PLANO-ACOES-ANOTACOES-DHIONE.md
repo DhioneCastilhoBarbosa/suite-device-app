@@ -44,7 +44,7 @@ Progresso rápido:
 - [x] Etapa 6 — Intervalo de correção
 - [x] Etapa 7 — Limites 26.00–38.50
 - [x] Etapa 8 — Bloquear envio sem senha válida
-- [ ] Etapa 9 — Restaurar vírgulas
+- [x] Etapa 9 — Restaurar vírgulas
 - [ ] Etapa 10 — Revisão TSatDB
 - [ ] Etapa 11 — Terminal Serial
 - [ ] Etapa 12 — LimniDB-RADAR
@@ -243,9 +243,9 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 ### Validar comigo
 
-- [ ] Atualizar preenche 100/300/1200 corretamente a partir da resposta com vírgulas
-- [ ] Enviar (senha ok) monta o payload no formato que o firmware espera
-- [ ] Reler confirma os três valores
+- [x] Atualizar preenche 100/300/1200 corretamente a partir da resposta com vírgulas
+- [x] Enviar (senha ok) monta o payload no formato que o firmware espera
+- [x] Reler confirma os três valores
 
 **Pare aqui.** Pergunte: *“Etapa 9 ok para avançar?”*
 
@@ -259,7 +259,7 @@ Em `RFAdvanced.tsx`, `handleSendSetting` chama `validate()` (setState assíncron
 
 - [ ] Mapear fluxos: Status, GPS, Configuração, RF Advanced, Apontamento, Terminal, Teste de transmissão.
 - [ ] Listar bugs reproduzíveis restantes (além das etapas 4–9).
-- [ ] Corrigir só o que for claro e validável; anotar dúvidas de protocolo para o time/hardware.
+- [x] Corrigir só o que for claro e validável; anotar dúvidas de protocolo para o time/hardware.
 - [ ] Não inventar comandos serial sem referência.
 
 ### Validar comigo
