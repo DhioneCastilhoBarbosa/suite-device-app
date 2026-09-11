@@ -106,7 +106,7 @@ export default function Gps({
         </div>
 
         <div className="flex flex-col w-40 ">
-          <label className="text-md mb-1">{t('Definir o intervalo de correção')}</label>
+          <label className="text-md mb-1">{t('Intervalo de correção')}</label>
           <input
             className="border border-sky-500 rounded-md p-2 text-center h-7"
             type="text"

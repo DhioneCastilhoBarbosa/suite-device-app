@@ -40,7 +40,7 @@ Progresso rápido:
 - [x] Etapa 2 — Banner Saiba mais
 - [x] Etapa 3 — Limpeza TXT (begin/end + PluviDB)
 - [x] Etapa 4 — GOES-19
-- [ ] Etapa 5 — Nível de potência
+- [x] Etapa 5 — Nível de potência
 - [ ] Etapa 6 — Intervalo de correção
 - [ ] Etapa 7 — Limites 26.00–38.50
 - [ ] Etapa 8 — Bloquear envio sem senha válida
@@ -157,8 +157,8 @@ Progresso rápido:
 
 ### Validar comigo
 
-- [ ] PT com acentos corretos
-- [ ] EN/ES sem regressão
+- [x] PT com acentos corretos
+- [x] EN/ES sem regressão
 
 **Pare aqui.** Pergunte: *“Etapa 5 ok para avançar?”*
 
@@ -170,8 +170,8 @@ Progresso rápido:
 
 ### Ações
 
-- [ ] Atualizar chave/uso em `src/renderer/src/components/TSatDB/components/gps.tsx`
-- [ ] Atualizar locales EN/ES (`Set correction interval` → `Correction interval`, etc.)
+- [x] Atualizar chave/uso em `src/renderer/src/components/TSatDB/components/gps.tsx`
+- [x] Atualizar locales EN/ES (`Set correction interval` → `Correction interval`, etc.)
 
 ### Validar comigo
 
