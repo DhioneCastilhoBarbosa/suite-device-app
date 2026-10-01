@@ -4,6 +4,7 @@ import LoadingData from '@renderer/components/loading/loadingData'
 import NoDeviceFoundModbus from '@renderer/components/modal/noDeviceFoundModbus'
 import { useEffect, useState } from 'react'
 import { t } from 'i18next'
+import { Hash, Monitor, Timer } from '@phosphor-icons/react'
 
 type Props = {
   informations: string | undefined
@@ -93,46 +94,73 @@ export default function Settings({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center ">
-      <div className="grid grid-cols-3 gap-2 h-full mt-4">
-        <div className="flex flex-col w-52">
-          <label>{t('Endereço SDI-12')}</label>
-          <input
-            type="text"
-            className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
-            min={0}
-            maxLength={1}
-            value={inputValueSDI12}
-            onChange={handleChangeSDI12}
-            inputMode="text"
-          />
+    <div className="flex w-full min-w-0 flex-col items-center justify-center px-8">
+      <div className="mt-4 grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="flex items-start gap-3 rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white px-3.5 py-3 shadow-sm">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sky-500/10 text-sky-600">
+            <Hash size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+              {t('Endereço SDI-12')}
+            </p>
+            <input
+              type="text"
+              className="mt-1.5 h-9 w-full rounded-md border border-sky-200 bg-white px-3 text-center text-sm font-semibold text-sky-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+              min={0}
+              maxLength={1}
+              value={inputValueSDI12}
+              onChange={handleChangeSDI12}
+              inputMode="text"
+            />
+          </div>
         </div>
 
-        <div className="flex flex-col w-52">
-          <label>{t('Tempo de Display')}</label>
-          <select
-            className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
-            value={inputValueDisplay}
-            onChange={(event) => handleChangeDisplay(event)}
-          >
-            <option value={30}>30</option>
-            <option value={60}>60</option>
-            <option value={120}>120</option>
-            <option value={300}>300</option>
-            <option value={600}>600</option>
-          </select>
+        <div className="flex items-start gap-3 rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white px-3.5 py-3 shadow-sm">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sky-500/10 text-sky-600">
+            <Monitor size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+              {t('Tempo de Display')}
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <select
+                className="h-9 min-w-0 flex-1 rounded-md border border-sky-200 bg-white px-3 text-center text-sm font-semibold text-sky-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                value={inputValueDisplay}
+                onChange={(event) => handleChangeDisplay(event)}
+              >
+                <option value={30}>30</option>
+                <option value={60}>60</option>
+                <option value={120}>120</option>
+                <option value={300}>300</option>
+                <option value={600}>600</option>
+              </select>
+              <span className="shrink-0 text-xs font-medium text-zinc-500">s</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col w-52">
-          <label>{t('Tempo de Dados (min)')}</label>
-          <input
-            type="number"
-            className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
-            min={1}
-            value={inputValueData}
-            onChange={handleChangeData}
-            inputMode="numeric"
-          />
+        <div className="flex items-start gap-3 rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white px-3.5 py-3 shadow-sm">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sky-500/10 text-sky-600">
+            <Timer size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+              {t('Tempo de Dados (min)')}
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <input
+                type="number"
+                className="h-9 min-w-0 flex-1 rounded-md border border-sky-200 bg-white px-3 text-center text-sm font-semibold text-sky-700 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+                min={1}
+                value={inputValueData}
+                onChange={handleChangeData}
+                inputMode="numeric"
+              />
+              <span className="shrink-0 text-xs font-medium text-zinc-500">min</span>
+            </div>
+          </div>
         </div>
       </div>
 

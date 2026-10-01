@@ -162,7 +162,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
           {t('Apontamento da antena')}
         </label>
       </div>
-      <div className="flex flex-col w-full gap-2 border-[1px] border-sky-500 pt-8 items-start rounded-b-md">
+      <div className="flex w-full flex-col items-start gap-2 rounded-b-md border border-sky-500 pt-3">
         <div className="flex flex-row  items-center justify-end w-full">
           <div className="flex flex-row  items-center gap-2 mr-6 border-[1px] border-sky-500 rounded-md p-1">
             <img src={satellite} alt="satellite" />
@@ -218,7 +218,7 @@ export function AntenaPointing({ handlePositiom, receiverGPS, receiverPOS }: Pro
             </div>
           </div>
         </div>
-        <div className="flex flex-row w-full justify-end gap-4 pr-2">
+        <div className="flex w-full flex-row justify-end gap-4 pb-5 pr-2 pt-1">
           <Button
             filled={false}
             size={'medium'}

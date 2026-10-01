@@ -29,23 +29,20 @@ export default function UpdateModubus() {
   }
 
   const synced = () => {
-    //console.log("Sincronizado com o sensor concluida")
     setStatus(
       (status) =>
-        status + t('Sincronizado com o sensor concluida!\nAtualização em andamento aguarde... \n')
+        status + t('Sincronização com o sensor concluída!\nAtualização em andamento, aguarde... \n')
     )
   }
 
   const fail = () => {
-    //console.log('Erro durante a atualização')
     setStatus((status) => status + t('Erro durante a atualização. \n'))
     setShowModalFail(true)
     SerialManager.setIdle()
   }
 
   const finished = () => {
-    setStatus((status) => status + t('Atualização concluida com sucesso! \n'))
-    //SetPortOpen({state:false})
+    setStatus((status) => status + t('Atualização concluída com sucesso! \n'))
     setShowModalSucess(true)
     SerialManager.setIdle()
   }
@@ -85,39 +82,48 @@ export default function UpdateModubus() {
   }
 
   useEffect(() => {
-    //console.log(baudRateSelect)
+    // baudRateSelect
   }, [baudRateSelect])
 
   return (
-    <div className="flex flex-col items-center  w-full h-96 ">
-      <div className="flex flex-col w-2/3 mt-8">
-        <label>{t('Status')}</label>
+    <div className="mx-auto flex w-full max-w-2xl flex-col px-4 py-6 sm:px-6">
+      <div className="rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white p-4 shadow-sm">
+        <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+          {t('Status')}
+        </label>
         <textarea
-          className=" h-36 leading-relaxed border border-[2px] border-zinc-200 resize-none whitespace-pre-wrap outline-none text-black text-sm rounded-md pl-4 pt-4"
+          className="mt-2 h-36 w-full resize-none whitespace-pre-wrap rounded-md border border-sky-200 bg-white px-3 py-2 text-sm leading-relaxed text-zinc-700 outline-none focus:border-sky-400"
           value={status}
           readOnly
         />
-        <label className="mt-4">{t('BaudRate')}</label>
-        <select
-          onChange={handleBaudSelect}
-          value={baudRateSelect}
-          className="w-40 h-6 rounded-md border border-zinc-400"
-        >
-          <option value="115200">115200</option>
-          <option value="57600">57600</option>
-          <option value="9600">9600</option>
-        </select>
+
+        <div className="mt-4 flex w-fit flex-col gap-1.5">
+          <label className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+            {t('Baud rate')}
+          </label>
+          <select
+            onChange={handleBaudSelect}
+            value={baudRateSelect}
+            className="h-9 w-auto min-w-[5.5rem] rounded-md border border-sky-200 bg-white px-2 text-sm text-sky-700 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
+          >
+            <option value="115200">115200</option>
+            <option value="57600">57600</option>
+            <option value="9600">9600</option>
+          </select>
+        </div>
       </div>
-      <div className="flex flex-row gap-8 mt-10">
-        <Button size={'large'} onClick={handleSelectFile}>
-          <FolderOpen size={24} />
+
+      <div className="mt-6 flex flex-row flex-wrap justify-end gap-3">
+        <Button size="large" onClick={handleSelectFile}>
+          <FolderOpen size={22} />
           {t('Selecionar arquivo')}
         </Button>
-        <Button size={'large'} onClick={openModal} disabled={enable}>
-          <ArrowsClockwise size={24} />
+        <Button size="large" onClick={openModal} disabled={enable}>
+          <ArrowsClockwise size={22} />
           {t('Atualizar')}
         </Button>
       </div>
+
       <ModalUpdate show={showModal} onUpdate={handleUpdate} onClose={handleClose} />
       <ModalSucess show={showModalSucess} onClose={handleCloseModal} />
       <ModalFailUpdate show={showModalFail} onClose={handleCloseModal} />

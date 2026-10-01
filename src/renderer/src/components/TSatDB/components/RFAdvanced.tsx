@@ -146,11 +146,11 @@ export function RFAdvanced({
         {t('Nível de potência RF')}
       </label>
       <div className="border-[1px] border-sky-500 rounded-b-md ">
-        <div className="flex gap-4 p-4 mt-10">
-          <div className=" flex flex-row justify-center items-center border border-sky-500 w-auto p-4 rounded-md gap-2  bg-sky-500 ">
+        <div className="grid grid-cols-3 gap-2 p-3 mt-10">
+          <div className=" flex flex-row justify-center items-center border border-sky-500 min-w-0 p-2 rounded-md gap-2  bg-sky-500 ">
             <input
               id="TX100BPS"
-              className="border border-sky-500 rounded-md p-2 text-center h-7 w-36"
+              className="border border-sky-500 rounded-md px-1 text-center text-sm h-7 w-full min-w-0 max-w-[5rem]"
               type="number"
               step="0.01"
               value={TX100BPS}
@@ -159,17 +159,23 @@ export function RFAdvanced({
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
-            <label className="font-semibold w-36 text-white"> 100bps</label>
-            <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
-              <label className="font-normal text-white">{t('Max')}: 38.50</label>
+            <label className="font-semibold text-sm text-white shrink-0 whitespace-nowrap">
+              100 bps
+            </label>
+            <div className="flex flex-col shrink-0 leading-tight">
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Min')}: 26.00
+              </label>
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Max')}: 38.50
+              </label>
             </div>
           </div>
 
-          <div className=" flex flex-row justify-center items-center border border-sky-500 w-auto p-4 rounded-md gap-2  bg-sky-500">
+          <div className=" flex flex-row justify-center items-center border border-sky-500 min-w-0 p-2 rounded-md gap-2  bg-sky-500">
             <input
               id="TX300BPS"
-              className="border border-sky-500 rounded-md p-2 text-center h-7 w-36"
+              className="border border-sky-500 rounded-md px-1 text-center text-sm h-7 w-full min-w-0 max-w-[5rem]"
               type="number"
               step="0.01"
               min={RF_POWER_MIN}
@@ -178,17 +184,23 @@ export function RFAdvanced({
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
-            <label className="font-semibold w-36 text-white"> 300 bps</label>
-            <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
-              <label className="font-normal text-white">{t('Max')}: 38.50</label>
+            <label className="font-semibold text-sm text-white shrink-0 whitespace-nowrap">
+              300 bps
+            </label>
+            <div className="flex flex-col shrink-0 leading-tight">
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Min')}: 26.00
+              </label>
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Max')}: 38.50
+              </label>
             </div>
           </div>
 
-          <div className=" flex flex-row justify-center items-center border border-sky-500 w-auto p-4 rounded-md gap-2  bg-sky-500">
+          <div className=" flex flex-row justify-center items-center border border-sky-500 min-w-0 p-2 rounded-md gap-2  bg-sky-500">
             <input
               id="TX1200BPS"
-              className="border border-sky-500 rounded-md p-2 text-center h-7 w-36"
+              className="border border-sky-500 rounded-md px-1 text-center text-sm h-7 w-full min-w-0 max-w-[5rem]"
               type="number"
               step="0.01"
               min={RF_POWER_MIN}
@@ -197,31 +209,45 @@ export function RFAdvanced({
               onChange={(e) => handleInputChange(e.target.id, e.target.value)}
               onBlur={(e) => handleBlur(e.target.id, e.target.value)}
             />
-            <label className="font-semibold w-36 text-white"> 1200 bps</label>
-            <div className="flex flex-col w-full ">
-              <label className="font-normal text-white"> {t('Min')}: 26.00</label>
-              <label className="font-normal text-white">{t('Max')}: 38.50</label>
+            <label className="font-semibold text-sm text-white shrink-0 whitespace-nowrap">
+              1200 bps
+            </label>
+            <div className="flex flex-col shrink-0 leading-tight">
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Min')}: 26.00
+              </label>
+              <label className="font-normal text-xs text-white whitespace-nowrap">
+                {t('Max')}: 38.50
+              </label>
             </div>
           </div>
         </div>
         <div className="flex justify-between items-center gap-4 mr-4 ml-4 mb-10 ">
           <div className="flex flex-col gap-2">
             <label className="text-gray-700 font-semibold text-sm">{t('Senha')}:</label>
-            <div className=" flex flex-row border border-sky-500 rounded-md ">
+            <div
+              className={`flex flex-row items-center h-9 w-56 overflow-hidden rounded-md border bg-white ${
+                isPasswordInvalid
+                  ? 'border-red-400 focus-within:border-red-500'
+                  : 'border-sky-500 focus-within:ring-1 focus-within:ring-sky-500'
+              }`}
+            >
               <input
                 id="Password"
-                className="p-2 text-center h-7 w-48 outline-none"
+                className="h-full min-w-0 flex-1 bg-transparent px-2 text-center outline-none"
                 type={showPassword ? 'text' : 'password'}
                 value={Password}
                 onChange={(e) => handleInputChange(e.target.id, e.target.value)}
                 placeholder={t('Digite a senha')}
               />
-              <span
-                className="flex items-center cursor-pointer mr-2"
+              <button
+                type="button"
+                className="flex shrink-0 items-center justify-center px-2 text-gray-600 hover:text-sky-600"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? t('Ocultar senha') : t('Mostrar senha')}
               >
-                {showPassword ? <Eye size={24} /> : <EyeClosed size={24} />}
-              </span>
+                {showPassword ? <Eye size={20} /> : <EyeClosed size={20} />}
+              </button>
             </div>
             {isPasswordInvalid ? (
               <span className=" text-red-500 ">{t('Senha inválida')}</span>

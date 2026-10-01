@@ -1,16 +1,39 @@
 import { twMerge } from 'tailwind-merge'
 import Conector from './conector/Conector'
 import { Device } from '../Context/DeviceContext'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { t } from 'i18next'
-import Footer from './Footer'
+import { cancelConnection, setPortOwner } from '../utils/modbusRTU'
+
+const DEVICES = [
+  { key: 'linnimDB-Borbulha', label: 'LimniDB-BORBULHA', match: (name: string) => name === 'linnimDB-Borbulha' },
+  { key: 'linnimDB-cap', label: 'LimniDB-CAP', match: (name: string) => name === 'linnimDB-cap' },
+  { key: 'linnimDB-radar', label: 'LimniDB-RADAR', match: (name: string) => name === 'linnimDB-radar' },
+  {
+    key: 'PluviDB-Iot',
+    label: 'PluviDB-IoT',
+    match: (name: string) => name === 'PluviDB-Iot' || name === 'PluviDB-Iot-Remote'
+  },
+  {
+    key: 'PCD-Pluviometrica',
+    label: 'PCD Pluviométrica',
+    match: (name: string) => name === 'PCD-Pluviometrica' || name === 'PCD-Pluviometrica-Remote'
+  },
+  { key: 'teclado-sdi12', label: 'Teclado SDI-12', match: (name: string) => name === 'teclado-sdi12' },
+  { key: 'terminal', label: 'Terminal SDI-12', match: (name: string) => name === 'terminal' },
+  { key: 'terminal-serial', label: 'Terminal Serial', match: (name: string) => name === 'terminal-serial' },
+  { key: 'TSatDB', label: 'TSatDB', match: (name: string) => name === 'TSatDB' }
+] as const
 
 export default function Menu() {
   const { device, setDevice, setPort, PortOpen, SetPortOpen }: any = Device()
 
-  function newDevice(device) {
-    // console.log(device)
-    setDevice({ name: device })
+  function newDevice(next: string) {
+    if (next === device.name) return
+    setPortOwner(null)
+    void cancelConnection()
+    SetPortOpen({ state: false })
+    setDevice({ name: next })
   }
 
   function ChangeStatus(status) {
@@ -26,131 +49,37 @@ export default function Menu() {
   }, [PortOpen.state])
 
   return (
-    <div className="flex max-h-screen flex-col justify-between bg-[#1769A0] w-52 rounded-lg mt-16 ">
-      <div>
-        <div className="flex items-center justify-center border-b-[2px] border-sky-500 pt-1 pb-3">
-          <span className="text-white text-sm font-bold">{t('Dispositivos')}</span>
-        </div>
-
-        <div className="flex items-center justify-center pt-4 text-white font-bold">
-          <ul className="  w-full ml-1 mr-3">
-            <li className="">
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'terminal'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('terminal')}
-                disabled={PortOpen.state}
-              >
-                Terminal-SDI12
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'terminal-serial'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('terminal-serial')}
-                disabled={PortOpen.state}
-              >
-                Terminal Serial
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'linnimDB-Borbulha'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('linnimDB-Borbulha')}
-                disabled={PortOpen.state}
-              >
-                LimniDB-Borbulha
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'linnimDB-cap'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('linnimDB-cap')}
-                disabled={PortOpen.state}
-              >
-                LimniDB-CAP
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'linnimDB-radar'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('linnimDB-radar')}
-                disabled={PortOpen.state}
-              >
-                LimniDB-RADAR
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'teclado-sdi12'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('teclado-sdi12')}
-                disabled={PortOpen.state}
-              >
-                Teclado-SDI12
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'TSatDB'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('TSatDB')}
-                disabled={PortOpen.state}
-              >
-                TSatDB
-              </button>
-            </li>
-            <li>
-              <button
-                className={twMerge(
-                  'w-full h-8 flex items-center justify-start pl-4 rounded-b-lg rounded-tr-lg mb-2',
-                  device.name === 'PluviDB-Iot' || device.name === 'PluviDB-Iot-Remote'
-                    ? 'bg-white text-[#1E9EF4]'
-                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
-                )}
-                onClick={() => newDevice('PluviDB-Iot')}
-                disabled={PortOpen.state}
-              >
-                PluviDB-IoT
-              </button>
-            </li>
-          </ul>
-        </div>
+    <div className="flex h-full min-h-0 w-52 shrink-0 flex-col rounded-lg bg-[#1769A0]">
+      <div className="flex shrink-0 items-center justify-center border-b-[2px] border-sky-500 pb-3 pt-1">
+        <span className="text-sm font-bold text-white">{t('Dispositivos')}</span>
       </div>
 
-      <div>
+      <div className="sidebar-device-list min-h-0 flex-1 overflow-y-auto pl-1 pr-3 pt-4 font-bold text-white">
+        <ul>
+          {DEVICES.map((item) => (
+            <li
+              key={item.key}
+              className={PortOpen.state ? 'cursor-not-allowed' : undefined}
+            >
+              <button
+                className={twMerge(
+                  'mb-2 flex h-8 w-full items-center justify-start rounded-b-lg rounded-tr-lg pl-4 text-left text-sm',
+                  PortOpen.state ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer',
+                  item.match(device.name)
+                    ? 'bg-white text-[#1E9EF4]'
+                    : `bg-[#1E9EF4] ${!PortOpen.state ? 'hover:bg-sky-400 hover:text-white' : ''}`
+                )}
+                onClick={() => newDevice(item.key)}
+                disabled={PortOpen.state}
+              >
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="shrink-0">
         <Conector
           portDevice={ConnectToDevice}
           isOnline={PortOpen.state}

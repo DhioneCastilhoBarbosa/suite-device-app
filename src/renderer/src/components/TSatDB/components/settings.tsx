@@ -1,8 +1,84 @@
+import { CaretDown, CaretUp } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import ButtonSet from './buttonSet'
 import { saveAs } from 'file-saver'
 import { selectFile } from '@renderer/utils/fileUtils'
 import { t } from 'i18next'
+
+function clampChannel(value: string, allowEmpty = false): string {
+  const digits = value.replace(/\D/g, '').slice(0, 3)
+  if (!digits) return allowEmpty ? '' : '1'
+  const channel = Number.parseInt(digits, 10)
+  if (!Number.isFinite(channel) || channel < 1) return allowEmpty ? '' : '1'
+  if (channel > 266) return '266'
+  return String(channel)
+}
+
+function stepChannel(value: string, delta: number): string {
+  if (!value) return '1'
+  const current = Number.parseInt(value, 10)
+  const base = Number.isFinite(current) ? current : 1
+  return clampChannel(String(base + delta))
+}
+
+export function ChannelField({
+  id,
+  value,
+  onValue,
+  disabled = false
+}: {
+  id: string
+  value: string
+  onValue: (next: string) => void
+  disabled?: boolean
+}): JSX.Element {
+  return (
+    <div className="relative h-7 w-28">
+      <input
+        id={id}
+        className="h-7 w-full rounded-md border border-gray-500 py-1 pl-2 pr-5 text-center disabled:bg-zinc-100"
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onValue(clampChannel(e.target.value, true))}
+        onBlur={(e) => onValue(clampChannel(e.target.value))}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            onValue(stepChannel(value, 1))
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            onValue(stepChannel(value, -1))
+          }
+        }}
+      />
+      <div className="absolute bottom-px right-px top-px flex w-4 flex-col overflow-hidden rounded-r-[5px] border-l border-gray-400 bg-zinc-50">
+        <button
+          type="button"
+          tabIndex={-1}
+          className="flex flex-1 items-center justify-center text-zinc-600 hover:bg-zinc-200 disabled:opacity-40"
+          disabled={disabled}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onValue(stepChannel(value, 1))}
+        >
+          <CaretUp size={8} weight="bold" />
+        </button>
+        <button
+          type="button"
+          tabIndex={-1}
+          className="flex flex-1 items-center justify-center border-t border-gray-300 text-zinc-600 hover:bg-zinc-200 disabled:opacity-40"
+          disabled={disabled}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onValue(stepChannel(value, -1))}
+        >
+          <CaretDown size={8} weight="bold" />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 type Props = {
   receiverSettings: string | undefined
@@ -31,7 +107,7 @@ export default function Settings({
 
   // variables for the tx temporized
   const [NESID, setNESID] = useState<string>('0000')
-  const [TCH, setTCH] = useState<string>('33')
+  const [TCH, setTCH] = useState<string>('1')
   const [TBR, setTBR] = useState<string>('300')
   const [TIN, setTIN] = useState<string>('00:01:00:00')
   const [FTT, setFTT] = useState<string>('00:47:50')
@@ -41,7 +117,7 @@ export default function Settings({
   const [EBM, setEBM] = useState<string>('Y')
   const [TPR, setTPR] = useState<string>('S')
   // variables for the tx aleatory
-  const [RCH, setRCH] = useState<string>('0')
+  const [RCH, setRCH] = useState<string>('1')
   const [RBR, setRBR] = useState<string>('300')
   const [RIN, setRIN] = useState<string>('20')
   const [RPC, setRPC] = useState<string>('50')
@@ -65,7 +141,7 @@ export default function Settings({
         setNESID(value)
         break
       case 'TCH':
-        setTCH(value)
+        setTCH(clampChannel(value, true))
         break
       case 'TBR':
         setTBR(value)
@@ -92,7 +168,7 @@ export default function Settings({
         setTPR(value)
         break
       case 'RCH':
-        setRCH(value)
+        setRCH(clampChannel(value, true))
         break
       case 'RBR':
         setRBR(value)
@@ -154,7 +230,7 @@ export default function Settings({
   function handleSendSetting(): void {
     const settingsArray = [
       NESID,
-      TCH,
+      clampChannel(TCH),
       TBR,
       TIN,
       FTT,
@@ -163,7 +239,7 @@ export default function Settings({
       EBM,
       TPR,
       TDF,
-      RCH,
+      clampChannel(RCH),
       RBR,
       RIN,
       RPC,
@@ -201,7 +277,7 @@ export default function Settings({
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = t('Dados de configuração do Trasmissor TSatDB - ')
+    const headerFile = t('Dados de configuração do Transmissor TSatDB - ')
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\r\n' + dataSaveSettings.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
@@ -218,7 +294,7 @@ export default function Settings({
 
   function UpdateVarible(): void {
     setNESID(dataSettings[1] ? dataSettings[1].replace('NESID=', '') : 'N/A')
-    setTCH(dataSettings[2] ? dataSettings[2].replace('TCH=', '') : '0')
+    setTCH(clampChannel(dataSettings[2] ? dataSettings[2].replace('TCH=', '') : '1'))
     setTBR(dataSettings[3] ? dataSettings[3].replace('TBR=', '') : '100')
     setTIN(dataSettings[4] ? dataSettings[4].replace('TIN=', '') : 'N/A')
     setFTT(dataSettings[5] ? dataSettings[5].replace('FTT=', '') : 'N/A')
@@ -227,7 +303,7 @@ export default function Settings({
     setEBM(dataSettings[8] ? dataSettings[8].replace('EBM=', '') : 'Sim')
     setTPR(dataSettings[9] ? dataSettings[9].replace('TPR=', '') : 'Y')
     setTDF(dataSettings[10] ? dataSettings[10].replace('TDF=', '') : 'ASCII')
-    setRCH(dataSettings[11] ? dataSettings[11].replace('RCH=', '') : '0')
+    setRCH(clampChannel(dataSettings[11] ? dataSettings[11].replace('RCH=', '') : '1'))
     setRBR(dataSettings[12] ? dataSettings[12].replace('RBR=', '') : '100')
     setRIN(dataSettings[13] ? dataSettings[13].replace('RIN=', '') : 'N/A')
     setRPC(dataSettings[14] ? dataSettings[14].replace('RPC=', '') : '0')
@@ -254,13 +330,13 @@ export default function Settings({
   }, [])
 
   return (
-    <div className="flex flex-col gap-6 mt-6 w-full pr-2 h-auto ">
-      <div className="flex gap-8 border-[1px] border-sky-500 rounded-md p-5">
+    <div className="mt-6 mb-4 flex h-auto w-full min-w-0 flex-col gap-6 pr-2">
+      <div className="flex flex-col gap-8 rounded-md border border-sky-500 p-5 sm:flex-row sm:flex-wrap">
         <div className="flex flex-col gap-2">
           <label className="text-gray-700 font-bold"> {t('ID da plataforma')}</label>
           <input
             id="NESID"
-            className="border border-gray-500 rounded-md p-2 text-center h-7 w-52"
+            className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
             type="text"
             value={NESID}
             onChange={(e) => handleInputChange(e.target.id, e.target.value)}
@@ -270,7 +346,7 @@ export default function Settings({
         <div className="flex flex-col gap-2 ">
           <label className="text-gray-700 font-bold">
             {' '}
-            {t('Substituição de caractere proíbido(IRC)')}
+            {t('Substituição de caractere proibido(IRC)')}
           </label>
           <input
             id="IRC"
@@ -282,19 +358,13 @@ export default function Settings({
         </div>
       </div>
 
-      <div className="flex gap-8">
-        <div className=" w-full flex flex-col">
+      <div className="flex min-w-0 flex-col gap-8 lg:flex-row">
+        <div className="flex w-full min-w-0 flex-col">
           <label className="w-full mb-1 font-semibold">{t('Transmissão Temporizada')}</label>
           <div className="flex flex-col gap-4 border-[1px] border-sky-500 rounded-md p-5">
             <div className="flex flex-col gap-2">
               <label> {t('Número do canal da transmissão')}</label>
-              <input
-                id="TCH"
-                className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
-                type="number"
-                value={TCH}
-                onChange={(e) => handleInputChange(e.target.id, e.target.value)}
-              />
+              <ChannelField id="TCH" value={TCH} onValue={setTCH} />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -355,7 +425,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> {t('Centralização de mensagem em trasmissões')}</label>
+              <label> {t('Centralização da mensagem nas transmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -371,7 +441,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> {t('Formato de dados das trasmissões')}</label>
+              <label> {t('Formato dos dados das transmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select
@@ -405,18 +475,12 @@ export default function Settings({
           </div>
         </div>
 
-        <div className=" w-full flex flex-col">
+        <div className="flex w-full min-w-0 flex-col">
           <label className=" w-full mb-1 font-semibold">{t('Transmissão Aleatória')}</label>
           <div className=" h-full flex flex-col gap-4 border-[1px] border-sky-500 rounded-md p-5 ">
             <div className="flex flex-col gap-2">
               <label> {t('Número do canal da transmissão')}</label>
-              <input
-                id="RCH"
-                className="border border-gray-500 rounded-md p-2 text-center h-7 w-28"
-                type="number"
-                value={RCH}
-                onChange={(e) => handleInputChange(e.target.id, e.target.value)}
-              />
+              <ChannelField id="RCH" value={RCH} onValue={setRCH} />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -476,7 +540,7 @@ export default function Settings({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label> {t('Formato de dados das transmissões')}</label>
+              <label> {t('Formato dos dados das transmissões')}</label>
 
               <div className="flex flex-row gap-2 items-center">
                 <select

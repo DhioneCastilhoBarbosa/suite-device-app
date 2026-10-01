@@ -1,21 +1,32 @@
 import { DownloadSimple } from '@phosphor-icons/react'
 import { t } from 'i18next'
 
+const DEFAULT_MANUAL_URL = 'https://dualbase.com.br/produtos/'
+
 interface ImageDeviceProps {
   image: string
   link?: string
+  className?: string
+  fit?: 'cover' | 'contain'
 }
 
-export function ImageDevice({ image, link }: ImageDeviceProps) {
+export function ImageDevice({
+  image,
+  link = DEFAULT_MANUAL_URL,
+  className
+}: ImageDeviceProps) {
   return (
-    <div className=" w-full flex items-center justify-center mb-1 z-0 relative">
-      <img className="w-full h-full object-cover object-bottom" src={image} alt="" />
-      <button className="absolute  flex items-center justify-center bg-[#1E9EF4] hover:bg-sky-400 text-white rounded-lg p-1 bottom-0 right-0 mr-2 mb-2">
+    <div className={`device-banner relative z-0 mb-1 w-full ${className ?? ''}`}>
+      <img src={image} alt="" />
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-2 right-3 z-10 flex items-center justify-center rounded-md bg-[#1E9EF4] px-2 py-1.5 text-white shadow-sm transition-all duration-150 hover:bg-sky-400 hover:shadow-md"
+      >
         <DownloadSimple size={25} />
-        <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm m-1">
-          {t('Saiba mais')}
-        </a>
-      </button>
+        <span className="m-1 text-sm">{t('Saiba mais')}</span>
+      </a>
     </div>
   )
 }

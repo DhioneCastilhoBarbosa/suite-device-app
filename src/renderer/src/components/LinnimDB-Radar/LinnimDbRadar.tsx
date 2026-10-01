@@ -59,8 +59,8 @@ export default function LinnimDbRadar(props: LinnimDbRadarProps): JSX.Element {
         <Waves size={30} />
       </HeaderDevice>
 
-      <div className="mb-3 mt-2 flex w-full min-w-0 max-w-4xl flex-col justify-center rounded-lg bg-white pb-6 text-sm text-zinc-500 shadow-sm mr-4 ml-4 sm:mr-8 sm:ml-8">
-        <header className="mx-4 mt-3 border-b border-sky-500 sm:mx-6">
+      <div className="mx-2 mb-2 mt-2 flex min-h-0 w-full min-w-0 max-w-4xl flex-1 flex-col overflow-hidden rounded-lg bg-white pb-2 text-sm text-zinc-500 shadow-sm sm:mx-4">
+        <header className="mx-4 mt-2 shrink-0 border-b border-sky-500 sm:mx-6">
           <div className="flex flex-wrap justify-start gap-1 sm:gap-2">
             {!isFirmwareOnly && (
               <>
@@ -101,16 +101,18 @@ export default function LinnimDbRadar(props: LinnimDbRadarProps): JSX.Element {
         </header>
 
         {isFirmwareOnly ? (
-          <div className="pb-2">
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto pb-2">
             <UpdateModubus />
           </div>
         ) : menuName === 'config' ? (
-          <div className="min-w-0 w-full overflow-x-hidden px-1 pb-8">
+          <div className="app-scroll min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-1 pb-2">
             <Settings />
             <Measure />
           </div>
         ) : (
-          <Information />
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto">
+            <Information />
+          </div>
         )}
       </div>
     </ContainerDevice>
@@ -145,26 +147,31 @@ export default function LinnimDbRadar(props: LinnimDbRadarProps): JSX.Element {
       <div className="flex flex-col items-center justify-center rounded-b-lg bg-[#EDF4FB] pt-3">
         <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            <RichText i18nKey="O <b>LimniDB-RADAR</b> é um sensor de nível <b>sem contato</b> com a água. Mede a distância até a lâmina d’água por ondas eletromagnéticas e é normalmente instalado em pontes ou estruturas seguras. É seguro, de fácil uso e baixa manutenção, com compensação de temperatura e baixa incerteza de medição." />
+            <RichText i18nKey="O <b>LimniDB-RADAR</b> é um sensor de nível (limnímetro) por radar desenvolvido para aplicações em que segurança operacional, confiabilidade e baixa necessidade de manutenção são essenciais, sendo ideal para instalações em pontes, estruturas elevadas e locais de difícil acesso." />
           </p>
         </CardInformation>
 
         <CardInformation title={t('DESTAQUES')}>
           <p>
-            • <RichText i18nKey="<b>Sensor radar 80 GHz</b> para medição de nível de água;" />
+            • <RichText i18nKey="<b>Medição sem contato</b> com alta precisão." />
           </p>
           <p>
-            • <RichText i18nKey="<b>Corpo em alumínio anodizado</b> com proteção IP68;" />
+            • <RichText i18nKey="<b>Tecnologia FMCW de 80 GHz.</b>" />
           </p>
           <p>
-            • <RichText i18nKey="<b>Saídas digitais SDI-12 e Modbus</b>, com compensação de temperatura." />
+            •{' '}
+            <RichText i18nKey="<b>Diagnóstico inteligente</b> com monitoramento de inclinação do equipamento, alertas de entrada de água, umidade interna e condições operacionais." />
+          </p>
+          <p>
+            •{' '}
+            <RichText i18nKey="<b>Saídas digitais RS-485 e SDI-12</b>, com ampla compatibilidade de integração;" />
           </p>
         </CardInformation>
 
         <CardInformation title={t('APLICAÇÕES')}>
           <p>
             {t(
-              'Hidrologia, meteorologia, monitoramento de rios e reservatórios, instalação em pontes e estruturas seguras.'
+              'Monitoramento hidrológico, rios, canais, barragens, áreas sujeitas a enchentes, estruturas elevadas e sistemas de alerta.'
             )}
           </p>
         </CardInformation>

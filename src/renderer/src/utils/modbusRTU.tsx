@@ -42,19 +42,86 @@ function newClient() {
   return c
 }
 
-// ★ ADDED: fecha e limpa qualquer client antigo
-async function hardCloseClient() {
-  try {
-    if (!client) return
-    try { client.removeAllListeners?.() } catch {}
-    // modbus-serial expõe close(cb)
-    await new Promise<void>((res) => {
-      try { client.close?.(() => res()) } catch { res() }
+// ★ ADDED: fecha e limpa qualquer client antigo, em série, para um cancelamento
+// atrasado não fechar a porta que a conexão seguinte acabou de abrir.
+let closeChain: Promise<void> = Promise.resolve()
+
+let inflightReads = 0
+const inflightIdleWaiters: Array<() => void> = []
+
+function trackInflight<T>(work: Promise<T>): Promise<T> {
+  inflightReads += 1
+  return work.finally(() => {
+    inflightReads = Math.max(0, inflightReads - 1)
+    if (inflightReads === 0) {
+      const waiters = inflightIdleWaiters.splice(0)
+      waiters.forEach((resolve) => resolve())
+    }
+  })
+}
+
+function waitInflight(maxMs: number): Promise<void> {
+  if (inflightReads === 0) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, maxMs)
+    inflightIdleWaiters.push(() => {
+      clearTimeout(timer)
+      resolve()
     })
-  } finally {
-    client = null
+  })
+}
+
+function closeWithTimeout(close: (done: () => void) => void, maxMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false
+    const done = () => {
+      if (settled) return
+      settled = true
+      resolve()
+    }
+    try {
+      close(done)
+    } catch {
+      done()
+    }
+    setTimeout(done, maxMs)
+  })
+}
+
+function portStillBusy(error: unknown): boolean {
+  const text = String((error as { message?: string })?.message ?? error)
+  return /access denied|acesso negado|semaphore timeout|unknown error code\s*121|ebusy|eacces/i.test(text)
+}
+
+function hardCloseClient(): Promise<void> {
+  const job = closeChain.then(async () => {
+    const current = client
+    if (client === current) client = null
     mbsId = 1
-  }
+    // Leituras do PARAR terminam (timeout de 250 ms) antes do close.
+    // Fechar com ReadFile pendente deixa a COM presa em alguns drivers USB-serial.
+    await waitInflight(800)
+    if (!current) return
+    try { current.removeAllListeners?.() } catch {}
+    if (typeof current.close === 'function') {
+      await closeWithTimeout((done) => current.close(done), 1000)
+    }
+    const serial = current._port?._client
+    if (serial?.isOpen && typeof serial.close === 'function') {
+      await closeWithTimeout((done) => serial.close(done), 500)
+    }
+  })
+  closeChain = job.then(
+    () => undefined,
+    () => undefined
+  )
+  return job
+}
+
+let releaseChain: Promise<void> = Promise.resolve()
+
+export function waitForPortRelease(): Promise<void> {
+  return releaseChain
 }
 
 export function IdModBus(address) {
@@ -68,45 +135,38 @@ interface ModBusConectProps {
 }
 
 let cancelScan = false
+let connectGeneration = 0
 const MAX_ADDRESS = 247
-const CONCURRENCY = 20
 let deviceFound = false
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const scanAddress = async (mbsId: number): Promise<number | null> => {
+const scanAddress = async (address: number): Promise<number | null> => {
   if (cancelScan || deviceFound) return null
-  if (!client) return null // ★ ADDED: guarda
-  client.setID(mbsId)
-  // console.log(`Verificando endereço ${mbsId}...`)
+  const current = client
+  if (!current) return null
   try {
-    const data = await client.readHoldingRegisters(255, 1)
-    if (cancelScan || deviceFound) return null
-    // console.log(`Dispositivo encontrado no endereço ${mbsId}:`, data.data)
+    current.setID(address)
+    if (cancelScan || deviceFound || client !== current) return null
+    await trackInflight(current.readHoldingRegisters(255, 1))
+    if (cancelScan || deviceFound || client !== current) return null
     deviceFound = true
-    return mbsId
+    return address
   } catch {
     return null
   }
 }
 
 export const scanNextAddress = async (): Promise<boolean> => {
-  for (let i = 1; i <= MAX_ADDRESS; i += CONCURRENCY) {
-    if (cancelScan || deviceFound) return deviceFound
-    const promises: Promise<number | null>[] = []
-    for (let j = i; j < i + CONCURRENCY && j <= MAX_ADDRESS; j++) {
-      promises.push(scanAddress(j))
-      await delay(250)
-    }
-    const results = await Promise.all(promises)
-    const foundAddress = results.find((result) => result !== null)
-    if (foundAddress !== undefined && foundAddress !== null) {
-      if (client) client.setID(foundAddress) // ★ CHANGED: checa client
-      // console.log('Varredura parada, dispositivo encontrado.')
+  // Uma leitura por vez. O RTU usa um único slot de transação: leituras
+  // sobrepostas trocam o ID e a tela abre sem os dados do sensor.
+  for (let address = 1; address <= MAX_ADDRESS; address++) {
+    if (cancelScan) return false
+    const found = await scanAddress(address)
+    if (cancelScan || client == null) return false
+    if (found !== null) {
+      client.setID(found)
       return true
     }
   }
-  // console.log('Varredura completa, nenhum dispositivo encontrado.')
   return false
 }
 
@@ -116,36 +176,68 @@ export const cancelScanProcess = () => {
   mbsId = 1
 }
 
-export async function connectClient({ SerialName, BaudRate }: ModBusConectProps): Promise<boolean> {
+export type ConnectResult = boolean | 'cancelled'
+
+export async function connectClient({
+  SerialName,
+  BaudRate
+}: ModBusConectProps): Promise<ConnectResult> {
+  if (cancelScan) return 'cancelled'
   if (busy) return false // ★ ADDED: evita chamada concorrente
   busy = true
+  const myGen = ++connectGeneration
+  if (cancelScan || myGen !== connectGeneration) {
+    busy = false
+    return 'cancelled'
+  }
   cancelScan = false
   deviceFound = false
+  const aborted = () => cancelScan || myGen !== connectGeneration
+
+  const openRtu = async () => {
+    client = newClient()
+    client.setTimeout(mbsTimeout)
+    await client.connectRTUBuffered(SerialName, {
+      baudRate: BaudRate,
+      parity: 'none',
+      dataBits: 8,
+      stopBits: 1
+    })
+  }
 
   try {
     // ★ ADDED: fecha qualquer client pendente antes de abrir novamente
     await hardCloseClient()
+    if (aborted()) return 'cancelled'
 
     // ★ ADDED: cooldown curto após unplug/plug para Windows/FTDI
     await sleep(800)
+    if (aborted()) return 'cancelled'
 
-    client = newClient()
-    client.setTimeout(mbsTimeout)
+    try {
+      await openRtu()
+    } catch (openError) {
+      await hardCloseClient()
+      if (aborted() || !portStillBusy(openError)) throw openError
+      await sleep(700)
+      if (aborted()) return 'cancelled'
+      await openRtu()
+    }
 
-    // ★ CHANGED: parity 'none' → sua versão usava 'One' (inválido para 'parity')
-    await client.connectRTUBuffered(SerialName, {
-      baudRate: BaudRate,
-      parity: 'none',          // ★ CHANGED
-      dataBits: 8,
-      stopBits: 1
-      // autoOpen é gerenciado pelo modbus-serial internamente no connectRTUBuffered
-    })
+    if (aborted()) {
+      await hardCloseClient()
+      return 'cancelled'
+    }
 
     mbsState = MBS_STATE_GOOD_CONNECT
     mbsStatus = 'Connected, wait for reading...'
     console.log(mbsStatus)
 
     const ok = await scanNextAddress()
+    if (aborted()) {
+      await hardCloseClient()
+      return 'cancelled'
+    }
     return ok
   } catch (e) {
     mbsState = MBS_STATE_FAIL_CONNECT
@@ -153,15 +245,60 @@ export async function connectClient({ SerialName, BaudRate }: ModBusConectProps)
     console.log('Erro Modbus:', e)
     // ★ ADDED: garante limpeza em falha para próxima tentativa ser “fresh”
     await hardCloseClient()
+    if (aborted()) return 'cancelled'
     throw e // ★ CHANGED: manter propagação
   } finally {
     busy = false // ★ ADDED
   }
 }
 
-export const cancelConnection = () => {
+let portOwner: string | null = null
+let notFoundModalFor: string | null = null
+
+export function setPortOwner(name: string | null) {
+  portOwner = name
+}
+
+export function getPortOwner() {
+  return portOwner
+}
+
+export function armNotFoundModal(deviceName: string) {
+  notFoundModalFor = deviceName
+}
+
+export function disarmNotFoundModal() {
+  notFoundModalFor = null
+}
+
+export function notFoundModalTarget() {
+  return notFoundModalFor
+}
+
+export function beginConnection() {
+  cancelScan = false
+}
+
+export function cancelConnection(): Promise<void> {
   cancelScan = true
+  connectGeneration += 1
+  deviceFound = false
+  portOwner = null
+  notFoundModalFor = null
   mbsId = 1
+  const job = releaseChain.then(async () => {
+    try {
+      await hardCloseClient()
+      await sleep(500)
+    } catch (e) {
+      console.log('Erro ao liberar a porta COM:', e)
+    }
+  })
+  releaseChain = job.then(
+    () => undefined,
+    () => undefined
+  )
+  return job
 }
 
 //==============================================================
@@ -233,7 +370,6 @@ export async function CloseModBus() {
   // ★ CHANGED: fechamento agressivo e assíncrono para liberar handle antes da próxima conexão
   await hardCloseClient()
   console.log('Conexão fechada com sucesso.')
-  cancelScan = false
   deviceFound = false
 }
 /* eslint-enable no-unused-vars */

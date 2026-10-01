@@ -195,81 +195,79 @@ export default function Status({
   }
 
   return (
-    <div className="flex flex-col mt-1">
-      <div className="flex flex-row justify-around bg-sky-500 h-16 rounded-md ">
-        <div className="flex flex-row items-center  bg-white m-0.5 rounded-md border-2 border-white w-64">
-          <div className="flex flex-row justify-center items-center gap-8 p-1 border-2 border-sky-500 rounded-l-md w-full h-full">
-            <div className="flex flex-col items-center text-sky-500 ">
-              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 ">
+    <div className="mt-1 flex flex-col">
+      <div className="flex h-16 flex-row justify-around rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white">
+        <div className="m-0.5 flex w-64 flex-row items-center overflow-hidden rounded-md border border-sky-200 bg-white">
+          <div className="flex h-full w-full flex-row items-center justify-center gap-8 p-1">
+            <div className="flex flex-col items-center text-sky-600">
+              <span className="ml-2 flex flex-row items-baseline justify-center text-base font-bold">
                 {arrayData[4]}
               </span>
               <div className="flex flex-row items-center justify-center gap-1.5">
-                <div className="relative flex flex-row items-end gap-[2px] w-[28px] h-[24px]">
+                <div className="relative flex h-[24px] w-[28px] flex-row items-end gap-[2px]">
                   {getSignalBars() === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center text-red-500 text-xs font-bold">
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-red-500">
                       <CellSignalX weight="bold" size={36} />
                     </div>
                   ) : (
                     Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
-                        className={`w-[3px] transition-all rounded-sm ${
-                          index < getSignalBars() ? 'bg-sky-500' : 'bg-gray-300'
+                        className={`w-[3px] rounded-sm transition-all ${
+                          index < getSignalBars() ? 'bg-sky-400' : 'bg-sky-100'
                         }`}
                         style={{ height: `${(index + 1) * 20}%` }}
                       />
                     ))
                   )}
                 </div>
-                <span className="text-[12px] font-bold mt-1">{`${arrayData[2]} dBm`}</span>
+                <span className="mt-1 text-[12px] font-bold">{`${arrayData[2]} dBm`}</span>
               </div>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center  bg-sky-500  rounded-r-md w-full h-full ">
-            <span className=" font-light text-white text-[12px]">{arrayData[6]}</span>
-            <span className=" font-light text-white text-[12px]">{arrayData[5]}</span>
+          <div className="flex h-full w-full flex-col items-center justify-center rounded-r-md border-l border-sky-100 bg-[#E8F4FC]">
+            <span className="text-[12px] font-medium text-sky-700">{arrayData[6]}</span>
+            <span className="text-[12px] font-medium text-sky-700">{arrayData[5]}</span>
           </div>
         </div>
-        <div className="flex flex-col justify-center  bg-white m-0.5 rounded-md border-2 border-white">
-          <div className="flex flex-col justify-start  gap-1 p-1 border-2 border-sky-500 rounded-md h-full w-auto">
+        <div className="m-0.5 flex flex-col justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
+          <div className="flex h-full w-auto flex-col justify-start gap-1 p-1">
             <div>
-              <span className="flex flex-row justify-center items-baseline font-bold text-base ml-2 text-sky-500 ">
+              <span className="ml-2 flex flex-row items-baseline justify-center text-base font-bold text-sky-800">
                 {t('Transmissão')}
               </span>
 
               <div className="flex flex-row items-center gap-4">
-                <div className="flex flex-row justify-center items-center gap-2 text-[12px] ">
+                <div className="flex flex-row items-center justify-center gap-2 text-[12px] text-zinc-600">
                   <span>{t('Protocolo utilizado:')}</span>
-                  <span className="font-bold">{arrayData[0].toUpperCase()}</span>
+                  <span className="font-bold text-sky-700">{arrayData[0].toUpperCase()}</span>
                 </div>
 
-                <div className="flex flex-row justify-center items-center gap-2 text-[12px]">
+                <div className="flex flex-row items-center justify-center gap-2 text-[12px] text-zinc-600">
                   <span>{t('Última transmissão:')}</span>
-                  <span className="font-bold">{arrayData[7]}</span>
+                  <span className="font-bold text-sky-700">{arrayData[7]}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-col justify-center  bg-white m-0.5 rounded-md border-2 border-white">
-          <div className="flex flex-col justify-center items-center p-1 border-2 border-sky-500 rounded-md h-full w-auto">
+        <div className="m-0.5 flex flex-col justify-center overflow-hidden rounded-md border border-sky-200 bg-white">
+          <div className="flex h-full w-auto flex-col items-center justify-center p-1">
             <div className="flex flex-col items-center justify-center">
-              <div className="flex items-center ">
-                {/* Corpo da bateria */}
-                <div className="flex flex-row items-center gap-[3px] border-2 border-sky-500 rounded-md p-[3px] w-[48px] h-[24px]">
+              <div className="flex items-center">
+                <div className="flex h-[24px] w-[48px] flex-row items-center gap-[3px] rounded-md border border-sky-300 p-[3px]">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <div
                       key={index}
-                      className={`w-[5px] h-full rounded-sm ${
-                        index < getBatteryBars() ? 'bg-sky-500' : ''
+                      className={`h-full w-[5px] rounded-sm ${
+                        index < getBatteryBars() ? 'bg-sky-400' : 'bg-sky-100'
                       }`}
                     />
                   ))}
                 </div>
-                {/* Terminal da bateria */}
-                <div className="w-[4px] h-[12px] bg-sky-500 ml-[2px] rounded-sm" />
+                <div className="ml-[2px] h-[12px] w-[4px] rounded-sm bg-sky-300" />
               </div>
-              <span className="text-[12px] font-bold mt-1">{`${arrayData[3]} Volts`}</span>
+              <span className="mt-1 text-[12px] font-bold text-sky-700">{`${arrayData[3]} Volts`}</span>
             </div>
           </div>
         </div>
@@ -277,57 +275,52 @@ export default function Status({
 
       <div className="my-2">
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+          <table className="min-w-full rounded-lg border border-sky-100 bg-white shadow-sm">
             <thead>
-              <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
-                <th className="py-0.5 px-4 text-left">{t('Informações do dispositivo')}</th>
-                <th className="py-0.5 px-4 text-left"></th>
+              <tr className="border-b border-sky-600 bg-sky-500 text-sm uppercase leading-normal">
+                <th className="px-4 py-1 text-left text-xs font-bold tracking-wide text-white">
+                  {t('Informações do dispositivo')}
+                </th>
+                <th className="px-4 py-1 text-left"></th>
               </tr>
             </thead>
-            <tbody className="text-gray-600 text-sm font-light">
+            <tbody className="text-sm font-light text-zinc-600">
               {data.map((item) => (
-                <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-0.5 px-4 text-left font-bold text-gray-500">{item.name}</td>
-                  <td className="py-0.5 px-4 text-left font-semibold text-gray-400">
+                <tr key={item.id} className="border-b border-sky-100 hover:bg-sky-50/60">
+                  <td className="px-4 py-0.5 text-left font-bold text-zinc-500">{item.name}</td>
+                  <td className="px-4 py-0.5 text-left font-semibold text-sky-700/80">
                     {item.value}
                   </td>
                 </tr>
               ))}
             </tbody>
-            <tfoot>
-              <tr className="bg-gray-200 text-gray-700 text-sm leading-normal rounded-b-lg ">
-                <td className="py-2 px-4 text-left rounded-bl-lg" colSpan={3}></td>
-              </tr>
-            </tfoot>
           </table>
         </div>
       </div>
-      <div className="flex flex-col justify-evenly bg-white h-auto rounded-md  border-2 border-sky-500">
-        <div className="bg-sky-500 text-white p-0.5 ">
-          <span className="font-bold">{t('Relatório:')}</span>
+      <div className="flex h-auto flex-col justify-evenly overflow-hidden rounded-md border border-sky-100 bg-white shadow-sm">
+        <div className="border-b border-sky-600 bg-sky-500 px-2 py-1">
+          <span className="text-xs font-bold uppercase tracking-wide text-white">
+            {t('Relatório:')}
+          </span>
         </div>
-        <div className="flex flex-row justify-between items-center my-1 mx-2">
-          <div className="flex flex-col justify-center items-start gap-2">
+        <div className="mx-2 my-1 flex flex-row items-center justify-between">
+          <div className="flex flex-col items-start justify-center gap-2 text-zinc-600">
             <div className="flex flex-row gap-2">
-              <span className="font-bold">{t('Número de registros:')}</span>
-              <span>{arrayData[12]}</span>
+              <span className="font-bold text-zinc-500">{t('Número de registros:')}</span>
+              <span className="font-semibold text-sky-700">{arrayData[12]}</span>
             </div>
             <div className="flex flex-row gap-2">
               <span>{t('Memória utilizada:')}</span>
-              <span>{arrayData[13]}%</span>
+              <span className="font-semibold text-sky-700">{arrayData[13]}%</span>
             </div>
           </div>
-          <Button
-            size={'medium'}
-            className="bg-white text-sky-500 px-1 py-5"
-            onClick={handleDowReport}
-          >
-            <DownloadSimple size={24} />
+          <Button size="medium" className="px-3 py-2.5" onClick={handleDowReport}>
+            <DownloadSimple size={22} />
             {t('Coletar relatórios')}
           </Button>
         </div>
       </div>
-      <div className="flex justify-end mt-1 border-t-[1px] border-gray-200 pt-2 w-full gap-4">
+      <div className="mt-1 flex w-full justify-end gap-4 border-t border-sky-100 pb-4 pt-2">
         <Button onClick={handleUpdateStatus}>
           <ArrowsClockwise size={24} />
           {t('Atualizar')}

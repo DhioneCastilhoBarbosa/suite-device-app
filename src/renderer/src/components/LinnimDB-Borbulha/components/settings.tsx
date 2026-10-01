@@ -1,4 +1,4 @@
-import { DownloadSimple, FolderOpen, UploadSimple } from '@phosphor-icons/react'
+import { DownloadSimple, UploadSimple } from '@phosphor-icons/react'
 import { Device } from '../../../Context/DeviceContext'
 import Button from '@renderer/components/button/Button'
 import LoadingData from '@renderer/components/loading/loadingData'
@@ -23,38 +23,26 @@ export default function Settings() {
   const [titleLoading, setTitleLoading] = useState(t('Baixando informações do dispositivo!'))
 
   const fetchData = async () => {
-    setModbusData([])
     setTitleLoading(t('Baixando informações do dispositivo!'))
     setIsLoading(true)
     try {
-      // Espera 500 millsegundo antes de fazer a chamada Modbus
-
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Array de chamadas Modbus com argumentos específicos
       const modbusCalls = [
-        { address: 255, register: 1, Int16: true, float32: false }, //
-        { address: 336, register: 1, Int16: true, float32: false }, //
-        { address: 352, register: 2, Int16: false, float32: true }, //
-        { address: 368, register: 2, Int16: false, float32: true }, //
-        { address: 372, register: 1, Int16: true, float32: false }, //
-        { address: 376, register: 1, Int16: true, float32: false } //
+        { address: 255, register: 1, Int16: true, float32: false },
+        { address: 336, register: 1, Int16: true, float32: false },
+        { address: 352, register: 2, Int16: false, float32: true },
+        { address: 368, register: 2, Int16: false, float32: true },
+        { address: 372, register: 1, Int16: true, float32: false },
+        { address: 376, register: 1, Int16: true, float32: false }
       ]
 
-      // Função para fazer chamadas Modbus em sequência
-      const makeModbusCalls = async (calls) => {
-        for (let i = 0; i < calls.length; i++) {
-          const { address, register, Int16, float32 } = calls[i]
-          const data = await readModbusData(address, register, Int16, float32, 250)
-          setModbusData((prevData) => [...prevData, data as string])
-          await new Promise((resolve) => setTimeout(resolve, 300)) // Aguarda 200ms antes de fazer a próxima chamada
-        }
+      const results: string[] = []
+      for (const { address, register, Int16, float32 } of modbusCalls) {
+        const data = await readModbusData(address, register, Int16, float32, 250)
+        results.push(data as string)
       }
-
-      // Chama a função para fazer as chamadas Modbus
-      await makeModbusCalls(modbusCalls)
+      setModbusData(results)
     } catch (error) {
-      //console.error('Erro ao fazer chamadas Modbus:', error);
+      setIsLoading(false)
     }
   }
 
@@ -112,7 +100,7 @@ export default function Settings() {
       for (let i = 0; i < modbusData.length; i++) {
         updateValueInputs(i, modbusData[i])
       }
-      setTimeout(() => setIsLoading(false), 1000)
+      setIsLoading(false)
     }
   }, [modbusData])
 
@@ -172,118 +160,132 @@ export default function Settings() {
   }, [address, unit, coefA, coefB, timePumping, timeStability])
 
   return (
-    <div className="flex flex-col items-center justify-center ">
-      <div className="grid grid-cols-2  gap-2 h-full mt-4">
-        <div className="flex flex-col w-52">
-          <label>{t('Endereço MODBUS')}</label>
-          <input
-            type="number"
-            className="border border-zinc-400 w-48 rounded-md h-6 outline-none text-center"
-            min={1}
-            value={inptsData[0] === 0 ? '' : inptsData[0]}
-            onChange={(event) => updateData(0, event)}
-            inputMode="numeric"
-          />
-        </div>
-
-        <div className="flex flex-col w-56">
-          <label>{t('Unidade')}</label>
-          <select
-            name="unidade"
-            id="unidade"
-            value={inptsData[1].toString()}
-            onChange={(event) => updateData(1, event)}
-            className="w-48 rounded-md h-6 border border-zinc-400 "
-          >
-            <option value="0">-</option>
-            <option value="7">Bar</option>
-            <option value="8">mbar</option>
-            <option value="12">kPA</option>
-            <option value="2">inHG</option>
-            <option value="5">mmHG</option>
-            <option value="14">atm</option>
-            <option value="6">psi</option>
-            <option value="171">mH20</option>
-            <option value="170">cmH20</option>
-            <option value="1">inH20</option>
-            <option value="3">ftH20</option>
-          </select>
-        </div>
-
-        <div className="flex flex-col mt-11">
-          <label>{t('Coeficiente')}</label>
-          <div className=" flex flex-row w-52 items-center justify-center border border-zinc-400 rounded-md p-2 gap-2">
-            <div className="w-auto flex flex-col items-center pb-5">
-              <label>Ax</label>
-              <input
-                type="number"
-                className="w-full border border-zinc-400 rounded-md h-6 outline-none text-center"
-                min={-9999}
-                value={inptsData[2].toFixed(2)}
-                onChange={(event) => updateData(2, event)}
-              />
-            </div>
-            <div className="w-6 flex flex-col justify-center">
-              <span>+</span>
-            </div>
-            <div className="w-auto flex flex-col items-center pb-5">
-              <label>B</label>
-              <input
-                type="number"
-                className="w-full border border-zinc-400 rounded-md h-6 outline-none text-center"
-                min={-9999}
-                value={inptsData[3].toFixed(2)}
-                onChange={(event) => updateData(3, event)}
-              />
-            </div>
+    <div className="mx-auto w-full max-w-2xl px-4 pt-2 sm:px-6">
+      <div className="rounded-md border border-zinc-200 bg-white p-2.5">
+        {/* Grid com coluna central para alinhar o eixo vertical */}
+        <div className="grid grid-cols-1 items-end gap-y-2 sm:grid-cols-[1fr_2rem_1fr] sm:gap-x-0">
+          {/* Endereço | Unidade */}
+          <div className="flex min-w-0 flex-col gap-1">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+              {t('Endereço MODBUS')}
+            </label>
+            <input
+              type="number"
+              className="h-8 w-full rounded-md border border-zinc-300 bg-white px-3 text-center text-sm text-zinc-700 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
+              min={1}
+              value={inptsData[0] === 0 ? '' : inptsData[0]}
+              onChange={(event) => updateData(0, event)}
+              inputMode="numeric"
+            />
           </div>
-        </div>
+          <div className="hidden sm:block" aria-hidden />
+          <div className="flex min-w-0 flex-col gap-1">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+              {t('Unidade')}
+            </label>
+            <select
+              name="unidade"
+              id="unidade"
+              value={inptsData[1].toString()}
+              onChange={(event) => updateData(1, event)}
+              className="h-8 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-700 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
+            >
+              <option value="0">-</option>
+              <option value="7">Bar</option>
+              <option value="8">mbar</option>
+              <option value="12">kPA</option>
+              <option value="2">inHG</option>
+              <option value="5">mmHG</option>
+              <option value="14">atm</option>
+              <option value="6">psi</option>
+              <option value="171">mH20</option>
+              <option value="170">cmH20</option>
+              <option value="1">inH20</option>
+              <option value="3">ftH20</option>
+            </select>
+          </div>
 
-        <div className="flex flex-col w-52 mt-2 ">
-          <div className="border border-zinc-400 rounded-md p-2 w-48">
-            <label>{t('Tempo de Bombeamento')}</label>
-            <div className="flex gap-1 items-center">
+          {/* Coeficiente */}
+          <div className="col-span-1 sm:col-span-3">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+              {t('Coeficiente')}
+            </label>
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-0.5 rounded-md border border-zinc-200 bg-zinc-50/80 px-3 py-2">
+            <span className="text-center text-xs font-medium text-zinc-500">Ax</span>
+            <input
+              type="number"
+              className="h-8 w-full rounded-md border border-zinc-300 bg-white text-center text-sm text-zinc-700 outline-none focus:border-sky-400"
+              min={-9999}
+              value={inptsData[2].toFixed(2)}
+              onChange={(event) => updateData(2, event)}
+            />
+          </div>
+          <div className="flex items-center justify-center pb-1 text-lg font-semibold text-sky-500">
+            +
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5 rounded-md border border-zinc-200 bg-zinc-50/80 px-3 py-2">
+            <span className="text-center text-xs font-medium text-zinc-500">B</span>
+            <input
+              type="number"
+              className="h-8 w-full rounded-md border border-zinc-300 bg-white text-center text-sm text-zinc-700 outline-none focus:border-sky-400"
+              min={-9999}
+              value={inptsData[3].toFixed(2)}
+              onChange={(event) => updateData(3, event)}
+            />
+          </div>
+
+          {/* Tempos */}
+          <div className="flex min-w-0 flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50/80 px-3 py-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+              {t('Tempo de Bombeamento')}
+            </label>
+            <div className="flex items-center gap-2">
               <input
                 type="number"
-                className="border border-zinc-400 w-24 rounded-md h-6 outline-none text-center mt-1"
+                className="h-8 w-[70%] max-w-[10rem] rounded-md border border-zinc-300 bg-white text-center text-sm text-zinc-700 outline-none focus:border-sky-400"
                 min={1}
                 value={inptsData[4]}
                 onChange={(event) => updateData(4, event)}
                 inputMode="numeric"
               />
-              <p className="text-xs">{t('segundos')}</p>
+              <span className="text-xs text-zinc-500">{t('segundos')}</span>
             </div>
           </div>
-          <div className="mt-1.5 border border-zinc-400 rounded-md p-2 w-48">
-            <label>{t('Tempo de estabilização')}</label>
-            <div className="flex gap-1 items-center">
+          <div className="hidden sm:block" aria-hidden />
+          <div className="flex min-w-0 flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50/80 px-3 py-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+              {t('Tempo de estabilização')}
+            </label>
+            <div className="flex items-center gap-2">
               <input
                 type="number"
-                className="border border-zinc-400 w-24 rounded-md h-6 outline-none text-center mt-1"
+                className="h-8 w-[70%] max-w-[10rem] rounded-md border border-zinc-300 bg-white text-center text-sm text-zinc-700 outline-none focus:border-sky-400"
                 min={1}
                 value={inptsData[5]}
                 onChange={(event) => updateData(5, event)}
                 inputMode="numeric"
               />
-              <p className="text-xs">{t('segundos')}</p>
+              <span className="text-xs text-zinc-500">{t('segundos')}</span>
             </div>
+          </div>
+          <div className="mt-2 flex min-w-0 items-center justify-end">
+            <Button size="large" onClick={fetchData}>
+              <DownloadSimple size={22} />
+              {t('Baixar informações')}
+            </Button>
+          </div>
+          <div className="hidden sm:block" aria-hidden />
+          <div className="flex min-w-0 items-center justify-start">
+            <Button size="large" onClick={handleSendSettings}>
+              <UploadSimple size={22} />
+              {t('Enviar configurações')}
+            </Button>
           </div>
         </div>
       </div>
-      <div className=" flex flex-row gap-5 h-10 my-5 pr-10 ">
-        {/*<Button size={'large'} onClick={handleSelectFile}>
-          <FolderOpen size={24} />
-          Selecione o arquivo
-        </Button>*/}
-        <Button size={'large'} onClick={fetchData}>
-          <DownloadSimple size={24} />
-          {t('Baixar informações')}
-        </Button>
-        <Button size={'large'} onClick={handleSendSettings}>
-          <UploadSimple size={24} />
-          {t('Enviar configurações')}
-        </Button>
-      </div>
+
       <LoadingData visible={isLoading} title={titleLoading} />
     </div>
   )

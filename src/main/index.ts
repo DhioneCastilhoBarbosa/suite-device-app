@@ -204,11 +204,23 @@ const distPath = is.dev
   : path.join(app.getAppPath(), 'renderer', 'dist')
 
 function createWindow(): void {
+  const { workArea } = screen.getPrimaryDisplay()
+  const preferredWidth = 1200
+  const preferredHeight = 800
+  // 1366×768 (e o mesmo notebook com escala do Windows) tem área útil menor que 800 px.
+  // O mínimo não pode passar da work area, senão o SO corta a janela.
+  const width = Math.min(preferredWidth, workArea.width)
+  const height = Math.min(preferredHeight, workArea.height)
+  const minWidth = Math.min(1024, workArea.width)
+  const minHeight = Math.min(600, workArea.height)
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 1200,
-    minHeight: 800,
+    x: workArea.x,
+    y: workArea.y,
+    width,
+    height,
+    minWidth,
+    minHeight,
     show: false,
     autoHideMenuBar: true,
     icon: appIcon,
@@ -245,6 +257,9 @@ function createWindow(): void {
     }
 
     mainWindow!.on('ready-to-show', () => {
+      if (workArea.height < preferredHeight || workArea.width < preferredWidth) {
+        mainWindow!.maximize()
+      }
       mainWindow!.show()
       scheduleUpdateCheckAfterAppOpen()
     })

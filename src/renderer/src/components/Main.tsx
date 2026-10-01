@@ -4,10 +4,12 @@ import Preview from './Preview'
 
 export default function Main() {
   return (
-    <div className=" flex flex-row h-screen p-1 w-full">
+    <div className="flex min-h-0 w-full flex-1 flex-row gap-2 p-1">
       <DeviceProvider>
         <Menu />
-        <Preview />
+        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
+          <Preview />
+        </div>
       </DeviceProvider>
     </div>
   )

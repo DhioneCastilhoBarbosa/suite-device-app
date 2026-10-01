@@ -7,50 +7,44 @@ import { IdModBus, WriteModbus, readModbusData } from '../../../utils/modbusRTU'
 import { useEffect, useState } from 'react'
 import { t } from 'i18next'
 
+const RADAR_DISPLAY_UNITS = ['mm', 'cm', 'm', 'in', 'ft'] as const
+type RadarDisplayUnit = (typeof RADAR_DISPLAY_UNITS)[number]
+/** Unidade real no Modbus (endereço 336): sempre mm. cm/m/in/ft são só de tela. */
+const RADAR_DEVICE_UNIT_MM = 0
+
 export default function Settings() {
   const [modbusData, setModbusData] = useState<string[]>([])
   const [address, setAddress] = useState(0)
-  const [unit, setUnit] = useState(0)
+  const [unit, setUnit] = useState(RADAR_DEVICE_UNIT_MM)
   const [coefA, setCoefA] = useState(0)
   const [coefB, setCoefB] = useState(0)
   const { mode }: any = Device()
   const [fileContent, setFileContent] = useState<string>('')
-  const [inptsData, setInptsData] = useState<number[]>([1, 7, 0, 0])
+  const [inptsData, setInptsData] = useState<number[]>([1, 0, 0, 0])
+  const [displayUnit, setDisplayUnit] = useState<RadarDisplayUnit>('mm')
   const [sendData, setSendData] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [titleLoading, setTitleLoading] = useState(t('Baixando informações do dispositivo!'))
 
   const fetchData = async () => {
-    setModbusData([])
     setTitleLoading(t('Baixando informações do dispositivo!'))
     setIsLoading(true)
     try {
-      // Espera 500 millsegundo antes de fazer a chamada Modbus
-
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Array de chamadas Modbus com argumentos específicos
       const modbusCalls = [
-        { address: 255, register: 1, Int16: true, float32: false }, //
-        { address: 336, register: 1, Int16: true, float32: false }, //
-        { address: 352, register: 2, Int16: false, float32: true }, //
-        { address: 368, register: 2, Int16: false, float32: true } //
+        { address: 255, register: 1, Int16: true, float32: false },
+        { address: 336, register: 1, Int16: true, float32: false },
+        { address: 352, register: 2, Int16: false, float32: true },
+        { address: 368, register: 2, Int16: false, float32: true }
       ]
 
-      // Função para fazer chamadas Modbus em sequência
-      const makeModbusCalls = async (calls) => {
-        for (let i = 0; i < calls.length; i++) {
-          const { address, register, Int16, float32 } = calls[i]
-          const data = await readModbusData(address, register, Int16, float32, 250)
-          setModbusData((prevData) => [...prevData, data as string])
-          await new Promise((resolve) => setTimeout(resolve, 300)) // Aguarda 200ms antes de fazer a próxima chamada
-        }
+      const results: string[] = []
+      for (const { address, register, Int16, float32 } of modbusCalls) {
+        const data = await readModbusData(address, register, Int16, float32, 250)
+        results.push(data as string)
       }
-
-      // Chama a função para fazer as chamadas Modbus
-      await makeModbusCalls(modbusCalls)
+      setModbusData(results)
     } catch (error) {
-      //console.error('Erro ao fazer chamadas Modbus:', error);
+      setIsLoading(false)
     }
   }
 
@@ -66,7 +60,7 @@ export default function Settings() {
       const modbusCalls = [
         { address: 368, register: coefB, type: 'float' },
         { address: 352, register: coefA, type: 'float' },
-        { address: 336, register: unit, type: 'int' },
+        { address: 336, register: RADAR_DEVICE_UNIT_MM, type: 'int' },
         { address: 255, register: address, type: 'int' }
       ]
 
@@ -103,10 +97,11 @@ export default function Settings() {
 
   useEffect(() => {
     if (modbusData.length >= 4) {
-      for (let i = 0; i < modbusData.length; i++) {
-        updateValueInputs(i, modbusData[i])
-      }
-      setTimeout(() => setIsLoading(false), 1000)
+      updateValueInputs(0, modbusData[0])
+      updateValueInputs(2, modbusData[2])
+      updateValueInputs(3, modbusData[3])
+      setDisplayUnit('mm')
+      setIsLoading(false)
     }
   }, [modbusData])
 
@@ -146,12 +141,9 @@ export default function Settings() {
 
   const handleSendSettings = async () => {
     setAddress(inptsData[0])
-    setUnit(inptsData[1])
+    setUnit(RADAR_DEVICE_UNIT_MM)
     setCoefA(inptsData[2])
     setCoefB(inptsData[3])
-
-    //console.log(inptsData[3], inptsData[2], inptsData[1], inptsData[0])
-    //console.log(coefB, coefA, unit, address)
 
     setSendData(true)
   }
@@ -188,22 +180,15 @@ export default function Settings() {
             <select
               name="unidade"
               id="unidade"
-              value={inptsData[1].toString()}
-              onChange={(event) => updateData(1, event)}
+              value={displayUnit}
+              onChange={(event) => setDisplayUnit(event.target.value as RadarDisplayUnit)}
               className="h-8 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-700 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
             >
-              <option value="0">-</option>
-              <option value="7">Bar</option>
-              <option value="8">mbar</option>
-              <option value="12">kPA</option>
-              <option value="2">inHG</option>
-              <option value="5">mmHG</option>
-              <option value="14">atm</option>
-              <option value="6">psi</option>
-              <option value="171">mH20</option>
-              <option value="170">cmH20</option>
-              <option value="1">inH20</option>
-              <option value="3">ftH20</option>
+              {RADAR_DISPLAY_UNITS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
             </select>
           </div>
         </div>

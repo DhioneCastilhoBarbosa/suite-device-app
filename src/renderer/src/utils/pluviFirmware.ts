@@ -1,5 +1,39 @@
+import { t } from 'i18next'
 import SerialManagerRS232 from './serial'
 import { classifyMcumgrProbeFailure, McumgrClient } from './mcumgr'
+
+export function translateFirmwareDetail(detail: string): string {
+  const initialPrefix = detail.match(/^Prefixo inicial inválido: \[(.+), (.+)\]$/)
+  if (initialPrefix) {
+    return t('Prefixo inicial inválido: [{{b1}}, {{b2}}]', {
+      b1: initialPrefix[1],
+      b2: initialPrefix[2]
+    })
+  }
+
+  const chunkPrefix = detail.match(/^Prefixo de chunk inválido: \[(.+), (.+)\]$/)
+  if (chunkPrefix) {
+    return t('Prefixo de chunk inválido: [{{b1}}, {{b2}}]', {
+      b1: chunkPrefix[1],
+      b2: chunkPrefix[2]
+    })
+  }
+
+  const resetFailed = detail.match(/^Reset falhou com rc=(.+)$/)
+  if (resetFailed) {
+    return t('Reset falhou com rc={{rc}}', { rc: resetFailed[1] })
+  }
+
+  const uploadFailed = detail.match(/^Upload falhou com rc=(.+) no offset (.+)$/)
+  if (uploadFailed) {
+    return t('Upload falhou com rc={{rc}} no offset {{offset}}', {
+      rc: uploadFailed[1],
+      offset: uploadFailed[2]
+    })
+  }
+
+  return t(detail)
+}
 
 let mcumgrClient: McumgrClient | null = null
 

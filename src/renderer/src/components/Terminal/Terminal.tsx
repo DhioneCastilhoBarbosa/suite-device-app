@@ -3,8 +3,8 @@ import Button from '../button/Button'
 import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 import SerialManager from '../../utils/serialSDI12'
-import TerminalImagem from '../../assets/TerminalImage.png'
-import { CardInformation } from '../cardInfomation/CardInformation'
+import TerminalSDI12Banner from '../../assets/TerminalSDI12-banner.png'
+import { CardInformation, RichText } from '../cardInfomation/CardInformation'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import { Device } from '../../Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
@@ -136,7 +136,7 @@ export function Terminal(props: TerminalProps): JSX.Element {
   }
 
   const handleSaveToFile = () => {
-    const headerFile = 'Dados gerado do conversor USB/SDI-12 - '
+    const headerFile = t('Dados gerados do conversor USB/SDI-12 - ')
     const date = TimeStamp()
     const Data = headerFile + date + '\n \n' + textValue
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
@@ -194,12 +194,12 @@ export function Terminal(props: TerminalProps): JSX.Element {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={'Terminal SDI12'}>
+      <HeaderDevice DeviceName={t('Terminal SDI-12')}>
         <TerminalWindow size={30} />
       </HeaderDevice>
-      <div className="bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl">
-        <header className="flex items-center justify-between mr-8 ml-8 pt-4 border-b-[1px] border-sky-500">
-          <div className=" mb-2">
+      <div className="bg-white mx-2 mb-6 mt-4 flex w-full min-w-0 max-w-4xl flex-col rounded-lg pb-8 text-sm text-zinc-500 sm:mx-8">
+        <header className="flex flex-wrap items-center justify-between gap-3 mr-4 ml-4 sm:mr-8 sm:ml-8 pt-4 border-b-[1px] border-sky-500">
+          <div className="mb-2">
             <span className="pr-2">{t('Endereço:')}</span>
             <input
               type="number"
@@ -213,10 +213,10 @@ export function Terminal(props: TerminalProps): JSX.Element {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="pr-2 pl-4">{t('Auto-Retry')}</span>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="pr-1">{t('Auto-Retry')}</span>
             <input type="checkbox" checked={autoRetry} onChange={handleCheckboxAutoRetry} />
-            <span className="pr-2 pl-4">{t('timerStamp')}</span>
+            <span className="pr-1 pl-2">{t('timerStamp')}</span>
             <input
               type="checkbox"
               checked={timeStapActive}
@@ -224,7 +224,7 @@ export function Terminal(props: TerminalProps): JSX.Element {
             />
           </div>
         </header>
-        <div className="flex flex-row items-center justify-end mr-8 mt-4 gap-2">
+        <div className="flex flex-row items-center justify-end mr-4 sm:mr-8 mt-4 gap-2">
           <Button size={'small'} onClick={handleSaveToFile}>
             {t('Salvar')}
           </Button>
@@ -233,57 +233,59 @@ export function Terminal(props: TerminalProps): JSX.Element {
             {t('Limpar')}
           </Button>
         </div>
-        <div className="w-full pr-8 pl-8 pt-4 flex">
-          <div className="flex flex-col items-center mr-4 w-36">
-            <span className="mb-2 mr-1 font-light">{t('Comandos')}</span>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand('?!')
-              }}
-            >
-              ?!
-            </Button>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand(`${address}!`)
-              }}
-            >
-              a!
-            </Button>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand(`${address}I!`)
-              }}
-            >
-              al!
-            </Button>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand(`${firstAddress}A${address}!`)
-              }}
-            >
-              aAb!
-            </Button>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand(`${address}C!`)
-              }}
-            >
-              aC!
-            </Button>
-            <Button
-              size={'small'}
-              onClick={() => {
-                handleClickSendComand(`${address}D0!`)
-              }}
-            >
-              aD0!
-            </Button>
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 px-4 pt-4 sm:px-8 md:grid-cols-[9rem_minmax(0,1fr)] md:items-stretch">
+          <div className="flex w-full flex-row flex-wrap items-center justify-center gap-1 md:h-full md:flex-col md:flex-nowrap md:items-stretch">
+            <span className="mb-2 w-full text-center font-light">{t('Comandos')}</span>
+            <div className="flex flex-row flex-wrap items-center justify-center gap-1 md:flex-1 md:flex-col md:flex-nowrap md:justify-between">
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand('?!')
+                }}
+              >
+                ?!
+              </Button>
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand(`${address}!`)
+                }}
+              >
+                a!
+              </Button>
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand(`${address}I!`)
+                }}
+              >
+                al!
+              </Button>
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand(`${firstAddress}A${address}!`)
+                }}
+              >
+                aAb!
+              </Button>
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand(`${address}C!`)
+                }}
+              >
+                aC!
+              </Button>
+              <Button
+                size={'small'}
+                onClick={() => {
+                  handleClickSendComand(`${address}D0!`)
+                }}
+              >
+                aD0!
+              </Button>
+            </div>
           </div>
           <textarea
             ref={textareaRef}
@@ -291,59 +293,63 @@ export function Terminal(props: TerminalProps): JSX.Element {
             id=""
             value={textValue}
             readOnly
-            className="w-full border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm"
+            className="min-h-[16rem] w-full min-w-0 resize-none overflow-y-scroll whitespace-pre-wrap border-[2px] border-zinc-200 text-sm text-black outline-none md:h-full"
           ></textarea>
-        </div>
-        <div className="flex justify-end flex-row mt-4 mr-8 ml-8">
-          <input
-            className="w-[20rem] border-[2px] mb-2 mr-2 rounded-md outline-sky-400"
-            type="text"
-            onChange={handleInputChange}
-            onKeyDown={handleKeyPress}
-            placeholder={t('Digite o comando')}
-          />
-          <Button size={'small'} onClick={() => handleClickSendComand(inputValue)}>
-            {t('Enviar')}
-          </Button>
+          <div className="flex flex-row items-stretch gap-2 md:col-start-2">
+            <input
+              className="min-h-8 min-w-0 flex-1 rounded-md border-[2px] border-zinc-200 px-3 text-sm outline-sky-400"
+              type="text"
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              placeholder={t('Digite o comando')}
+            />
+            <Button
+              size={'small'}
+              className="shrink-0"
+              onClick={() => handleClickSendComand(inputValue)}
+            >
+              {t('Enviar')}
+            </Button>
+          </div>
         </div>
       </div>
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={t('Terminal SDI12')}>
+      <HeaderDevice DeviceName={t('Terminal SDI-12')}>
         <TerminalWindow size={30} />
       </HeaderDevice>
-      <ImageDevice image={TerminalImagem} />
+      <ImageDevice
+        image={TerminalSDI12Banner}
+        link="https://dualbase.com.br/produtos/"
+        fit="contain"
+      />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
+      <div className="flex flex-col items-center justify-center rounded-b-lg bg-[#EDF4FB] pt-3">
         <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            {t(
-              'Conversor USB/SDI12 é um equipamento capaz de comunicar com dispositivos SDI-12 afim de verificar o funcionamento e acessar configurações.'
-            )}
+            <RichText i18nKey="O <b>ConvDB-SDI12</b> é um conversor USB para SDI-12 desenvolvido para facilitar a configuração, testes e integração de sensores e equipamentos compatíveis com o protocolo SDI-12. Compacto e de fácil utilização, permite a comunicação direta entre um computador e dispositivos SDI-12, simplificando atividades de instalação, manutenção e diagnóstico em campo ou laboratório." />
           </p>
         </CardInformation>
 
-        <CardInformation title={t('CARACTERÍSTICAS')}>
+        <CardInformation title={t('DESTAQUES')}>
           <p>
-            {t(
-              'Capacidade de enviar quaisquer comandos digitados (modo transparente), além de possuir alguns atalhos para comandos pré-definidos.'
-            )}
+            • <RichText i18nKey="<b>Conversão USB para SDI-12 de forma simples e confiável;</b>" />
           </p>
-          <p>{t('Aceita múltiplos sensores ligados simultaneamente.')}</p>
           <p>
-            {t(
-              'Identifica o endereço do sensor automaticamente (para este caso permite penas 1 sensor no barramento).'
-            )}
+            • <RichText i18nKey="<b>Facilita configuração, testes e diagnóstico de sensores SDI-12;</b>" />
           </p>
-          <p>{t('Pode salvar LOG de comunicação.')}</p>
+          <p>
+            • <RichText i18nKey="<b>Solução compacta, portátil e de fácil conexão ao computador.</b>" />
+          </p>
         </CardInformation>
 
-        <CardInformation title={t('ESPECIFICAÇÃO')}>
-          <p>{t('Compatível com plataforma Windows (XP ou superior, incluindo Windows 11).')}</p>
-          <p>{t('Compatível com todas as versões do SDI-12 (incluindo v1.4).')}</p>
-          <p>{t('Compatível com USB2.0.')}</p>
-          <p>{t('Alimentação pela porta USB (5V).')}</p>
+        <CardInformation title={t('APLICAÇÕES')}>
+          <p>
+            {t(
+              'Configuração de sensores SDI-12, comissionamento de estações de monitoramento, testes em bancada, manutenção de equipamentos e atividades de suporte técnico em campo.'
+            )}
+          </p>
         </CardInformation>
       </div>
     </ContainerDevice>

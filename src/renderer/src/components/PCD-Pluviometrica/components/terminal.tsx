@@ -34,7 +34,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = t('Dados gerado da PCD Pluviométrica - ')
+    const headerFile = t('Dados gerados da PCD Pluviométrica - ')
     const date = new Date().toLocaleString()
     const Data = sanitizePcdTxtExport(
       headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')

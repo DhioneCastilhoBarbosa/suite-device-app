@@ -427,7 +427,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
     try {
       const result = await ipcRenderer.invoke('save-logs-file', {
-        fileName: t('Pluvio-IoT-{{imei}}.txt', { imei }),
+        fileName: t('Pluvi-IoT-{{imei}}.txt', { imei }),
         content
       })
       if (result.success) {
@@ -462,16 +462,18 @@ export default function PluviDBIotRemote(): React.ReactElement {
         <Drop size={30} />
       </HeaderDevice>
 
-      <div className="flex flex-col justify-center bg-white mr-8 ml-8 mt-4 rounded-lg shadow-lg text-zinc-700 text-sm w-full max-w-5xl mb-1 pb-2">
-        <header className="flex items-center justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-400 min-h-12">
-          <div className="flex gap-4 text-sky-600 font-semibold text-lg">
+      <div className="mb-1 ml-8 mr-8 mt-4 flex w-full max-w-5xl flex-col justify-center rounded-lg border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white pb-2 text-sm text-zinc-700 shadow-sm">
+        <header className="ml-8 mr-8 mt-4 flex min-h-12 items-center justify-between border-b border-sky-200">
+          <div className="flex gap-4 text-lg font-semibold text-sky-600">
             <button>{t('Dispositivos Remotos')}</button>
           </div>
         </header>
 
-        <div className="flex h-[500px] mr-8 ml-8 mt-4 rounded-lg overflow-hidden">
-          <div className="w-1/4 bg-sky-50 p-4 rounded-l-lg flex flex-col">
-            <h3 className="font-bold text-sky-700 mb-3 text-base">{t('Dispositivos')}</h3>
+        <div className="ml-8 mr-8 mt-4 flex h-[500px] overflow-hidden rounded-md border border-sky-100">
+          <div className="flex w-1/4 flex-col rounded-l-md bg-[#F7FBFF] p-4">
+            <h3 className="mb-3 text-base font-bold uppercase tracking-wide text-sky-800">
+              {t('Dispositivos')}
+            </h3>
             <ul className="flex-1 overflow-auto space-y-2">
               {devices.map((device, index) => {
                 const isConnected = connectedDevice?.name === device.name
@@ -479,7 +481,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 return (
                   <li
                     key={index}
-                    className="bg-white border border-sky-200 rounded flex items-center justify-between px-3 py-2 shadow-sm hover:shadow-md transition"
+                    className="flex items-center justify-between rounded-xl border border-sky-200 bg-white px-3 py-2 shadow-sm transition hover:shadow-md"
                   >
                     <span className="font-medium flex-1">{device.name}</span>
                     <div className="flex gap-2 items-center">
@@ -520,7 +522,7 @@ export default function PluviDBIotRemote(): React.ReactElement {
                 setEditDevice(null)
                 setIsModalOpen(true)
               }}
-              className="mt-4 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg shadow-md transition"
+              className="mt-4 rounded-md bg-sky-500 px-4 py-2 font-semibold text-white shadow-sm transition-all duration-150 hover:bg-sky-600 hover:shadow-md"
             >
               {t('+ Adicionar')}
             </button>
@@ -528,20 +530,20 @@ export default function PluviDBIotRemote(): React.ReactElement {
 
           <div className="flex-1 bg-sky-100 p-4 rounded-r-lg flex flex-col">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sky-700 font-semibold">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-sky-800">
                 {t('Terminal')} {connectedDevice ? `- ${connectedDevice.name}` : ''}
               </h3>
               {connectedDevice && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleClearLogs}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                    className="rounded-md bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-red-600"
                   >
                     {t('Limpar Histórico')}
                   </button>
                   <button
                     onClick={handleSaveLogs}
-                    className="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1 rounded text-sm"
+                    className="rounded-md bg-sky-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-sky-600"
                   >
                     {t('Salvar Histórico')}
                   </button>
@@ -549,22 +551,22 @@ export default function PluviDBIotRemote(): React.ReactElement {
               )}
             </div>
 
-            <div className="flex-1 bg-white border border-sky-200 rounded p-3 overflow-auto text-sky-800 shadow-inner">
+            <div className="flex-1 overflow-auto rounded-md border border-sky-100 bg-white p-3 text-sky-800 shadow-sm">
               {terminalOutput.length > 0 ? (
                 terminalOutput.map((msg, index) => (
                   <p
                     key={`${msg.id}-${index}`}
-                    className={`px-2 py-1 rounded mb-1 ${
+                    className={`mb-1 rounded px-2 py-1 ${
                       msg.status === 'responded'
-                        ? 'bg-green-200'
+                        ? 'bg-emerald-50 text-emerald-800'
                         : msg.status === 'warning'
-                          ? 'bg-red-500 text-white'
+                          ? 'bg-red-100 text-red-700'
                           : msg.status === 'pending'
-                            ? 'bg-yellow-200'
+                            ? 'bg-amber-50 text-amber-800'
                             : msg.status === 'highlight'
-                              ? 'bg-gray-200'
+                              ? 'bg-sky-50 text-sky-700'
                               : msg.status === 'error'
-                                ? 'bg-red-800 text-white'
+                                ? 'bg-red-100 text-red-800'
                                 : 'bg-white'
                     }`}
                   >
@@ -572,14 +574,14 @@ export default function PluviDBIotRemote(): React.ReactElement {
                   </p>
                 ))
               ) : (
-                <p className="text-gray-400">
+                <p className="text-sky-400">
                   {t('Conecte a um dispositivo para usar o terminal')}
                 </p>
               )}
               <div ref={terminalEndRef} />
             </div>
 
-            <div className="flex mt-3">
+            <div className="mt-3 flex">
               <input
                 type="text"
                 value={command}
@@ -592,12 +594,12 @@ export default function PluviDBIotRemote(): React.ReactElement {
                     handleSendCommand()
                   }
                 }}
-                className={`flex-1 px-4 py-2 rounded-l-lg outline-none border ${connectedDevice ? 'bg-white border-sky-300 focus:ring-2 focus:ring-sky-400' : 'bg-gray-200 border-gray-300 cursor-not-allowed'} transition`}
+                className={`flex-1 rounded-l-md border px-4 py-2 outline-none transition ${connectedDevice ? 'border-sky-200 bg-white focus:border-sky-400 focus:ring-1 focus:ring-sky-300' : 'cursor-not-allowed border-sky-100 bg-[#F7FBFF] text-zinc-400'}`}
               />
               <button
                 onClick={handleSendCommand}
                 disabled={!connectedDevice}
-                className={`${connectedDevice ? 'bg-sky-500 hover:bg-sky-600' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-r-lg shadow-md transition`}
+                className={`rounded-r-md px-4 py-2 font-semibold text-white shadow-sm transition-all duration-150 ${connectedDevice ? 'bg-sky-400 hover:bg-sky-500' : 'cursor-not-allowed bg-sky-200'}`}
               >
                 {t('Enviar')}
               </button>

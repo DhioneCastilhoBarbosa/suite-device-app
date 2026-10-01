@@ -8,6 +8,8 @@ import { Device } from '../Context/DeviceContext'
 import TSatDB from './TSatDB/TSatDB'
 import PluviDBIot from './PluviDB-Iot/PluviDBIot'
 import PluviDBIotRemote from './PluviDB-Iot/PluviDBIotRemote'
+import PcdPluviometrica from './PCD-Pluviometrica/PcdPluviometrica'
+import PcdPluviometricaRemote from './PCD-Pluviometrica/PcdPluviometricaRemote'
 
 export default function Preview(): JSX.Element | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,7 +42,12 @@ export default function Preview(): JSX.Element | undefined {
   }
   if (device.name === 'PluviDB-Iot-Remote') {
     return <PluviDBIotRemote />
-  } else {
-    return undefined
   }
+  if (device.name === 'PCD-Pluviometrica') {
+    return <PcdPluviometrica isConect={PortOpen.state} portCom={port} PortStatus={PortOpen} />
+  }
+  if (device.name === 'PCD-Pluviometrica-Remote') {
+    return <PcdPluviometricaRemote />
+  }
+  return undefined
 }

@@ -14,6 +14,7 @@ interface ModalProps {
   onClose: () => void
   onCancel?: () => void
   onEnterRecoveryOnly: () => void
+  enviarOsMode?: boolean
   onValidatePassword: (password: string) => Promise<{
     success: boolean
     errorCode?: 'wrong-password' | 'invalid-command' | 'connection-error' | 'unexpected' | string
@@ -25,37 +26,32 @@ export default function PasswordModal({
   onClose,
   onValidatePassword,
   onCancel,
-  onEnterRecoveryOnly
+  onEnterRecoveryOnly,
+  enviarOsMode = false
 }: ModalProps): JSX.Element {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberPassword, setRememberPassword] = useState(false)
-  const [firmwareRecoveryMode, setFirmwareRecoveryMode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    if (firmwareRecoveryMode) return
+    if (enviarOsMode) {
+      setRememberPassword(false)
+      setError('')
+      return
+    }
     const savedPassword = localStorage.getItem('savedPassword')
     if (savedPassword) {
       setPassword(savedPassword)
       setRememberPassword(true)
     }
-  }, [firmwareRecoveryMode])
-
-  const handleFirmwareRecoveryToggle = (): void => {
-    const next = !firmwareRecoveryMode
-    setFirmwareRecoveryMode(next)
-    setError('')
-    if (next) {
-      setRememberPassword(false)
-    }
-  }
+  }, [enviarOsMode])
 
   const handleSubmit = async (): Promise<void> => {
     if (submitting) return
 
-    if (firmwareRecoveryMode) {
+    if (enviarOsMode) {
       onEnterRecoveryOnly()
       return
     }
@@ -93,10 +89,10 @@ export default function PasswordModal({
     }
   }
 
-  const canSubmit = firmwareRecoveryMode || Boolean(password)
+  const canSubmit = enviarOsMode || Boolean(password)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
       <div
         className={`w-full max-w-[420px] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200/80 ${submitting ? 'pointer-events-none opacity-95' : ''}`}
         aria-busy={submitting}
@@ -104,7 +100,7 @@ export default function PasswordModal({
         role="dialog"
         aria-labelledby="pluvi-login-title"
       >
-        <div className="relative bg-gradient-to-br from-sky-500 to-sky-600 px-6 pt-6 pb-8 text-white">
+        <div className="relative bg-gradient-to-br from-sky-500 to-sky-600 px-6 pb-8 pt-6 text-white">
           <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/10" />
           <div className="absolute -left-4 bottom-0 h-20 w-20 rounded-full bg-white/10" />
 
@@ -122,17 +118,31 @@ export default function PasswordModal({
         </div>
 
         <div className="space-y-4 px-6 py-5">
+          {enviarOsMode && (
+            <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-left text-xs leading-relaxed text-red-900">
+              <Warning size={18} className="shrink-0 text-red-600" weight="fill" />
+              <div>
+                <p className="font-bold text-red-600">{t('Modo Atualizar Firmware selecionado')}</p>
+                <p className="mt-1">
+                  {t(
+                    'Acesso limitado à atualização de firmware. Coloque a placa em modo recovery antes de gravar.'
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label
               htmlFor="pluvi-password"
-              className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide ${firmwareRecoveryMode ? 'text-zinc-400' : 'text-zinc-500'}`}
+              className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide ${enviarOsMode ? 'text-zinc-400' : 'text-zinc-500'}`}
             >
               <LockKey size={14} />
               {t('Senha de acesso')}
             </label>
             <div
               className={`flex items-center overflow-hidden rounded-lg border-2 bg-white transition-colors ${
-                firmwareRecoveryMode || submitting
+                enviarOsMode || submitting
                   ? 'border-zinc-200 bg-zinc-50'
                   : error
                     ? 'border-red-300 focus-within:border-red-400'
@@ -145,17 +155,17 @@ export default function PasswordModal({
                 className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-zinc-800 outline-none placeholder:text-zinc-400 disabled:text-zinc-400"
                 value={password}
                 onChange={(e) => {
-                  if (submitting || firmwareRecoveryMode) return
+                  if (submitting || enviarOsMode) return
                   setPassword(e.target.value)
                   setError('')
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleSubmit()
                 }}
-                disabled={submitting || firmwareRecoveryMode}
-                autoFocus={!firmwareRecoveryMode}
+                disabled={submitting || enviarOsMode}
+                autoFocus={!enviarOsMode}
                 placeholder={
-                  firmwareRecoveryMode ? t('Não necessário neste modo') : t('Digite sua senha')
+                  enviarOsMode ? t('Não necessário neste modo') : t('Digite sua senha')
                 }
               />
               <button
@@ -163,8 +173,8 @@ export default function PasswordModal({
                 className="flex shrink-0 items-center justify-center px-3 text-zinc-500 hover:text-sky-600 disabled:opacity-40"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? t('Ocultar senha') : t('Mostrar senha')}
-                disabled={submitting || firmwareRecoveryMode}
-                tabIndex={firmwareRecoveryMode ? -1 : 0}
+                disabled={submitting || enviarOsMode}
+                tabIndex={enviarOsMode ? -1 : 0}
               >
                 {showPassword ? <Eye size={20} /> : <EyeClosed size={20} />}
               </button>
@@ -173,7 +183,7 @@ export default function PasswordModal({
 
           <label
             className={`box-border flex cursor-pointer items-center gap-2.5 rounded-lg border-2 px-3 py-2.5 transition-colors ${
-              firmwareRecoveryMode || submitting
+              enviarOsMode || submitting
                 ? 'cursor-not-allowed border-zinc-100 bg-zinc-50 opacity-60'
                 : 'border-zinc-200 hover:border-sky-300 hover:bg-sky-50/50'
             }`}
@@ -184,46 +194,10 @@ export default function PasswordModal({
               className="h-4 w-4 rounded border-zinc-300 text-sky-500 focus:ring-sky-500"
               checked={rememberPassword}
               onChange={() => setRememberPassword(!rememberPassword)}
-              disabled={submitting || firmwareRecoveryMode}
+              disabled={submitting || enviarOsMode}
             />
             <span className="text-sm text-zinc-600">{t('Lembrar minha senha')}</span>
           </label>
-
-          <label
-            className={`flex cursor-pointer items-start gap-3 rounded-lg border-2 p-3 transition-all ${
-              firmwareRecoveryMode
-                ? 'border-amber-400 bg-amber-50 shadow-sm'
-                : 'border-zinc-200 bg-zinc-50/80 hover:border-amber-300 hover:bg-amber-50/60'
-            } ${submitting ? 'pointer-events-none opacity-60' : ''}`}
-          >
-            <input
-              id="firmware-recovery"
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-amber-400 text-amber-500 focus:ring-amber-500"
-              checked={firmwareRecoveryMode}
-              onChange={handleFirmwareRecoveryToggle}
-              disabled={submitting}
-            />
-            <div className="min-w-0 flex-1 text-left">
-              <p className="text-sm font-semibold leading-snug text-zinc-800">
-                {t('Atualizar firmware')}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                {t('Acesso exclusivo para atualização de firmware')}
-              </p>
-            </div>
-          </label>
-
-          {firmwareRecoveryMode && (
-            <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-left text-xs leading-relaxed text-amber-900">
-              <Warning size={18} className="shrink-0 text-amber-600" weight="fill" />
-              <p>
-                {t(
-                  'Acesso limitado: apenas a aba Atualização. Coloque a placa em modo recovery antes de gravar.'
-                )}
-              </p>
-            </div>
-          )}
 
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-left text-sm text-red-700">
@@ -266,7 +240,7 @@ export default function PasswordModal({
                   </svg>
                   {t('Validando...')}
                 </span>
-              ) : firmwareRecoveryMode ? (
+              ) : enviarOsMode ? (
                 <span className="inline-flex items-center justify-center gap-2 text-center">
                   <ArrowsClockwise size={18} weight="bold" className="shrink-0" />
                   {t('Entrar em modo Atualização')}

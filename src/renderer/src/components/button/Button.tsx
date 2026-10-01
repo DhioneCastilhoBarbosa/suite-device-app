@@ -7,12 +7,21 @@ interface ButtonProps extends ComponentProps<'button'> {
 }
 
 export default function ({ filled, size, className, ...props }: ButtonProps) {
+  const sizeClass =
+    size === 'small'
+      ? 'min-w-[5.5rem] w-auto px-3'
+      : size === 'medium'
+        ? 'min-w-[7rem] w-auto max-w-full px-3'
+        : size === 'large'
+          ? 'min-w-[8rem] w-auto max-w-full px-4'
+          : 'px-3'
+
   return filled ? (
     <button
       {...props}
       className={twMerge(
-        ' bg-sky-400 rounded-md text-sm text-white font-bold hover:bg-transparent hover:text-sky-400 hover:border-[1px] border-sky-400 delay-75 h-7 whitespace-nowrap',
-        size === 'small' ? 'w-24' : size === 'medium' ? 'w-44' : size === 'large' ? 'w-52' : '',
+        'inline-flex flex-row items-center justify-center gap-1.5 rounded-md border border-sky-400 bg-sky-400 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-sky-500 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 h-8 px-3 leading-none',
+        sizeClass,
         className
       )}
     >
@@ -22,8 +31,8 @@ export default function ({ filled, size, className, ...props }: ButtonProps) {
     <button
       {...props}
       className={twMerge(
-        ' flex flex-row items-center justify-center mb-2 p-4 gap-1 border-[1px] border-sky-400 rounded-md text-sm text-sky-400 font-bold hover:bg-sky-400 hover:text-white delay-75 h-7',
-        size === 'small' ? 'w-24' : size === 'medium' ? 'w-44' : size === 'large' ? 'w-52' : '',
+        'inline-flex flex-row items-center justify-center gap-1.5 rounded-md border border-sky-400 bg-white text-sm font-semibold text-sky-500 shadow-sm transition-all duration-150 hover:bg-sky-500 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 h-8 px-3 leading-none',
+        sizeClass,
         className
       )}
     >

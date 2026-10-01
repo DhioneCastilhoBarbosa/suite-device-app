@@ -15,7 +15,11 @@ export default function LoadingModal({ onStop }: LoadingModalProps): JSX.Element
           {t('Procurando dispositivo')}.
         </p>
 
-        <button className=" w-32 px-2 py-2 mt-6 bg-red-500 text-white rounded" onClick={onStop}>
+        <button
+          type="button"
+          className=" w-32 px-2 py-2 mt-6 bg-red-500 text-white rounded"
+          onClick={onStop}
+        >
           {t('Parar')}
         </button>
       </div>

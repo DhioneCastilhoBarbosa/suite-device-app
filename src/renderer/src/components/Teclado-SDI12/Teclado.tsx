@@ -1,6 +1,6 @@
-import { Drop } from '@phosphor-icons/react'
-import { CardInformation } from '../cardInfomation/CardInformation'
-import ImgTeclado from '../../assets/TecladoSDI12.svg'
+import { Drop, GearSix } from '@phosphor-icons/react'
+import { CardInformation, RichText } from '../cardInfomation/CardInformation'
+import ImgTeclado from '../../assets/TecladoSDI12-banner.png'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
@@ -202,26 +202,29 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={t('Teclado-SDI12')}>
+      <HeaderDevice DeviceName={t('Teclado SDI-12')}>
         <Drop size={30} />
       </HeaderDevice>
 
-      <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-4 rounded-lg text-zinc-500 text-sm w-full max-w-4xl  ">
-        <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 ">
-          <div className="flex gap-4">
+      <div className="mx-4 mb-4 mt-4 flex w-full min-w-0 max-w-4xl flex-col justify-start overflow-visible rounded-lg bg-white pb-4 text-sm text-zinc-500 shadow-sm sm:mx-8">
+        <header className="mx-4 mt-3 shrink-0 overflow-visible border-b border-sky-500 sm:mx-6">
+          <div className="flex min-h-11 flex-wrap items-end justify-start gap-1 overflow-visible sm:gap-2">
             <button
-              className={`border-b-2 border-transparent ${
-                colorConfig ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+              className={`inline-flex shrink-0 items-center gap-1.5 overflow-visible rounded-t-md px-3 py-2 text-sm font-medium leading-normal transition-colors duration-150 ${
+                colorConfig
+                  ? 'border-b-2 border-sky-500 text-sky-600'
+                  : 'border-b-2 border-transparent text-zinc-500 hover:text-sky-500'
+              }`}
               onClick={() => handleMenu('config')}
             >
+              <GearSix size={16} />
               {t('Configurações')}
             </button>
           </div>
         </header>
 
         {
-          <div className="h-[70vh] overflow-y-auto mt-2">
+          <div className="mt-2 min-w-0 overflow-y-auto">
             <Settings
               informations={ResponseDonwInformation}
               clear={ClearInformations}
@@ -257,44 +260,40 @@ export default function TecladoSDI12(props: TecladoSDI12Props) {
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={t('Teclado-SDI12')}>
+      <HeaderDevice DeviceName={t('Teclado SDI-12')}>
         <Drop size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgTeclado} link="https://dualbase.com.br/produto" />
+      <ImageDevice
+        image={ImgTeclado}
+        link="https://dualbase.com.br/produtos/"
+        fit="contain"
+      />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
+      <div className="flex flex-col items-center justify-center rounded-b-lg bg-[#EDF4FB] pt-3">
         <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            {t(
-              'Dispositivo que permite a entrada manual de dados e a comunicação com um datalogger utilizando protocolo de comunicação serial SDI-12.'
-            )}
+            <RichText i18nKey="O <b>Teclado SDI-12</b> é um dispositivo de entrada de informações para dataloggers. Permite a inserção manual de valores diretamente na PCD. Conecta-se por meio de um cabo SDI-12 ao datalogger existente na estação." />
           </p>
         </CardInformation>
 
-        <CardInformation title={t('CARACTERÍSTICAS')}>
-          <p>{t('Caixa de proteção IP65.')}</p>
-          <p>{t('Display 12 Digitos 2 linhas.')}</p>
-          <p>{t('Entrada de dados via teclado de membrana.')}</p>
+        <CardInformation title={t('DESTAQUES')}>
+          <p>
+            • <RichText i18nKey="<b>Permite o registro de variáveis diárias no campo;</b>" />
+          </p>
+          <p>
+            •{' '}
+            <RichText i18nKey="<b>Permite a comparação e validação entre os dados medidos e os registros do observador;</b>" />
+          </p>
+          <p>
+            • <RichText i18nKey="<b>Configurável para até 10 parâmetros.</b>" />
+          </p>
         </CardInformation>
 
-        <CardInformation title={t('ESPECIFICAÇÃO')}>
+        <CardInformation title={t('APLICAÇÕES')}>
           <p>
             {t(
-              'Possuir membrana de 16 teclas produzido com base nas recomendações NBR 13173 de agosto de 2012.'
-            )}
-          </p>
-          <p>{t('Faixa de temperatura de operação: -40º a +80ºC')}</p>
-          <p>{t('Grau de proteção: IP65')}</p>
-          <p>{t('Alimentação: 10 a 16 Vcc')}</p>
-          <p>{t('Sinal de saída digital: SDI-12')}</p>
-          <p>{t('Comunicação de configuração: RS232/USB')}</p>
-          <p>
-            {t('Display LCD alfanumérico com 02 linhas de 12 dígitos cada linha e 16 segmentos.')}
-          </p>
-          <p>
-            {t(
-              'Configurável a partir de aplicativo externo compatível com sistema operacional Windows 10.'
+              'Meteorologia operacional, pesquisa climática, universidades, órgãos públicos, monitoramento ambiental e projetos institucionais.'
             )}
           </p>
         </CardInformation>

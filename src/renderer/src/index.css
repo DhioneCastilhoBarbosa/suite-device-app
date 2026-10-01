@@ -2,6 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
+html,
+body,
+#root {
+  height: 100%;
   overflow: hidden;
+}
+
+/* Rolagem só nas áreas que precisam: painel do dispositivo e lista da sidebar. */
+.device-panel-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.sidebar-device-list {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.device-panel-scroll,
+.app-scroll,
+.sidebar-device-list {
+  scrollbar-width: thin;
+}
+
+.device-panel-scroll,
+.app-scroll {
+  scrollbar-color: rgba(30, 158, 244, 0.55) transparent;
+}
+
+.sidebar-device-list {
+  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
+}
+
+.device-panel-scroll::-webkit-scrollbar,
+.app-scroll::-webkit-scrollbar,
+.sidebar-device-list::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+.device-panel-scroll::-webkit-scrollbar-track,
+.app-scroll::-webkit-scrollbar-track,
+.sidebar-device-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.device-panel-scroll::-webkit-scrollbar-thumb,
+.app-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(30, 158, 244, 0.45);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.sidebar-device-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.35);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.device-panel-scroll::-webkit-scrollbar-thumb:hover,
+.app-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(23, 105, 160, 0.75);
+}
+
+.sidebar-device-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.65);
+}
+
+.device-panel-scroll::-webkit-scrollbar-button:vertical:start:increment,
+.device-panel-scroll::-webkit-scrollbar-button:vertical:end:decrement,
+.app-scroll::-webkit-scrollbar-button:vertical:start:increment,
+.app-scroll::-webkit-scrollbar-button:vertical:end:decrement,
+.sidebar-device-list::-webkit-scrollbar-button:vertical:start:increment,
+.sidebar-device-list::-webkit-scrollbar-button:vertical:end:decrement {
+  display: none;
+  height: 0;
+}
+
+.device-panel-scroll::-webkit-scrollbar-button:single-button:vertical:decrement,
+.device-panel-scroll::-webkit-scrollbar-button:single-button:vertical:increment,
+.app-scroll::-webkit-scrollbar-button:single-button:vertical:decrement,
+.app-scroll::-webkit-scrollbar-button:single-button:vertical:increment,
+.sidebar-device-list::-webkit-scrollbar-button:single-button:vertical:decrement,
+.sidebar-device-list::-webkit-scrollbar-button:single-button:vertical:increment {
+  display: block;
+  height: 16px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+}
+
+.device-panel-scroll::-webkit-scrollbar-button:single-button:vertical:decrement,
+.app-scroll::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 7.6 6 3.8l3.8 3.8' fill='none' stroke='%231769A0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.device-panel-scroll::-webkit-scrollbar-button:single-button:vertical:increment,
+.app-scroll::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 4.4 6 8.2l3.8-3.8' fill='none' stroke='%231769A0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.sidebar-device-list::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 7.6 6 3.8l3.8 3.8' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.sidebar-device-list::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 4.4 6 8.2l3.8-3.8' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.device-banner {
+  overflow: visible !important;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.device-banner img {
+  display: block;
+  width: 100%;
+  height: auto !important;
 }

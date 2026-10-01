@@ -11,6 +11,7 @@ import Button from '@renderer/components/button/Button'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SerialManager } from '@renderer/utils/serialManager'
 import { pluviFirmware } from '../PluviDBIot'
+import { translateFirmwareDetail } from '@renderer/utils/pluviFirmware'
 import { ModalUpdate } from '@renderer/components/modal/modalUpdate'
 import { ModalSucess } from '@renderer/components/modal/modalSucces'
 import { ModalFailUpdate } from '@renderer/components/modal/modalFailUpdate'
@@ -100,7 +101,16 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
   const [showModalFail, setShowModalFail] = useState(false)
 
   const logText = useMemo(
-    () => logEntries.map((e) => `[${e.ts}] ${t(e.key, e.params)}\n`).join(''),
+    () =>
+      logEntries
+        .map((e) => {
+          const params =
+            e.params && typeof e.params.detail === 'string'
+              ? { ...e.params, detail: translateFirmwareDetail(e.params.detail) }
+              : e.params
+          return `[${e.ts}] ${t(e.key, params)}\n`
+        })
+        .join(''),
     [logEntries, i18n.language, t]
   )
 
@@ -388,7 +398,7 @@ export function Update({ isConect }: UpdateProps): JSX.Element {
         </div>
       </div>
 
-      <div className="flex flex-wrap justify-end gap-3 border-t border-sky-100 pt-3">
+      <div className="flex flex-wrap justify-end gap-3 border-t border-sky-100 pb-4 pt-3">
         <Button
           size="medium"
           className="shrink-0"

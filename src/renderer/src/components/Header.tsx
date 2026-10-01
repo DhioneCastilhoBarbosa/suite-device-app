@@ -15,7 +15,7 @@ export function Header() {
   }
 
   return (
-    <div className="max-h-16 bg-slate-50 border-b-[2px] border-sky-500 flex flex-row justify-between px-2 py-1 items-center w-screen fixed z-20">
+    <div className="z-20 flex w-full shrink-0 flex-row items-center justify-between border-b-[2px] border-sky-500 bg-slate-50 px-2 py-1">
       <div>
         <img className="w-44" src={logo} alt="Logotipo da empresa dualbase" />
       </div>

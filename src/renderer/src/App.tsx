@@ -6,7 +6,7 @@ import { ToastContainer } from 'react-toastify'
 function App(): JSX.Element {
   return (
     <>
-      <div className="flex flex-col items-center h-screen ">
+      <div className="flex h-screen w-full flex-col overflow-hidden">
         <Header />
         <Main />
         <Footer />

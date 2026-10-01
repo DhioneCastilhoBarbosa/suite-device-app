@@ -2,7 +2,7 @@ import LoadingData from '@renderer/components/loading/loadingData'
 import Button from '@renderer/components/button/Button'
 import { Device } from '../../../Context/DeviceContext'
 import { readModbusData } from '../../../utils/modbusRTU'
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { t } from 'i18next'
 import {
   HardDrives,
@@ -45,30 +45,44 @@ const MODBUS_CALLS = [
 
 export default function Information() {
   const [modbusData, setModbusData] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const { mode }: any = Device()
+  const requestId = useRef(0)
+
+  const readInfo = useCallback(async () => {
+    const results: string[] = []
+    for (const { address, register, Int16, float32 } of MODBUS_CALLS) {
+      const data = await readModbusData(address, register, Int16, float32, 250)
+      results.push(data as string)
+    }
+    return results
+  }, [])
 
   const fetchData = useCallback(async () => {
-    if (mode.state) return
-
-    setIsLoading(true)
-    setModbusData([])
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      const results: string[] = []
-      for (const { address, register, Int16, float32 } of MODBUS_CALLS) {
-        const data = await readModbusData(address, register, Int16, float32, 250)
-        results.push(data as string)
-        await new Promise((resolve) => setTimeout(resolve, 300))
-      }
-      setModbusData(results)
-    } catch (error) {
-      // ignore
-    } finally {
-      setTimeout(() => setIsLoading(false), 500)
+    if (mode.state) {
+      setIsLoading(false)
+      return
     }
-  }, [mode.state])
+
+    const id = ++requestId.current
+    setIsLoading(true)
+    const apply = (data: string[] | null) => {
+      if (id !== requestId.current) return
+      if (data) setModbusData(data)
+      setIsLoading(false)
+    }
+
+    try {
+      try {
+        apply(await readInfo())
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+        apply(await readInfo())
+      }
+    } catch {
+      apply(null)
+    }
+  }, [mode.state, readInfo])
 
   useEffect(() => {
     void fetchData()

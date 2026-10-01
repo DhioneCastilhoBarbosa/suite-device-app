@@ -4,9 +4,9 @@ import { t } from 'i18next'
 import {
   FolderOpen,
   FloppyDisk,
-  DownloadSimple,
   UploadSimple,
   ArrowCounterClockwise,
+  ArrowsClockwise,
   Broom
 } from '@phosphor-icons/react'
 
@@ -54,11 +54,11 @@ export default function ButtonSet({
   return (
     <>
       <div className="flex items-start justify-between  mb-2 border-b-[1px] border-sky-500  "></div>
-      <div className="flex flex-row justify-center gap-1 items-center  mb-8 ">
+      <div className="mt-1 flex w-full flex-row flex-wrap items-center justify-between gap-y-2 pb-2">
         <Button
           filled={false}
           size={'medium'}
-          className="text-[11px] px-0 py-6"
+          className="px-1 py-2 text-[11px]"
           onClick={handleClearFailSafe}
         >
           <Broom size={24} />
@@ -67,7 +67,7 @@ export default function ButtonSet({
         <Button
           filled={false}
           size={'medium'}
-          className="text-[11px] px-0 py-6"
+          className="px-1 py-2 text-[11px]"
           onClick={handleRetornFactory}
         >
           <ArrowCounterClockwise size={24} />
@@ -76,7 +76,7 @@ export default function ButtonSet({
         <Button
           filled={false}
           size={'medium'}
-          className="text-[11px] px-0 py-6"
+          className="px-1 py-2 text-[11px]"
           onClick={handleSelectFile}
         >
           <FolderOpen size={24} />
@@ -85,7 +85,7 @@ export default function ButtonSet({
         <Button
           filled={false}
           size={'medium'}
-          className="text-[11px] px-0 py-6"
+          className="px-1 py-2 text-[11px]"
           onClick={handleSaveToFile}
         >
           <FloppyDisk size={24} />
@@ -96,15 +96,15 @@ export default function ButtonSet({
           filled={false}
           size={'medium'}
           onClick={handleDown}
-          className="text-[11px] px-1 py-6"
+          className="px-1 py-2 text-[11px]"
         >
-          <DownloadSimple size={24} />
-          {t('Baixar informação')}
+          <ArrowsClockwise size={24} />
+          {t('Atualizar')}
         </Button>
         <Button
           filled={false}
           size={'medium'}
-          className="text-[11px] px-1 py-6"
+          className="px-1 py-2 text-[11px]"
           onClick={handleSend}
         >
           <UploadSimple size={24} />

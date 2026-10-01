@@ -1,9 +1,9 @@
-import { Drop } from '@phosphor-icons/react'
-import { CardInformation } from '../cardInfomation/CardInformation'
-import ImgBorbulha from '../../assets/LinnimDdCAP.svg'
+import { ArrowsClockwise, Drop, GearSix, Info } from '@phosphor-icons/react'
+import { CardInformation, RichText } from '../cardInfomation/CardInformation'
+import ImgLimniDbCap from '../../assets/LimniDB-CAP-banner.png'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import Information from './components/information'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
@@ -22,6 +22,13 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
   const [colorInfo, setColorInfo] = useState(true)
   const [colorConfig, setColorConfig] = useState(false)
   const [colorUpdate, setColorUpdate] = useState(false)
+  const [updateFirmwareSelected, setUpdateFirmwareSelected] = useState(false)
+  const isFirmwareOnly = props.isConect && updateFirmwareSelected
+
+  useEffect(() => {
+    if (!props.isConect) return
+    handleMenu(updateFirmwareSelected ? 'update' : 'info')
+  }, [props.isConect])
 
   function handleMenu(menu): void {
     if (menu === 'info') {
@@ -43,90 +50,122 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
 
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
-      <HeaderDevice DeviceName={t('LimniDB-Cap')}>
+      <HeaderDevice DeviceName={t('LimniDB-CAP')}>
         <Drop size={30} />
       </HeaderDevice>
 
-      <div className=" flex flex-col justify-center bg-white mr-8 ml-8 mt-28 rounded-lg text-zinc-500 text-sm w-full max-w-4xl ">
-        <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 ">
-          <div className="flex gap-4">
-            <button
-              className={`border-b-2 border-transparent ${
-                colorInfo ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('info')}
-            >
-              {t('Informações')}
-            </button>
-            <button
-              className={`border-b-2 border-transparent ${
-                colorConfig ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('config')}
-            >
-              {t('Configurações')}
-            </button>
-            <button
-              className={`border-b-2 border-transparent ${
-                colorUpdate ? 'text-sky-500' : ''
-              } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
-              onClick={() => handleMenu('update')}
-            >
-              {t('Atualização')}
-            </button>
+      <div className="mx-2 mb-2 mt-2 flex min-h-0 w-full min-w-0 max-w-4xl flex-1 flex-col overflow-hidden rounded-lg bg-white pb-2 text-sm text-zinc-500 shadow-sm sm:mx-4">
+        <header className="mx-4 mt-2 shrink-0 border-b border-sky-500 sm:mx-6">
+          <div className="flex flex-wrap justify-start gap-1 sm:gap-2">
+            {!isFirmwareOnly && (
+              <>
+                <button
+                  className={`inline-flex items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                    colorInfo
+                      ? 'border-b-2 border-sky-500 text-sky-600'
+                      : 'border-b-2 border-transparent text-zinc-500 hover:text-sky-500'
+                  }`}
+                  onClick={() => handleMenu('info')}
+                >
+                  <Info size={16} />
+                  {t('Informações')}
+                </button>
+                <button
+                  className={`inline-flex items-center gap-1.5 rounded-t-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                    colorConfig
+                      ? 'border-b-2 border-sky-500 text-sky-600'
+                      : 'border-b-2 border-transparent text-zinc-500 hover:text-sky-500'
+                  }`}
+                  onClick={() => handleMenu('config')}
+                >
+                  <GearSix size={16} />
+                  {t('Configurações')}
+                </button>
+              </>
+            )}
+            {isFirmwareOnly && (
+              <button
+                className="inline-flex items-center gap-1.5 rounded-t-md border-b-2 border-sky-500 px-3 py-2 text-sm font-medium text-sky-600"
+                onClick={() => handleMenu('update')}
+              >
+                <ArrowsClockwise size={16} />
+                {t('Atualização')}
+              </button>
+            )}
           </div>
         </header>
 
-        {menuName === 'info' ? (
-          <Information />
+        {isFirmwareOnly ? (
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto pb-2">
+            <UpdateModubus />
+          </div>
         ) : menuName === 'config' ? (
-          <div className="">
+          <div className="app-scroll min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto px-1 pb-2">
             <Settings />
             <Measure />
           </div>
         ) : (
-          <UpdateModubus />
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto">
+            <Information />
+          </div>
         )}
       </div>
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'LimniDB-Cap'}>
+      <HeaderDevice
+        DeviceName={'LimniDB-CAP'}
+        rightSlot={
+          <label
+            className={`flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 transition-colors ${
+              updateFirmwareSelected ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded border-white/60 text-[#1769A0] focus:ring-white/40 focus:ring-offset-0"
+              checked={updateFirmwareSelected}
+              onChange={() => setUpdateFirmwareSelected((prev) => !prev)}
+            />
+            <span className="text-xs font-semibold text-white/90">{t('Atualizar Firmware')}</span>
+          </label>
+        }
+      >
         <Drop size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgBorbulha} link="https://dualbase.com.br/produto/limnidb-cap/" />
+      <ImageDevice
+        image={ImgLimniDbCap}
+        link="https://dualbase.com.br/produto/limnidb-cap/"
+        fit="contain"
+      />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
+      <div className="flex flex-col items-center justify-center rounded-b-lg bg-[#EDF4FB] pt-3">
         <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            {t(
-              'O LimniDB-CAP faz a medição de pressão através do elemento capacitivo cerâmico o que o deixa muito robusto sem perder as qualidades metrológicas.'
-            )}
+            <RichText i18nKey="O <b>LimniDB-CAP</b> é um sensor de nível de água (limnímetro) com elemento capacitivo cerâmico, projetado para unir <b>robustez mecânica e excelente desempenho metrológico</b>. É uma solução confiável para operações contínuas em ambientes exigentes." />
           </p>
         </CardInformation>
 
-        <CardInformation title={t('CARACTERÍSTICAS')}>
-          <p>{t('Corpo em aço inox 316L.')}</p>
-          <p>{t('Elemento do sensor capacitivo cerâmico com compensação de temperatura.')}</p>
-          <p>{t('Cabo em poliuretano com filtro contra radiação UV com Kevlar (opcional).')}</p>
-          <p>{t('Tipo de medição disponível: absoluto ou diferencial.')}</p>
+        <CardInformation title={t('DESTAQUES')}>
+          <p>
+            •{' '}
+            <RichText i18nKey="<b>Elemento capacitivo cerâmico</b> para maior robustez em campo;" />
+          </p>
+          <p>
+            •{' '}
+            <RichText i18nKey="<b>Baixíssimo consumo energético</b>, ideal para estações remotas;" />
+          </p>
+          <p>
+            •{' '}
+            <RichText i18nKey="<b>Saídas digitais RS-485 e SDI-12</b>, com ampla compatibilidade de integração." />
+          </p>
         </CardInformation>
 
-        <CardInformation title={t('ESPECIFICAÇÃO')}>
-          <p>{t("Faixa de medição: 0 a 20 mca (metro de coluna d'água).")}</p>
-          <p>{t('Resolução: 0,001 mca (1 mm)')}</p>
-          <p>{t('Faixa de temperatura compensada: -20º a +80ºC')}</p>
-          <p>{t('Faixa de temperatura de operação: -40º a +80ºC')}</p>
-          <p>{t('Incerteza máxima associada: ± 0,1% F.E. @ -10º a +60ºC')}</p>
-          <p>{t('Grau de proteção: IP68')}</p>
-          <p>{t('Alimentação: 8 a 28 Vcc')}</p>
-          <p>{t('Consumo: 5 mA máx')}</p>
-          <p>{t('Sinal de saída digital: RS-485')}</p>
-          <p>{t('Sinal de saída (opcional): SDI-12')}</p>
+        <CardInformation title={t('APLICAÇÕES')}>
           <p>
             {t(
-              "Unidades de indicação: cca (centímetro de coluna d'água), mca, pé (ft), mBar e PSI"
+              'Projetos hidrológicos permanentes, monitoramento remoto e redes de coleta de dados com foco em durabilidade e estabilidade.'
             )}
           </p>
         </CardInformation>

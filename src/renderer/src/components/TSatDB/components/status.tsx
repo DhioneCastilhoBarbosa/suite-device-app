@@ -3,12 +3,22 @@ import Button from '@renderer/components/button/Button'
 import { useEffect, useRef, useState } from 'react'
 import { t } from 'i18next'
 
+function lastTransmissionStatus(raw: string | undefined): string {
+  if (!raw?.trim()) return 'N/A'
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !/^ltxs$/i.test(line))
+  return lines.join('\n') || 'N/A'
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 type Props = {
   receiverVER: string | undefined
   receiverRST: string | undefined
   receiverTIME: string | undefined
   receiverTEMP: string | undefined
+  receiverLTXS: string | undefined
   refreshInformation: () => void
   // clear: boolean | undefined
   // onClearReset: (newValue: boolean) => void
@@ -20,6 +30,7 @@ export default function Status({
   receiverRST,
   receiverTIME,
   receiverTEMP,
+  receiverLTXS,
   refreshInformation
 }: Props): JSX.Element {
   const [dataVer, setDataVer] = useState<string[]>([])
@@ -57,148 +68,147 @@ export default function Status({
     setTx(dataRst[1] ? dataRst[1].replace('Transmitter:', '') : 'N/A')
   }, [dataRst])
 
-  //console.log(dataVer[1].replace('Serial Number:', ''))
+  const fieldClass = 'flex h-full min-w-0 w-full flex-col'
+  const inputClass = 'mt-auto h-7 w-full rounded-md border border-sky-500 p-2 text-center'
+  const labelClass = 'mb-1 text-sm leading-snug'
+  const pairLabelClass = 'mb-1 min-h-[2.5rem] text-sm leading-snug'
+
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <div className="flex flex-col border border-sky-500 rounded-md py-4 mt-16 px-5">
-        <div className="flex flex-row gap-6 flex-wrap items-end justify-center ">
-          <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">{t('Número de série')}</label>
+    <div className="flex w-full min-w-0 flex-col items-center justify-center gap-3 px-1 pb-1">
+      <div className="mt-4 flex w-full min-w-0 flex-col rounded-md border border-sky-500 px-3 py-4 sm:px-5">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-stretch">
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Número de série')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataVer[1] ? dataVer[1].replace('Serial Number:', '') : 'N/A'}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">{t('Versão do hardware')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Versão do hardware')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataVer[2] ? dataVer[2].replace('Hardware Version:', '') : 'N/A'}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">{t('Versão do firmware')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Versão do firmware')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataVer[3] ? dataVer[3].replace('Firmware Version:', '') : 'N/A'}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">{t('Data e hora')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Data e hora')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataTime[1] ? dataTime[1].replace('Time=', '') : 'N/A'}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">{t('Fail Safe')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Fail Safe')}</label>
             <input
-              className={`border border-sky-500 rounded-md p-2 text-center h-7 ${FailSafe != ' OK' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
+              className={`${inputClass} ${FailSafe != ' OK' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
               type="text"
               value={FailSafe}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-md mb-1">{t('Habilitar transmissão')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Habilitar transmissão')}</label>
             <input
-              className={`border border-sky-500 rounded-md p-2 text-center h-7 ${Tx != 'ENABLE' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
+              className={`${inputClass} ${Tx != 'ENABLE' ? 'bg-yellow-300 font-bold' : 'bg-white font-normal'}`}
               type="text"
               value={Tx}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">{t('Tensão de alimentação')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Tensão de alimentação')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataRst[11] ? dataRst[11].replace('Supply voltage: ', '') : 'N/A'}
               readOnly
             />
           </div>
 
-          <div className="flex flex-col w-40 ">
-            <label className="text-sm mb-1">{t('Temperatura')}</label>
+          <div className={fieldClass}>
+            <label className={labelClass}>{t('Temperatura')}</label>
             <input
-              className="border border-sky-500 rounded-md p-2 text-center h-7"
+              className={inputClass}
               type="text"
               value={dataTemp[1] ? dataTemp[1].replace('Temp = ', '') : 'N/A'}
               readOnly
             />
           </div>
-        </div>
-        <div className="flex flex-row mt-7 px-8 items-center justify-around gap-6">
-          <div className="flex flex-row  items-center justify-center gap-6 w-full">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col w-40 ">
-                <label className="text-md mb-1">{t('Próxima transmissão temporizada')}</label>
-                <input
-                  className="border border-sky-500 rounded-md p-2 text-center h-7"
-                  type="text"
-                  value={dataRst[6] ? dataRst[6].replace('Next Timed Tx:', '') : 'N/A'}
-                  readOnly
-                />
-              </div>
 
-              <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">{t('Próxima transmissão aleatória')}</label>
-                <input
-                  className="border border-sky-500 rounded-md p-2 text-center h-7"
-                  type="text"
-                  value={dataRst[9] ? dataRst[9].replace('Next Random Tx:', '') : 'N/A'}
-                  readOnly
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">{t('Contagem do buffer módulo temporizado')}</label>
-                <input
-                  className="border border-sky-500 rounded-md p-2 text-center h-7"
-                  type="text"
-                  value={dataRst[5] ? dataRst[5].replace('Timed Message Length: ', '') : 'N/A'}
-                  readOnly
-                />
-              </div>
-
-              <div className="flex flex-col w-40 ">
-                <label className="text-sm mb-1">{t('Contagem do buffer módulo aleatório')}</label>
-                <input
-                  className="border border-sky-500 rounded-md p-2 text-center h-7"
-                  type="text"
-                  value={dataRst[7] ? dataRst[7].replace('Random Message Length: ', '') : 'N/A'}
-                  readOnly
-                />
-              </div>
-            </div>
+          <div className={`${fieldClass} lg:col-start-1 lg:row-start-3`}>
+            <label className={pairLabelClass}>{t('Próxima transmissão temporizada')}</label>
+            <input
+              className={inputClass}
+              type="text"
+              value={dataRst[6] ? dataRst[6].replace('Next Timed Tx:', '') : 'N/A'}
+              readOnly
+            />
           </div>
-          <div className="flex flex-col gap-2 justify-start items-start w-full">
-            <label className="text-sm mb-1">{t('Status da última transmissão')}</label>
+
+          <div className={`${fieldClass} lg:col-start-2 lg:row-start-3`}>
+            <label className={pairLabelClass}>{t('Contagem do buffer módulo temporizado')}</label>
+            <input
+              className={inputClass}
+              type="text"
+              value={dataRst[5] ? dataRst[5].replace('Timed Message Length: ', '') : 'N/A'}
+              readOnly
+            />
+          </div>
+
+          <div className={`${fieldClass} lg:col-start-1 lg:row-start-4`}>
+            <label className={pairLabelClass}>{t('Próxima transmissão aleatória')}</label>
+            <input
+              className={inputClass}
+              type="text"
+              value={dataRst[9] ? dataRst[9].replace('Next Random Tx:', '') : 'N/A'}
+              readOnly
+            />
+          </div>
+
+          <div className={`${fieldClass} lg:col-start-2 lg:row-start-4`}>
+            <label className={pairLabelClass}>{t('Contagem do buffer módulo aleatório')}</label>
+            <input
+              className={inputClass}
+              type="text"
+              value={dataRst[7] ? dataRst[7].replace('Random Message Length: ', '') : 'N/A'}
+              readOnly
+            />
+          </div>
+
+          <div className="flex min-h-[10rem] min-w-0 w-full flex-col sm:col-span-2 lg:col-span-2 lg:col-start-3 lg:row-span-2 lg:row-start-3">
+            <label className={pairLabelClass}>{t('Status da última transmissão')}</label>
             <textarea
               ref={textareaRef}
-              className="border border-sky-500 rounded-md p-2 text-justify h-36 w-[347px] resize-none"
-              value={dataRst[4] ? dataRst[4].replace('Time To Next Tx: ', '') : 'N/A'}
+              className="mt-auto h-36 min-h-0 w-full min-w-0 flex-1 resize-none rounded-md border border-sky-500 p-2 text-justify lg:h-auto"
+              value={lastTransmissionStatus(receiverLTXS)}
               readOnly
             ></textarea>
           </div>
         </div>
       </div>
-      <div className="flex flex-row justify-end items-end w-full">
+      <div className="flex w-full flex-row items-end justify-end px-2">
         <Button onClick={refreshInformation}>
           <ArrowsClockwise size={24} />
           {t('Atualizar')}

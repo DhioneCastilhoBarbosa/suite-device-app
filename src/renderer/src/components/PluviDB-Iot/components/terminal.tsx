@@ -16,15 +16,14 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSendComand = (): void => {
-    const txMessage = `TX: ${inputValue}\r` // Adiciona o prefixo TX para a mensagem enviada
-    setDataTerminal((prevData) => [...prevData, txMessage]) // Adiciona a mensagem de envio
+    const txMessage = `TX: ${inputValue}\r`
+    setDataTerminal((prevData) => [...prevData, txMessage])
     handleSendComandTerminal(inputValue)
     setInputValue('')
   }
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter') {
-      //console.log('Enter')
       handleSendComand()
     }
   }
@@ -34,7 +33,7 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
   }
 
   const handleSaveToFile = (): void => {
-    const headerFile = t('Dados gerado do PluviDB-IoT - ')
+    const headerFile = t('Dados gerados do PluviDB-IoT - ')
     const date = new Date().toLocaleString()
     const Data = headerFile + date + '\n \n' + dataTerminal.join('').replace(/,/g, '')
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
@@ -42,16 +41,14 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
     const dateObj = new Date(
       date.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/, '$3-$2-$1T$4:$5:$6')
     )
-    // Formatando a data no formato desejado
     const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}${(dateObj.getMonth() + 1).toString().padStart(2, '0')}${dateObj.getFullYear().toString().slice(-2)}-${dateObj.getHours().toString().padStart(2, '0')}${dateObj.getMinutes().toString().padStart(2, '0')}${dateObj.getSeconds().toString().padStart(2, '0')}`
-    //console.log(formattedDate)
     saveAs(blob, `Terminal-PluviDB-IoT_${formattedDate}.txt`)
   }
 
   useEffect(() => {
     if (receiverTerminal) {
-      const rxMessage = `RX: ${receiverTerminal}\r` // Adiciona o prefixo RX para a mensagem recebida
-      setDataTerminal((prevData) => [...prevData, rxMessage]) // Adiciona a mensagem de recebimento
+      const rxMessage = `RX: ${receiverTerminal}\r`
+      setDataTerminal((prevData) => [...prevData, rxMessage])
     }
   }, [receiverTerminal])
 
@@ -60,43 +57,52 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
       textareaRef.current.scrollTop = textareaRef.current.scrollHeight
     }
   }, [dataTerminal])
+
   useEffect(() => {
-    // Limpa o estado de dataTerminal toda vez que o componente é carregado.
-    setDataTerminal([]) // Limpa o terminal no primeiro carregamento
-  }, []) // O array
+    setDataTerminal([])
+  }, [])
+
   return (
-    <div className="flex flex-col w-full mt-10 mb-4">
-      <div className="flex flex-row gap-2 mt-6 mx-8 justify-end">
-        <Button size={'small'} onClick={handleClear}>
-          {t('Limpar')}
-        </Button>
-        <Button size={'small'} onClick={handleSaveToFile}>
-          {t('Salvar')}
-        </Button>
-      </div>
-      <div className=" flex w-full h-72">
+    <div className="box-border mx-auto mb-3 w-full min-w-0 max-w-2xl px-1 py-3 sm:px-2">
+      <div className="box-border overflow-hidden rounded-md border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white shadow-sm">
+        <div className="mb-0 flex flex-row flex-wrap items-center justify-between gap-2 border-b border-sky-600 bg-sky-500 px-3 py-1.5 sm:px-4">
+          <label className="text-xs font-bold uppercase tracking-wide text-white">
+            {t('Terminal')}
+          </label>
+          <div className="flex flex-row flex-wrap gap-2">
+            <Button size="small" onClick={handleClear}>
+              {t('Limpar')}
+            </Button>
+            <Button size="small" onClick={handleSaveToFile}>
+              {t('Salvar')}
+            </Button>
+          </div>
+        </div>
+
+        <div className="p-3 sm:p-4">
         <textarea
           ref={textareaRef}
           name=""
           id=""
           value={dataTerminal.join('\n')}
           readOnly
-          className="w-full mx-8 mt-2 border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm p-2"
-        ></textarea>
-      </div>
-
-      <div className="flex justify-end flex-row mt-4 mr-8 ml-8 gap-2">
-        <input
-          className="w-full border-[2px] rounded-md outline-sky-400 p-2"
-          type="text"
-          placeholder={t('Digite o comando')}
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyPress}
+          className="box-border h-56 w-full min-w-0 max-w-full resize-none overflow-y-auto whitespace-pre-wrap rounded-md border border-sky-200 bg-white px-3 py-2 text-sm leading-relaxed text-zinc-700 outline-none focus:border-sky-400"
         />
-        <Button size={'large'} className="h-10" filled onClick={handleSendComand}>
-          {t('Enviar')}
-        </Button>
+
+        <div className="mt-3 mb-4 flex w-full min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+          <input
+            className="box-border h-10 min-w-0 flex-1 rounded-md border border-sky-200 bg-white px-3 text-sm text-sky-700 outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-300"
+            type="text"
+            placeholder={t('Digite o comando')}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+          />
+          <Button size="large" className="h-10 shrink-0" filled onClick={handleSendComand}>
+            {t('Enviar')}
+          </Button>
+        </div>
+        </div>
       </div>
     </div>
   )

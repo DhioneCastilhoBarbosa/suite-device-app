@@ -28,7 +28,7 @@ export interface DeviceProviderPros {
 
 // Valor padrão seguro
 const defaultCtx: DeviceContextValue = {
-  device: { name: 'terminal' },
+  device: { name: 'linnimDB-Borbulha' },
   setDevice: () => {},
   port: { name: 'selecionar' },
   setPort: () => {},
@@ -45,7 +45,7 @@ const defaultCtx: DeviceContextValue = {
 export const DeviceContext = React.createContext<DeviceContextValue>(defaultCtx)
 
 export const DeviceProvider = ({ children }: DeviceProviderPros) => {
-  const [device, setDevice] = useState<DeviceState>({ name: 'terminal' })
+  const [device, setDevice] = useState<DeviceState>({ name: 'linnimDB-Borbulha' })
   const [port, setPort] = useState<PortState>({ name: 'selecionar' })
   const [PortOpen, SetPortOpen] = useState<BoolState>({ state: false })
   const [mode, setMode] = useState<BoolState>({ state: false })

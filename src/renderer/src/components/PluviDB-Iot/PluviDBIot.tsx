@@ -1,6 +1,6 @@
-import { Drop } from '@phosphor-icons/react'
-import { CardInformation } from '../cardInfomation/CardInformation'
-import ImgPluviDBIot from '../../assets/PluviDB-Iot.svg'
+import { ArrowsClockwise, Drop, Gauge, GearSix, Info, TerminalWindow } from '@phosphor-icons/react'
+import { CardInformation, RichText } from '../cardInfomation/CardInformation'
+import ImgPluviDBIotBanner from '../../assets/PluviDB-Iot-banner.png'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
@@ -97,6 +97,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [dataReceivedComandProtocol, setDataReceivedComandProtocol] = useState<string>('')
   const [dataReceivedComandProtocolMQTT, setDataReceivedComandProtocolMQTT] = useState<string>('')
   const [dataReceivedComandProtocolFTP, setDataReceivedComandProtocolFTP] = useState<string>('')
+  const [dataReceivedComandProtocolHTTP, setDataReceivedComandProtocolHTTP] = useState<string>('')
   const [dataReceivedComandMemoryInfo, setDataReceivedComandMemoryInfo] = useState<string>('')
   const [dataReceivedComandNTP, setDataReceivedComandNTP] = useState<string>('')
   const [dataReceivedComandMemoryInfoData, setDataReceivedComandMemoryInfoData] =
@@ -113,6 +114,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
   const [accessMode, setAccessMode] = useState<AccessMode>('none')
   const [enabledAccess, setEnabledAccess] = useState(false)
   const [showModalErroUnloagged, setShowModalErroUnloagged] = useState(false)
+  const [enviarOsSelected, setEnviarOsSelected] = useState(false)
   const { mode, connectorDisconnect }: any = Device()
 
   const isRecoveryOnly = accessMode === 'recoveryOnly'
@@ -327,6 +329,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     'prot=cfg?': [setDataReceivedComandProtocol],
     'mqtt=cfg?': [setDataReceivedComandProtocolMQTT],
     'ftp=cfg?': [setDataReceivedComandProtocolFTP],
+    'http=cfg?': [setDataReceivedComandProtocolHTTP],
     'ntp=cfg?': [setDataReceivedComandNTP]
   }
 
@@ -521,6 +524,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
     setDataReceivedComandProtocol('')
     setDataReceivedComandProtocolMQTT('')
     setDataReceivedComandProtocolFTP('')
+    setDataReceivedComandProtocolHTTP('')
     setDataReceivedComandTimerMaintenance('')
 
     if (props.isConect && !mode.state && enabledAccess) {
@@ -541,10 +545,21 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                       handleComandSend('ftp=cfg?').then((response) => {
                         setDataReceivedComandProtocolFTP(response)
                         setTimeout(() => {
-                          handleComandSend('tm=cfg?').then((response) => {
-                            setDataReceivedComandTimerMaintenance(response)
-                            setIsLoading(false)
-                          })
+                          handleComandSend('http=cfg?')
+                            .then((httpResponse) => {
+                              setDataReceivedComandProtocolHTTP(httpResponse)
+                            })
+                            .catch(() => {
+                              setDataReceivedComandProtocolHTTP('')
+                            })
+                            .finally(() => {
+                              setTimeout(() => {
+                                handleComandSend('tm=cfg?').then((tmResponse) => {
+                                  setDataReceivedComandTimerMaintenance(tmResponse)
+                                  setIsLoading(false)
+                                })
+                              }, time)
+                            })
                         }, time)
                       })
                     }, time)
@@ -623,10 +638,20 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                       handleComandSend(`ftp=${list[4]}!`).then(() => {
                         //console.log('Resposta do alterar Nome:', response)
                         setTimeout(() => {
-                          handleComandSend(`tm=${list[5]}!`).then(() => {
-                            //console.log('Resposta do alterar timer manutencao:', response)
-                            setIsLoading(false)
-                          })
+                          const httpPayload = list[6] ?? ''
+                          const sendHttp = httpPayload
+                            ? handleComandSend(`http=${httpPayload}!`)
+                            : Promise.resolve('')
+                          sendHttp
+                            .catch(() => '')
+                            .then(() => {
+                              setTimeout(() => {
+                                handleComandSend(`tm=${list[5]}!`).then(() => {
+                                  //console.log('Resposta do alterar timer manutencao:', response)
+                                  setIsLoading(false)
+                                })
+                              }, time)
+                            })
                         }, time)
                       })
                     }, time)
@@ -836,74 +861,76 @@ export default function PluviDBIot(props: PluviDBIotProps) {
 
   //console.log('Device mode:', props.isConect, isModalPassWordOpen)
 
+  const tabClass = (active: boolean, disabled = false): string =>
+    `inline-flex shrink-0 items-center gap-1.5 overflow-visible rounded-t-md px-3 py-2 text-sm font-medium leading-normal transition-colors duration-150 ${
+      active
+        ? 'border-b-2 border-sky-500 text-sky-600'
+        : 'border-b-2 border-transparent text-zinc-500 hover:text-sky-500'
+    } ${disabled ? 'cursor-not-allowed opacity-40 hover:text-zinc-500' : ''}`
+
   return props.isConect ? (
     <ContainerDevice heightScreen={true}>
       <HeaderDevice DeviceName={'PluviDB-IoT'}>
         <Drop size={30} />
       </HeaderDevice>
 
-      <div className=" flex flex-col justify-center  bg-white mr-8 ml-8 mt-4 rounded-lg text-zinc-500 text-sm w-full max-w-4xl mb-1">
+      <div className="mb-4 ml-8 mr-8 mt-4 flex w-full max-w-4xl flex-col justify-start overflow-visible rounded-lg border border-sky-100 bg-gradient-to-br from-[#F7FBFF] to-white pb-4 text-sm text-zinc-500 shadow-sm">
         {isRecoveryOnly && (
           <div className="mx-8 mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             {t('Modo recuperação — apenas atualização de firmware. Desconecte e reconecte para login completo.')}
           </div>
         )}
-        <header className="flex items-start justify-between mr-8 ml-8 mt-4 border-b-[1px] border-sky-500 min-h-10">
-          <div className="flex gap-4">
+        <header className="mx-4 mt-3 shrink-0 overflow-visible border-b border-sky-500 sm:mx-8">
+          <div className="flex min-h-11 flex-wrap items-end justify-start gap-1 overflow-visible sm:gap-2">
             <button
-              className={`border-b-2 border-transparent ${
-                colorStatus ? 'text-sky-500' : ''
-              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              className={tabClass(colorStatus, isRecoveryOnly)}
               onClick={() => trySwitchMenu('status')}
               disabled={isRecoveryOnly}
             >
+              <Info size={16} />
               {t('Status')}
             </button>
 
             <button
-              className={`border-b-2 border-transparent ${
-                colorInstantData ? 'text-sky-500' : ''
-              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              className={tabClass(colorInstantData, isRecoveryOnly)}
               onClick={() => trySwitchMenu('instantaneous')}
               disabled={isRecoveryOnly}
             >
+              <Gauge size={16} />
               {t('Dados Instantâneos')}
             </button>
 
             <button
-              className={`border-b-2 border-transparent ${
-                colorConfig ? 'text-sky-500' : ''
-              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              className={tabClass(colorConfig, isRecoveryOnly)}
               onClick={() => trySwitchMenu('config')}
               disabled={isRecoveryOnly}
             >
+              <GearSix size={16} />
               {t('Configuração')}
             </button>
 
             <button
-              className={`border-b-2 border-transparent ${
-                colorTerminal ? 'text-sky-500' : ''
-              } ${isRecoveryOnly ? 'opacity-40 cursor-not-allowed' : 'hover:border-b-2 hover:border-sky-500'} inline-block relative duration-300`}
+              className={tabClass(colorTerminal, isRecoveryOnly)}
               onClick={() => trySwitchMenu('terminal')}
               disabled={isRecoveryOnly}
             >
+              <TerminalWindow size={16} />
               {t('Terminal')}
             </button>
             {isRecoveryOnly && (
               <button
-                className={`border-b-2 border-transparent ${
-                  colorUpdate ? 'text-sky-500' : ''
-                } hover:border-b-2 hover:border-sky-500 inline-block relative duration-300`}
+                className={tabClass(colorUpdate)}
                 onClick={() => trySwitchMenu('Atualizar')}
               >
-                {t('Atualização')}
+                <ArrowsClockwise size={16} />
+                {t('Atualizar Firmware')}
               </button>
             )}
           </div>
         </header>
 
         {
-          <div className=" h-auto overflow-y-auto mr-8 ml-8">
+          <div className="ml-4 mr-4 h-auto min-w-0 max-w-full overflow-x-hidden overflow-y-auto sm:ml-8 sm:mr-8">
             {MenuName === 'status' ? (
               <Status
                 handleUpdateStatus={handleUpdateStatus}
@@ -942,6 +969,7 @@ export default function PluviDBIot(props: PluviDBIotProps) {
                 receivedProtocol={dataReceivedComandProtocol}
                 receivedProtocolDataMQTT={dataReceivedComandProtocolMQTT}
                 receivedProtocolDataFTP={dataReceivedComandProtocolFTP}
+                receivedProtocolDataHTTP={dataReceivedComandProtocolHTTP}
                 receivedTimerMaintenance={dataReceivedComandTimerMaintenance}
                 receiverHeritage={dataReceivedComandHeritage}
                 receivedRepeatSync={dataReceivedComandRepeatSync}
@@ -976,80 +1004,67 @@ export default function PluviDBIot(props: PluviDBIotProps) {
             resetToLoginState()
             connectorDisconnect?.()
           }}
-          onValidatePassword={handlePasswordValidation}
           onEnterRecoveryOnly={handleEnterRecoveryOnly}
+          enviarOsMode={enviarOsSelected}
+          onValidatePassword={handlePasswordValidation}
         />
       )}
       <ModalErroUnloagged show={showModalErroUnloagged} onClose={handleCloseModalErroUnlogged} />
     </ContainerDevice>
   ) : (
     <ContainerDevice>
-      <HeaderDevice DeviceName={'PluviDB-IoT'}>
+      <HeaderDevice
+        DeviceName={'PluviDB-IoT'}
+        rightSlot={
+          <label
+            className={`flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-0.5 transition-colors ${
+              enviarOsSelected ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 rounded border-white/60 text-[#1769A0] focus:ring-white/40 focus:ring-offset-0"
+              checked={enviarOsSelected}
+              onChange={() => setEnviarOsSelected((prev) => !prev)}
+            />
+            <span className="text-xs font-semibold text-white/90">{t('Atualizar Firmware')}</span>
+          </label>
+        }
+      >
         <Drop size={30} />
       </HeaderDevice>
 
-      <ImageDevice image={ImgPluviDBIot} link="https://dualbase.com.br/produto/pluvidb-iot/" />
+      <ImageDevice
+        image={ImgPluviDBIotBanner}
+        link="https://dualbase.com.br/produto/pluvidb-iot/"
+        fit="contain"
+      />
 
-      <div className="bg-[#EDF4FB] pt-3 flex items-center flex-col justify-center rounded-b-lg">
+      <div className="flex w-full flex-col items-center justify-center rounded-b-lg bg-[#EDF4FB] pt-3">
         <CardInformation title={t('VISÃO GERAL')}>
           <p>
-            {t(
-              'O PluviDB-IoT é um telepluviometro, sendo um medidor de chuva com tecnologia embarcada.'
-            )}
+            <RichText i18nKey="O <b>PluviDB-IoT</b> é uma solução pluviométrica compacta e inteligente, que integra o pluviômetro PluviDB a um transmissor IoT de baixíssimo consumo. Projetado para redes modernas, transmite dados via <b>4G/5G, incluindo NB-IoT e LTE-M</b>, com foco em autonomia, simplicidade de instalação e redução de infraestrutura. Possui bateria integrada de longa duração, dispensando o uso de painel solar." />
           </p>
-          <p>
-            {t(
-              'Possui simultaneamente com conexão via 4G – LTE-M CAT-M1 e NB-IoT versão 2 (NB2) compatível com 3GPP LTE release 14.'
-            )}
-          </p>
-          <p>
-            {t(
-              'Empregando as melhores técnicas de redução de consumo energético, o PluviDB-IoT funciona com bateria não recarregável de Lítio primária que pode alcançar autonomia maior que 5 anos.'
-            )}
-          </p>
-
-          <p>{t('Acompanha Certificado de Calibração rastreado a RBC conforme IEC 17025.')}</p>
-          <p>{t('Homologação ANATEL: 08591-24-11455')}</p>
         </CardInformation>
 
-        <CardInformation title={t('CARACTERÍSTICAS')}>
+        <CardInformation title={t('DESTAQUES')}>
           <p>
-            {t('Princípio de báscula instável, construído integralmente com materiais inoxidáveis')}
+            • <RichText i18nKey="<b>Transmissão IoT com baixo consumo energético</b>;" />
           </p>
           <p>
-            {t('Com dispositivo regulador de vazão, sistema de nivelamento com nível de bolha')}
+            •{' '}
+            <RichText i18nKey="<b>Bateria integrada de longa duração, sem necessidade de painel solar</b>;" />
           </p>
-          <p>{t('Corpo em alumínio, aço inox e pintura epóxi')}</p>
           <p>
-            {t(
-              'Bordas internas em formato de ângulo reto e borda externa com formato de ângulo oblíquo, que minimizam efeitos de turbulência do vento. Atende requisitos WMO.'
-            )}
+            •{' '}
+            <RichText i18nKey="<b>Instalação rápida e excelente escalabilidade para grandes redes</b>." />
           </p>
-          <p>{t('2 portas de medição de pulso')}</p>
-          <p>{t('ARM Cortex M33, Memória Flash de 64Mb para armazenamento de dados')}</p>
-          <p>{t('Configurável via / Bluetooth (BLE) e USB-C - (Windows/Linux/Android)')}</p>
-          <p>{t('Frequências LTE de 700 a 2200 Mhz')}</p>
-          <p>
-            {t(
-              'Cat-M1: B1, B2, B3, B4, B5, B8, B12, B13, B14, B17, B18, B19, B20, B25, B26, B28, B66'
-            )}
-          </p>
-          <p>{t('NB1/NB2: B1, B2, B3, B4, B5, B8, B12, B13, B17, B19, B20, B25, B26, B28, B66')}</p>
-          <p>{t('Funções eDRX e PSM power saving.')}</p>
-          <p>{t('Protocolos: MQTT, HTTP, NTP, FTP entre outros')}</p>
-          <p>{t('Bateria interna de lítio primária Li-SOCl2 – 2D/3,6V')}</p>
         </CardInformation>
 
-        <CardInformation title={t('ESPECIFICAÇÃO')}>
-          <p>{t('Capacidade: 0 a 500 mm/h')}</p>
-          <p>{t('Resolução: 0,2 mm')}</p>
-          <p>{t('Faixa de operação: -20 a 70 °C | 0 a 100% UR')}</p>
-          <p>{t('Incerteza máxima associada: 5% @ 0 a 200 mm/h')}</p>
-          <p>{t('Sistema de nivelamento : Nível de bolha')}</p>
-          <p>{t('Área de captação: 314 cm²')}</p>
-          <p>{t('Diâmetro do funil : 200 0,5 mm')}</p>
-          <p>{t('Sinal de saída : Duplo reed-switch, Pulso NA de 100 ms.')}</p>
-          <p>{t('Grau de Proteção: IP 66')}</p>
+        <CardInformation title={t('APLICAÇÕES')}>
+          <p>
+            <RichText i18nKey="Redes urbanas de chuva, defesa civil, <i>smart cities</i>, monitoramento distribuído e expansão de cobertura observacional." />
+          </p>
         </CardInformation>
       </div>
     </ContainerDevice>

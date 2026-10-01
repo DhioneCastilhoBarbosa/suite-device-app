@@ -1,19 +1,28 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
 interface HeaderDeviceProps extends ComponentProps<'header'> {
   DeviceName: string
+  rightSlot?: ReactNode
 }
 
-export default function HeaderDevice({ DeviceName, ...props }: HeaderDeviceProps) {
+export default function HeaderDevice({
+  DeviceName,
+  rightSlot,
+  children,
+  ...props
+}: HeaderDeviceProps) {
   return (
     <header
       {...props}
-      className="flex w-full items-center justify-start bg-[#1769A0] rounded-t-lg max-h-11 min-h-11 top-0"
+      className="top-0 flex max-h-11 min-h-11 w-full shrink-0 items-center justify-between rounded-t-lg bg-[#1769A0]"
     >
-      <div className="flex w-9 items-center justify-center bg-white ml-2 mt-4 mb-4 rounded-b-lg rounded-e-lg text-[#1769A0] ">
-        {props.children}
+      <div className="flex min-w-0 items-center">
+        <div className="mb-4 ml-2 mt-4 flex w-9 items-center justify-center rounded-b-lg rounded-e-lg bg-white text-[#1769A0]">
+          {children}
+        </div>
+        <h2 className="pl-2 font-semibold text-white">{DeviceName}</h2>
       </div>
-      <h2 className="text-white  font-semibold pl-2">{DeviceName}</h2>
+      {rightSlot ? <div className="mr-2 flex shrink-0 items-center">{rightSlot}</div> : null}
     </header>
   )
 }

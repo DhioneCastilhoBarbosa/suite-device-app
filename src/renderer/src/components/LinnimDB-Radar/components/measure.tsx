@@ -42,6 +42,7 @@ export default function Measure() {
     {
       key: 'distance',
       label: t('Distância'),
+      unit: 'mm',
       icon: <Ruler size={18} weight="duotone" />,
       address: 2
     },

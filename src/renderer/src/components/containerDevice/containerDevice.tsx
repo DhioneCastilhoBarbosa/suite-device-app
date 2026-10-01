@@ -13,8 +13,8 @@ export default function ContainerDevice({
     <div
       {...props}
       className={twMerge(
-        'w-full mt-16 ml-4 mr-[1px] bg-[#FFFFFF] rounded-lg overflow-y-auto',
-        heightScreen ? ' bg-[#EDF4FB] flex flex-col items-center h-auto' : ''
+        'device-panel-scroll h-full min-h-0 min-w-0 w-full rounded-lg bg-[#FFFFFF]',
+        heightScreen ? 'flex flex-col items-center bg-[#EDF4FB]' : ''
       )}
     >
       {props.children}

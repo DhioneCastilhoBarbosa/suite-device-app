@@ -99,13 +99,10 @@ export default function VariableControl({
 
   return (
     <div className="flex flex-col">
-      <header className="flex items-start justify-between mr-8 ml-8 mt-10 border-b-[1px] border-sky-500 ">
-        <div className="flex gap-4">
-          <label>{t('Variáveis Controle')}</label>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-5 gap-4  mr-8 ml-8">
+      <div className="mx-8 mt-8 border-b border-sky-200 pb-1">
+        <h3 className="text-sm font-semibold text-zinc-600">{t('Variáveis Controle')}</h3>
+      </div>
+      <div className="mx-8 mt-4 grid grid-cols-5 gap-4">
         {inputs.map((input: number, index: number) => (
           <VariableInput
             key={index}

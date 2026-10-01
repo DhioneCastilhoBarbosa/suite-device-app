@@ -3,21 +3,39 @@ import { useEffect, useRef, useState } from 'react'
 import { saveAs } from 'file-saver'
 import { t } from 'i18next'
 
-function formatTsatTerminalLog(chunks: string[]): string {
-  return chunks.join('').replace(/,(?!\s)/g, ', ')
+export type TerminalLogEntry = { kind: 'sent' | 'response'; text: string }
+
+function responseLineClass(line: string): string {
+  const text = line.trim().toLowerCase()
+  if (text === 'ok') return 'font-semibold text-emerald-700'
+  if (text.includes('bad parameter') || text.includes('must be enabled') || text.includes('error')) {
+    return 'font-semibold text-red-600'
+  }
+  return 'text-zinc-700'
+}
+
+function readableLine(line: string): string {
+  return line.replace(/,(?!\s)/g, ', ')
+}
+
+function formatTsatTerminalLog(entries: TerminalLogEntry[]): string {
+  return entries
+    .flatMap((entry) => {
+      if (entry.kind === 'sent') return [`TX=> ${entry.text}`]
+      return entry.text.split('\n').map((line) => `RX=> ${readableLine(line)}`)
+    })
+    .join('\n')
 }
 
 type Props = {
-  receiverTerminal: string | undefined
+  lines: TerminalLogEntry[]
   handleSendComandTerminal: (valuer: string) => void
-  // clear: boolean | undefined
-  // onClearReset: (newValue: boolean) => void
-  // changeVariableMain: (value: string) => void
+  onClear: () => void
 }
-export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props): JSX.Element {
-  const [dataTerminal, setDataTerminal] = useState<string[]>([])
+
+export function Terminal({ lines, handleSendComandTerminal, onClear }: Props): JSX.Element {
   const [inputValue, setInputValue] = useState<string>('')
-  const textareaRef: React.MutableRefObject<HTMLTextAreaElement | null> = useRef(null)
+  const logRef = useRef<HTMLDivElement | null>(null)
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setInputValue(event.target.value)
   }
@@ -29,53 +47,57 @@ export function Terminal({ receiverTerminal, handleSendComandTerminal }: Props):
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter') {
-      //console.log('Enter')
       handleSendComand()
     }
   }
 
-  const handleClear = (): void => {
-    setDataTerminal([])
-  }
-
   const handleSaveToFile = (): void => {
-    const headerFile = 'Dados gerado do Trasmissor TSatDB - '
+    const headerFile = t('Dados gerados do Transmissor TSatDB - ')
     const date = new Date().toLocaleString()
-    const Data = headerFile + date + '\n \n' + formatTsatTerminalLog(dataTerminal)
+    const Data = headerFile + date + '\n \n' + formatTsatTerminalLog(lines)
     const blob = new Blob([Data], { type: 'text/plain;charset=utf-8' })
     saveAs(blob, 'Terminal-TSatDB.txt')
   }
 
   useEffect(() => {
-    const receiver = receiverTerminal ? receiverTerminal.replace(/[>]/g, '') : ''
-
-    setDataTerminal((prevData) => (receiverTerminal ? [...prevData, receiver] : prevData))
-  }, [receiverTerminal])
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.scrollTop = textareaRef.current.scrollHeight
+    if (logRef.current) {
+      logRef.current.scrollTop = logRef.current.scrollHeight
     }
-  }, [dataTerminal])
+  }, [lines])
+
   return (
     <div className="flex flex-col w-full mt-10 mb-4">
       <div className="flex flex-row gap-2 mt-6 mx-8 justify-end">
-        <Button size={'small'} onClick={handleClear}>
+        <Button size={'small'} onClick={onClear}>
           {t('Limpar')}
         </Button>
         <Button size={'small'} onClick={handleSaveToFile}>
           {t('Salvar')}
         </Button>
       </div>
-      <div className=" flex w-full h-72">
-        <textarea
-          ref={textareaRef}
-          name=""
-          id=""
-          value={formatTsatTerminalLog(dataTerminal)}
-          readOnly
-          className="w-full mx-8 mt-2 border-[2px] border-zinc-200 resize-none overflow-y-scroll whitespace-pre-wrap outline-none text-black text-sm"
-        ></textarea>
+      <div className="mx-8 mt-2 h-72">
+        <div
+          ref={logRef}
+          className="h-full w-full overflow-y-auto rounded-md border border-sky-500 bg-white p-2 font-mono text-sm"
+        >
+          {lines.map((entry, index) =>
+            entry.kind === 'sent' ? (
+              <div key={index} className="mt-2 font-semibold text-sky-700 first:mt-0">
+                {'TX=> '}
+                {entry.text}
+              </div>
+            ) : (
+              <div key={index}>
+                {entry.text.split('\n').map((line, lineIndex) => (
+                  <div key={lineIndex} className={responseLineClass(line)}>
+                    {'RX=> '}
+                    {readableLine(line)}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
       </div>
 
       <div className="flex justify-end flex-row mt-4 mr-8 ml-8 gap-2">
