@@ -93,6 +93,7 @@ jobs:
           TAG="v${VERSION}"
           test -f artifacts/latest-mac.yml
           ls artifacts/*.zip >/dev/null
+          node scripts/prepare-github-release-assets.cjs artifacts
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/* --clobber
           else
@@ -100,4 +101,5 @@ jobs:
               --title "Suite Device ${VERSION}" \
               --notes "Versão de transição ${VERSION} (Mac). Feed embutido: suite-device-app/${{ inputs.channel }}."
           fi
+          gh release edit "$TAG" --prerelease=false
           echo "ok  GitHub Releases ${TAG} (Mac)"

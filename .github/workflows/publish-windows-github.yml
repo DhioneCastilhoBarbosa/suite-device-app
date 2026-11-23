@@ -114,6 +114,11 @@ jobs:
           echo "   Instalador embute feed generic suite-device-app/${{ inputs.channel }}."
           test -f artifacts/latest.yml
           ls artifacts/*.exe >/dev/null
+          # GitHub troca espaços por "." no asset — alinhar arquivos + latest.yml.
+          node scripts/prepare-github-release-assets.cjs artifacts
+          EXE=$(sed -n 's/^path: //p' artifacts/latest.yml | tr -d '\r' | head -n 1)
+          test -n "$EXE"
+          test -f "artifacts/$EXE"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/* --clobber
           else
@@ -121,4 +126,10 @@ jobs:
               --title "Suite Device ${VERSION}" \
               --notes "Versão de transição ${VERSION}. Clientes 2.4.x descobrem via GitHub; o instalador embute feed próprio (suite-device-app/${{ inputs.channel }})."
           fi
-          echo "ok  GitHub Releases ${TAG}"
+          # Garante release estável (não prerelease) para o electron-updater antigo.
+          gh release edit "$TAG" --prerelease=false
+          echo "ok  conferindo download do path do latest.yml"
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -L \
+            "https://github.com/${{ github.repository }}/releases/download/${TAG}/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$EXE")")
+          test "$code" = "200"
+          echo "ok  GitHub Releases ${TAG} (download HTTP $code)"
