@@ -127,7 +127,8 @@ jobs:
               --notes "Versão de transição ${VERSION}. Clientes 2.4.x descobrem via GitHub; o instalador embute feed próprio (suite-device-app/${{ inputs.channel }})."
           fi
           # Garante release estável (não prerelease) para o electron-updater antigo.
-          gh release edit "$TAG" --prerelease=false
+          REL_ID=$(gh api "repos/${{ github.repository }}/releases/tags/${TAG}" --jq .id)
+          gh api -X PATCH "repos/${{ github.repository }}/releases/${REL_ID}" -f prerelease=false -f make_latest=true >/dev/null
           echo "ok  conferindo download do path do latest.yml"
           code=$(curl -sS -o /dev/null -w '%{http_code}' -L \
             "https://github.com/${{ github.repository }}/releases/download/${TAG}/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$EXE")")

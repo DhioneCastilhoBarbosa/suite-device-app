@@ -107,5 +107,6 @@ jobs:
               --title "Suite Device ${VERSION}" \
               --notes "Versão de transição ${VERSION} (Linux). Feed embutido: suite-device-app/${{ inputs.channel }}."
           fi
-          gh release edit "$TAG" --prerelease=false
+          REL_ID=$(gh api "repos/${{ github.repository }}/releases/tags/${TAG}" --jq .id)
+          gh api -X PATCH "repos/${{ github.repository }}/releases/${REL_ID}" -f prerelease=false -f make_latest=true >/dev/null
           echo "ok  GitHub Releases ${TAG} (Linux)"
