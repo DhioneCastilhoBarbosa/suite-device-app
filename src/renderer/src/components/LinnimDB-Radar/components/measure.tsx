@@ -108,10 +108,10 @@ export default function Measure() {
       <div className="rounded-md border border-zinc-200 bg-white px-3 py-2">
         <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
           {readings.map((reading) => (
-            <div key={reading.key} className="grid min-w-0 grid-cols-[7.5rem_minmax(0,1fr)_1.5rem] items-center gap-2">
+            <div key={reading.key} className="grid min-w-0 grid-cols-[8.5rem_minmax(0,1fr)_1.5rem] items-center gap-2">
               <div className="flex min-w-0 items-center gap-1.5 text-sky-600">
                 {reading.icon}
-                <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
+                <span className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-wide text-zinc-600">
                   {reading.label}
                 </span>
               </div>

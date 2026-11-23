@@ -4,8 +4,9 @@ import { t } from 'i18next'
 interface ModalProps {
   show: boolean
   onClose: () => void
+  detail?: string
 }
-export function ModalSucess({ show, onClose }: ModalProps): JSX.Element | null {
+export function ModalSucess({ show, onClose, detail }: ModalProps): JSX.Element | null {
   if (!show) {
     return null
   }
@@ -14,7 +15,8 @@ export function ModalSucess({ show, onClose }: ModalProps): JSX.Element | null {
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
         <h2 className="text-xl font-bold mb-4">{t('Atenção!')}</h2>
         <p>{t('Dispositivo atualizado com Sucesso!')}</p>
-        <p className="mb-6">{t('É necessário reiniciar a conexão.')}</p>
+        {detail ? <p className="mt-2 text-sm text-zinc-600">{detail}</p> : null}
+        <p className="mb-6 mt-2">{t('É necessário reiniciar a conexão.')}</p>
         <div className="flex justify-center mx-8">
           <Button size={'small'} filled={true} onClick={onClose}>
             {t('Reiniciar')}

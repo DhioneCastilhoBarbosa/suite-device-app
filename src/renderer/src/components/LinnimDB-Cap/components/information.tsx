@@ -2,6 +2,7 @@ import LoadingData from '@renderer/components/loading/loadingData'
 import Button from '@renderer/components/button/Button'
 import { Device } from '../../../Context/DeviceContext'
 import { readModbusData } from '../../../utils/modbusRTU'
+import { useLimniInfoLoading } from '../../../utils/useLimniInfoLoading'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { t } from 'i18next'
 import {
@@ -46,8 +47,9 @@ const MODBUS_CALLS = [
 export default function Information() {
   const [modbusData, setModbusData] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { mode }: any = Device()
+  const { mode, PortOpen }: any = Device()
   const requestId = useRef(0)
+  useLimniInfoLoading(isLoading, Boolean(mode?.state), Boolean(PortOpen?.state))
 
   const readInfo = useCallback(async () => {
     const results: string[] = []
@@ -76,16 +78,28 @@ export default function Information() {
       try {
         apply(await readInfo())
       } catch {
+        if (id !== requestId.current) return
         await new Promise((resolve) => setTimeout(resolve, 200))
+        if (id !== requestId.current) return
         apply(await readInfo())
       }
     } catch {
       apply(null)
+    } finally {
+      if (id === requestId.current) setIsLoading(false)
     }
   }, [mode.state, readInfo])
 
   useEffect(() => {
-    void fetchData()
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      if (!cancelled) void fetchData()
+    }, 0)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+      requestId.current += 1
+    }
   }, [fetchData])
 
   const fields: InfoItem[] = [

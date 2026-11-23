@@ -8,12 +8,23 @@ import {
   beginConnection,
   cancelConnection,
   connectClient,
+  connectFirmwareRecovery,
   disarmNotFoundModal,
+  isModbusClientOpen,
+  modbusDebugSnapshot,
   notFoundModalTarget,
   setPortOwner,
   waitForPortRelease,
   type ConnectResult
 } from '../../utils/modbusRTU'
+import {
+  clearLimniDebug,
+  isLimniDevice,
+  limniDeviceLabel,
+  limniLog,
+  showsDiagnosticDock,
+  tsatLog
+} from '../../utils/limniDebug'
 import Loading from '../loading/loading'
 import NoDeviceFoundModbus from '../modal/noDeviceFoundModbus'
 import { ClosePortRS232, OpenPortRS232 } from '../Teclado-SDI12/Teclado'
@@ -106,7 +117,8 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
     resetUpdate,
     setResetUpdate,
     registerConnectorDisconnect,
-    connectorDisconnect
+    connectorDisconnect,
+    limniFirmwareMode
   }: any = Device()
 
   const [buttonAbility, setButtonAbility] = useState(true)
@@ -204,6 +216,14 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
   }, [OfflineMode])
 
   useEffect(() => {
+    if (showsDiagnosticDock(device.name)) {
+      clearLimniDebug()
+      if (isLimniDevice(device.name)) {
+        limniLog(`dispositivo selecionado: ${limniDeviceLabel(device.name)}`)
+      } else if (device.name === 'TSatDB') {
+        tsatLog('dispositivo selecionado: TSatDB')
+      }
+    }
     connectAttempt.current += 1
     stopRequested.current = true
     setHideNotFound(true)
@@ -222,12 +242,20 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
   useEffect(() => {
     SerialManager.snapshot().then((list) => setAvailablePorts(list ?? []))
 
+    const diagnosticLog = (message: string): void => {
+      const name = deviceNameRef.current
+      if (name === 'TSatDB') tsatLog(message)
+      else if (isLimniDevice(name)) limniLog(message)
+    }
+
     const offAdd = SerialManager.onAdded(({ path }) => {
+      if (showsDiagnosticDock(deviceNameRef.current)) diagnosticLog(`porta adicionada: ${path}`)
       setAvailablePorts((prev) => (prev.includes(path) ? prev : [...prev, path]))
       if (path === latestSelected.current) setCooldownUntil(Date.now() + 500)
     })
 
     const offRem = SerialManager.onRemoved(async ({ path }) => {
+      if (showsDiagnosticDock(deviceNameRef.current)) diagnosticLog(`porta removida: ${path}`)
       setAvailablePorts((prev) => prev.filter((p) => p !== path))
       if (latestOffline.current) return
       if (path === latestSelected.current) {
@@ -239,9 +267,10 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
       }
     })
 
-    const offErr = SerialManager.onError((m) =>
+    const offErr = SerialManager.onError((m) => {
+      if (showsDiagnosticDock(deviceNameRef.current)) diagnosticLog(`erro do SerialManager: ${m}`)
       toast.error(t('Erro serial: {{message}}', { message: translateNativeSerialMessage(m) }))
-    )
+    })
 
     return () => {
       offAdd?.()
@@ -293,6 +322,14 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
 
       portDevice(valorSelecionado)
       const ModBusProps = { SerialName: valorSelecionado, BaudRate: 9600 }
+      if (isLimniDevice(startedOn)) {
+        limniLog(`dispositivo selecionado: ${limniDeviceLabel(startedOn)}`)
+        limniLog(`porta ${valorSelecionado} baud ${ModBusProps.BaudRate}`)
+        limniLog(`portas no clique: ${availablePorts.join(', ') || '(nenhuma)'}`)
+      } else if (startedOn === 'TSatDB') {
+        tsatLog(`porta ${valorSelecionado} baud 9600`)
+        tsatLog(`portas no clique: ${availablePorts.join(', ') || '(nenhuma)'}`)
+      }
 
       await waitForPortRelease()
       if (!attemptActive()) {
@@ -324,7 +361,13 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
             SetPortOpen({ state: true })
             registerSilentDisconnect()
           } else if (device.name === 'TSatDB') {
-            await OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
+            try {
+              await OpenPortTSatDB({ portName: valorSelecionado, bauld: 9600 })
+              tsatLog(`abrir porta ${valorSelecionado}: sucesso`)
+            } catch (error) {
+              tsatLog(`abrir porta ${valorSelecionado}: erro ${String((error as Error)?.message ?? error)}`)
+              throw error
+            }
             if (!attemptActive()) {
               void ClosePortTSatDB()
               return
@@ -349,33 +392,33 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
             loadingTimeout = setTimeout(() => setIsLoading(true), 200)
             const stopped = (result?: ConnectResult) =>
               stopRequested.current || result === 'cancelled'
-            let ok: ConnectResult = await connectClient(ModBusProps)
-            if (!attemptActive() || stopped(ok)) {
-              if (connectAttempt.current === attempt) releaseCancelledConnect()
-              return
+            const firmwareRecovery = isLimniDevice(startedOn) && limniFirmwareMode
+            if (firmwareRecovery) {
+              limniLog('modo atualização: conectar sem procurar endereço')
             }
-            if (ok === false) {
-              await sleep(400)
-              if (!attemptActive() || stopped()) {
-                if (connectAttempt.current === attempt) releaseCancelledConnect()
-                return
-              }
-              ok = await connectClient(ModBusProps)
-            }
+            const ok: ConnectResult = firmwareRecovery
+              ? await connectFirmwareRecovery(ModBusProps)
+              : await connectClient(ModBusProps)
             if (!attemptActive() || stopped(ok)) {
               if (connectAttempt.current === attempt) releaseCancelledConnect()
               return
             }
             if (ok !== true) {
-              if (!attemptActive()) return
               SetPortOpen({ state: false })
               setIsLoading(false)
               setConected(false)
               setNotFoundOn(startedOn)
               setDeviceFound(false)
+              if (isLimniDevice(startedOn)) {
+                limniLog('busca encerrada: dispositivo não encontrado')
+              }
               return
             }
-            if (!attemptActive()) return
+            if (!attemptActive() || !isModbusClientOpen()) {
+              if (connectAttempt.current === attempt) releaseCancelledConnect()
+              if (isLimniDevice(startedOn)) limniLog('tela não aberta: client Modbus fechado')
+              return
+            }
             setPortOwner(startedOn)
             SetPortOpen({ state: true })
             setDeviceFound(true)
@@ -437,12 +480,18 @@ export default function Conector({ portDevice, isOnline, PortStatus }: ConectorP
   }
 
   const handleStop = () => {
+    if (isLimniDevice(deviceNameRef.current)) {
+      const snap = modbusDebugSnapshot()
+      limniLog(
+        `Parar: clique cancelScan=${snap.cancelScan} connectGeneration=${snap.connectGeneration} leituras em voo=${snap.inflightReads}`
+      )
+    }
     connectAttempt.current += 1
     stopRequested.current = true
     setHideNotFound(true)
     setNotFoundOn(null)
     setPortOwner(null)
-    void cancelConnection()
+    void cancelConnection({ reason: 'parar' })
     releaseCancelledConnect()
   }
 

@@ -4,6 +4,7 @@ import ImgLimniDbCap from '../../assets/LimniDB-CAP-banner.png'
 import { ImageDevice } from '../imageDevice/ImageDevice'
 import Information from './components/information'
 import { useEffect, useState } from 'react'
+import { Device } from '../../Context/DeviceContext'
 import HeaderDevice from '../headerDevice/HeaderDevice'
 import ContainerDevice from '../containerDevice/containerDevice'
 import Settings from './components/settings'
@@ -24,6 +25,12 @@ export default function LinnimDbCap(props: LinnimDbCapProps): JSX.Element {
   const [colorUpdate, setColorUpdate] = useState(false)
   const [updateFirmwareSelected, setUpdateFirmwareSelected] = useState(false)
   const isFirmwareOnly = props.isConect && updateFirmwareSelected
+  const { setLimniFirmwareMode } = Device()
+
+  useEffect(() => {
+    setLimniFirmwareMode(updateFirmwareSelected)
+    return () => setLimniFirmwareMode(false)
+  }, [updateFirmwareSelected, setLimniFirmwareMode])
 
   useEffect(() => {
     if (!props.isConect) return

@@ -20,6 +20,8 @@ type DeviceContextValue = {
   setResetUpdate: React.Dispatch<React.SetStateAction<BoolState>>
   registerConnectorDisconnect: (fn: ConnectorDisconnectFn | null) => void
   connectorDisconnect?: ConnectorDisconnectFn
+  limniFirmwareMode: boolean
+  setLimniFirmwareMode: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export interface DeviceProviderPros {
@@ -39,7 +41,9 @@ const defaultCtx: DeviceContextValue = {
   resetUpdate: { state: false },
   setResetUpdate: () => {},
   registerConnectorDisconnect: () => {},
-  connectorDisconnect: undefined
+  connectorDisconnect: undefined,
+  limniFirmwareMode: false,
+  setLimniFirmwareMode: () => {}
 }
 
 export const DeviceContext = React.createContext<DeviceContextValue>(defaultCtx)
@@ -50,6 +54,7 @@ export const DeviceProvider = ({ children }: DeviceProviderPros) => {
   const [PortOpen, SetPortOpen] = useState<BoolState>({ state: false })
   const [mode, setMode] = useState<BoolState>({ state: false })
   const [resetUpdate, setResetUpdate] = useState<BoolState>({ state: false })
+  const [limniFirmwareMode, setLimniFirmwareMode] = useState(false)
 
   const [connectorDisconnect, setConnectorDisconnect] = useState<
     ConnectorDisconnectFn | undefined
@@ -73,7 +78,9 @@ export const DeviceProvider = ({ children }: DeviceProviderPros) => {
         resetUpdate,
         setResetUpdate,
         registerConnectorDisconnect,
-        connectorDisconnect
+        connectorDisconnect,
+        limniFirmwareMode,
+        setLimniFirmwareMode
       }}
     >
       {children}

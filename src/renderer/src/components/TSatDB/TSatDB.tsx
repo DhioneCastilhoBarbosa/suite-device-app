@@ -1,6 +1,5 @@
 import {
   Broadcast,
-  CheckCircle,
   CircleNotch,
   Compass,
   GearSix,
@@ -30,6 +29,7 @@ import { AntenaPointing } from './components/antennapointing'
 import { RFAdvanced } from './components/RFAdvanced'
 import { t } from 'i18next'
 import { getPortOwner, notFoundModalTarget } from '../../utils/modbusRTU'
+import { describeSerialError, tsatLog } from '../../utils/limniDebug'
 //import { set } from 'zod'
 
 interface TSatDBProps {
@@ -77,6 +77,76 @@ function settingValue(raw: string, key: string): string {
   return line ? line.slice(key.length + 1).trim() : ''
 }
 
+const TEST_LINE_SKIP = new Set(['NESID', 'TBR'])
+
+function labeledValue(raw: string, label: string): string {
+  const needle = label.toLowerCase()
+  const line = raw
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .find((item) => item.toLowerCase().startsWith(needle))
+  if (!line) return ''
+  return line.slice(label.length).replace(/^[:\s]+/, '').trim()
+}
+
+function pwrlvlValue(raw: string): string {
+  const lines = raw
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter((item) => item && item !== '>')
+  const line =
+    lines.find((item) => /PWRLVL\s*=/i.test(item)) ??
+    lines.find((item) => /\d+(?:[.,]\d+)?\s*,/.test(item)) ??
+    ''
+  return line.replace(/.*PWRLVL\s*=\s*/i, '').replace(/>/g, '').trim()
+}
+
+function swrValue(raw: string): string {
+  const match = raw.match(/(?:^|[^A-Za-z])SWR\s*[:=]?\s*([0-9]+(?:[.,][0-9]+)?)/im)
+  return match?.[1] ?? ''
+}
+
+/** `Time To Next Tx: 00:00:02:09` → dias:horas:minutos:segundos. */
+function secondsFromTimeToNextTx(raw: string): number | null {
+  const match = raw.match(/Time To Next Tx:\s*(\d+):(\d+):(\d+)(?::(\d+))?/i)
+  if (!match) return null
+  const first = Number(match[1])
+  const second = Number(match[2])
+  const third = Number(match[3])
+  if (match[4] === undefined) return first * 3600 + second * 60 + third
+  return first * 86400 + second * 3600 + third * 60 + Number(match[4])
+}
+
+class TestCancelled extends Error {
+  constructor() {
+    super('cancel')
+    this.name = 'TestCancelled'
+  }
+}
+
+function buildTestTransmissionLine(
+  rcfg: string,
+  details: { ns: string; firmware: string; vbat: string; pwrlvl: string; swr: string },
+  obs: string
+): string {
+  const config = rcfg
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter((item) => /^[A-Za-z][A-Za-z0-9]*=/.test(item))
+    .filter((item) => !TEST_LINE_SKIP.has(item.slice(0, item.indexOf('=')).toUpperCase()))
+
+  return [
+    'TEST',
+    ...config,
+    `NS=${details.ns}`,
+    `Firmware=${details.firmware}`,
+    `VBat=${details.vbat}`,
+    `Pwrlvl=${details.pwrlvl}`,
+    `SWR=${details.swr}`,
+    `Obs=${obs.trim().slice(0, 50)}`
+  ].join(';')
+}
+
 /**
  * Só considera a resposta pronta quando a linha do marcador chegou inteira (com CRLF),
  * senão a leitura terminaria com o valor cortado no meio.
@@ -96,16 +166,35 @@ function lineCompleteIgnoreCase(marker: string): (partial: string) => boolean {
   }
 }
 
+const VAISALA_DSU_PORTS = ['dsu232_0_0', 'dsu232_0_1', 'dsu232_1_0', 'dsu232_1_1'] as const
+/** Sem Enter nos 10s finais do contador e nos 15s de transmissão que vêm depois. */
+const VAISALA_TX_QUIET_BEFORE_MS = 10_000
+const VAISALA_TX_QUIET_AFTER_MS = 15_000
+/** O Enter pode levar até ~2s; segura o próximo para ele não cair dentro dos 10s finais. */
+const VAISALA_KEEPALIVE_LEAD_MS = 2_000
+
 function vaisalaReroutePhrase(port: string): string {
   return `Terminal I/O re-routed to ${port}`
 }
 
-/**
- * A leitura devolve o buffer com trim, então o CRLF final some quando a frase
- * de redirecionamento é a última linha. Cada porta só confirma a própria frase.
- */
-function vaisalaPortRerouted(response: string, port: string): boolean {
-  return response.toLowerCase().includes(vaisalaReroutePhrase(port).toLowerCase())
+/** Qualquer porta DSU com redirecionamento confirma a ponte. */
+function confirmedVaisalaPort(response: string): string {
+  const text = response.toLowerCase()
+  return VAISALA_DSU_PORTS.find((port) => text.includes(vaisalaReroutePhrase(port).toLowerCase())) ?? ''
+}
+
+function vaisalaRerouteReady(partial: string): boolean {
+  return VAISALA_DSU_PORTS.some((port) => lineCompleteIgnoreCase(vaisalaReroutePhrase(port))(partial))
+}
+
+function serviceConnectionOpened(response: string): boolean {
+  return /Service connection opened/i.test(response)
+}
+
+function quoteSerial(raw: string): string {
+  const flat = raw.replace(/\r/g, '\\r').replace(/\n/g, '\\n')
+  if (!flat) return '(vazia)'
+  return flat.length > 600 ? `${flat.slice(0, 600)}…` : flat
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -121,21 +210,31 @@ export function tsatVaisalaServiceActive(): boolean {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export async function ClosePortTSatDB(options?: { physical?: boolean }) {
+  const hadService = vaisalaUsesService
   const shouldCloseService = vaisalaUsesService && !options?.physical
   vaisalaUsesService = false
+  if (hadService) {
+    tsatLog(
+      options?.physical
+        ? 'vaisala: desconectar físico, close do serviço não enviado'
+        : 'vaisala: desconectar, TX close'
+    )
+  }
   try {
     if (shouldCloseService && serialManagerTsatDB.isPortOpen()) {
       try {
         await serialManagerTsatDB.sendCommandTSatDB('close')
-        await serialManagerTsatDB.receiveDataTSatDB({
+        const response = await serialManagerTsatDB.receiveDataTSatDB({
           overallTimeoutMs: 1500,
           silenceMs: 400
         })
-      } catch {
-        // A COM fecha mesmo se o close não responder.
+        tsatLog(`vaisala: close resposta=${quoteSerial(response)}`)
+      } catch (error) {
+        tsatLog(`vaisala: close sem resposta ${describeSerialError(error)}`)
       }
     }
     await serialManagerTsatDB.closePortRS232()
+    if (hadService) tsatLog('vaisala: COM fechada')
   } catch {
     try {
       await serialManagerTsatDB.closePortRS232()
@@ -169,7 +268,9 @@ export default function TSatDB(props: TSatDBProps) {
   const [terminalLog, setTerminalLog] = useState<TerminalLogEntry[]>([])
   const [transmissionLog, setTransmissionLog] = useState<TestLogEntry[]>([])
   const [testStatus, setTestStatus] = useState('')
+  const [testLedHint, setTestLedHint] = useState(false)
   const [testSecondsLeft, setTestSecondsLeft] = useState<number | null>(null)
+  const [testSecondsTotal, setTestSecondsTotal] = useState<number | null>(null)
   const [messageIsLoading, setMessageIsLoading] = useState<string>(
     t('Baixando informações do dispositivo!')
   )
@@ -177,14 +278,18 @@ export default function TSatDB(props: TSatDBProps) {
   //FIM
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [vaisalaSelected, setVaisalaSelected] = useState(false)
-  const [vaisalaPhase, setVaisalaPhase] = useState<
-    'idle' | 'opening' | 'service-open' | 'redirecting' | 'error' | 'redirect-error'
-  >('idle')
+  const [vaisalaPhase, setVaisalaPhase] = useState<'idle' | 'searching' | 'not-found'>('idle')
   const [vaisalaBridged, setVaisalaBridged] = useState(false)
   const [vaisalaRetry, setVaisalaRetry] = useState(0)
   const restoreInProgress = useRef(false)
   const testInProgress = useRef(false)
+  const testCancelRequested = useRef(false)
+  const testConfigChanged = useRef(false)
   const testSerialLock = useRef(false)
+  const vaisalaLastActivityAt = useRef(Date.now())
+  const vaisalaCommandBusy = useRef(false)
+  const vaisalaKeepaliveBusy = useRef(false)
+  const vaisalaTxAt = useRef(0)
   const commandEpoch = useRef(0)
   const [deviceFound, setDeviceFound] = useState<boolean | null>(null) // null indica que a varredura ainda não foi iniciada
   const { mode, SetPortOpen, connectorDisconnect }: any = Device()
@@ -204,6 +309,22 @@ export default function TSatDB(props: TSatDBProps) {
     setDeviceFound(null)
   }
 
+  function touchVaisalaActivity(): void {
+    vaisalaLastActivityAt.current = Date.now()
+  }
+
+  function vaisalaTransmitQuiet(now = Date.now()): boolean {
+    const txAt = vaisalaTxAt.current
+    if (!txAt) return false
+    const quietStart = txAt - VAISALA_TX_QUIET_BEFORE_MS - VAISALA_KEEPALIVE_LEAD_MS
+    const quietEnd = txAt + VAISALA_TX_QUIET_AFTER_MS
+    return now >= quietStart && now < quietEnd
+  }
+
+  function releaseVaisalaTxQuiet(): void {
+    if (!vaisalaTransmitQuiet()) vaisalaTxAt.current = 0
+  }
+
   async function handleComandSend(
     comand: string,
     options?: {
@@ -212,24 +333,41 @@ export default function TSatDB(props: TSatDBProps) {
       silenceMs?: number
       keepLoading?: boolean
       isComplete?: (response: string) => boolean
+      skipLog?: boolean
+      allowDuringTest?: boolean
     }
   ): Promise<string> {
     // Comandos sem resposta obrigatória ainda precisam de folga para o dispositivo
     // responder; encurtar demais fazia a resposta cair na leitura do comando seguinte.
-    if (testInProgress.current && !testSerialLock.current) return ''
+    if (options?.allowDuringTest) {
+      if (testSerialLock.current || vaisalaTransmitQuiet()) return ''
+    } else if (testInProgress.current && !testSerialLock.current) {
+      return ''
+    }
     const overallTimeoutMs = options?.timeoutMs ?? (options?.optionalReply ? 1500 : 20000)
+    const shouldLog = !options?.skipLog
+    vaisalaCommandBusy.current = true
+    touchVaisalaActivity()
 
     try {
+      if (shouldLog) tsatLog(`TX ${comand}`)
       await serialManagerTsatDB.sendCommandTSatDB(comand)
-      return await serialManagerTsatDB.receiveDataTSatDB({
+      const response = await serialManagerTsatDB.receiveDataTSatDB({
         overallTimeoutMs,
         silenceMs: options?.silenceMs,
         isComplete: options?.isComplete
       })
+      if (shouldLog) tsatLog(`RX ${quoteSerial(response)}`)
+      touchVaisalaActivity()
+      return response
     } catch (error) {
+      if (shouldLog) tsatLog(`erro TX ${comand}: ${describeSerialError(error)}`)
       if (options?.optionalReply) return ''
       if (!options?.keepLoading) finishLoading()
       throw error
+    } finally {
+      vaisalaCommandBusy.current = false
+      touchVaisalaActivity()
     }
   }
 
@@ -712,7 +850,14 @@ export default function TSatDB(props: TSatDBProps) {
     setTransmissionLog((prev) => [...prev, { kind, text: line }])
   }
 
-  async function sendLoggedTestCommand(command: string, timeoutMs = 2500): Promise<void> {
+  async function waitOutVaisalaKeepalive(): Promise<void> {
+    while (vaisalaKeepaliveBusy.current) {
+      await wait(50)
+    }
+  }
+
+  async function sendLoggedTestCommand(command: string, timeoutMs = 2500): Promise<string> {
+    if (vaisalaKeepaliveBusy.current) await waitOutVaisalaKeepalive()
     testSerialLock.current = true
     try {
       appendTransmissionLog('sent', command)
@@ -725,25 +870,36 @@ export default function TSatDB(props: TSatDBProps) {
       const reply = testResponseText(command, response)
       if (reply) appendTransmissionLog('response', reply)
       await wait(READ_GAP_MS)
+      return response
     } finally {
       testSerialLock.current = false
     }
   }
 
   async function restoreOperationalConfig(ops: {
+    nesid: string
+    tdf: string
+    tch: string
+    tbr: string
     tin: string
     ftt: string
     twl: string
-    tch: string
+    cmsg: string
+    ebm: string
   }): Promise<void> {
     setIsLoading(true)
     setMessageIsLoading(t('Restaurando configuração do dispositivo!'))
     const commands = [
       'RST',
+      ops.nesid ? `NESID=${ops.nesid}` : '',
+      ops.tdf ? `TDF=${ops.tdf}` : '',
+      ops.tch ? `TCH=${ops.tch}` : '',
+      ops.tbr ? `TBR=${ops.tbr}` : '',
       ops.tin ? `TIN=${ops.tin}` : '',
       ops.ftt ? `FTT=${ops.ftt}` : '',
       ops.twl ? `TWL=${ops.twl}` : '',
-      ops.tch ? `TCH=${ops.tch}` : '',
+      ops.cmsg ? `CMSG=${ops.cmsg}` : '',
+      ops.ebm ? `EBM=${ops.ebm}` : '',
       'ETX'
     ].filter((command) => command.length > 0)
     for (const command of commands) {
@@ -755,25 +911,46 @@ export default function TSatDB(props: TSatDBProps) {
     }
   }
 
+  function requestTestCancel(): void {
+    if (!testInProgress.current || testCancelRequested.current) return
+    testCancelRequested.current = true
+    setTestStatus(t('Cancelando teste...'))
+    if (testConfigChanged.current) {
+      setMessageIsLoading(t('Restaurando configuração do dispositivo!'))
+    }
+  }
+
   async function handleTestTransmission(platformId: string, channel: string, message: string): Promise<void> {
     if (!props.isConect || mode.state || testInProgress.current) return
     testInProgress.current = true
+    testCancelRequested.current = false
+    testConfigChanged.current = false
     setIsLoading(true)
     setTransmissionLog([])
     setTestStatus(t('Preparando teste de transmissão…'))
-    setTestSecondsLeft(200)
+    setTestLedHint(false)
+    setTestSecondsLeft(null)
+    setTestSecondsTotal(null)
     setMessageIsLoading(t('Baixando informações do dispositivo!'))
-    const started = Date.now()
-    const clock = setInterval(() => {
-      const left = Math.max(0, 200 - Math.floor((Date.now() - started) / 1000))
-      setTestSecondsLeft(left)
-      if (left <= 40) setTestStatus(t('Concluindo... Consulte o resultado no site da NOAA.'))
-      else if (left <= 60) setTestStatus(t("Verifique o LED 'TX' !!!"))
-      else if (left <= 120) setTestStatus(t("LED 'DATA' apaga 1 min antes de transmitir. Aguarde..."))
-    }, 250)
-    let ops: { tin: string; ftt: string; twl: string; tch: string } | null = null
+    let clock: ReturnType<typeof setInterval> | undefined
+    let countdownActive = false
+    let ops: {
+      nesid: string
+      tdf: string
+      tch: string
+      tbr: string
+      tin: string
+      ftt: string
+      twl: string
+      cmsg: string
+      ebm: string
+    } | null = null
     let changed = false
+    const ensureNotCancelled = (): void => {
+      if (testCancelRequested.current) throw new TestCancelled()
+    }
     try {
+      if (vaisalaKeepaliveBusy.current) await waitOutVaisalaKeepalive()
       testSerialLock.current = true
       appendTransmissionLog('sent', 'rcfg')
       const raw = await handleComandSend('rcfg', {
@@ -785,26 +962,58 @@ export default function TSatDB(props: TSatDBProps) {
       const rcfgReply = testResponseText('rcfg', raw)
       if (rcfgReply) appendTransmissionLog('response', rcfgReply)
       const saved = {
+        nesid: settingValue(raw, 'NESID'),
+        tdf: settingValue(raw, 'TDF'),
+        tch: settingValue(raw, 'TCH'),
+        tbr: settingValue(raw, 'TBR'),
         tin: settingValue(raw, 'TIN'),
         ftt: settingValue(raw, 'FTT'),
         twl: settingValue(raw, 'TWL'),
-        tch: settingValue(raw, 'TCH'),
-        tbr: settingValue(raw, 'TBR') || '300'
+        cmsg: settingValue(raw, 'CMSG'),
+        ebm: settingValue(raw, 'EBM')
       }
-      if (!settingValue(raw, 'NESID') || !settingValue(raw, 'IRC') || !saved.tch || !saved.tin || !saved.ftt || !saved.twl) {
+      if (!saved.nesid || !settingValue(raw, 'IRC') || !saved.tch || !saved.tin || !saved.ftt || !saved.twl) {
         const missed = t('Não foi possível guardar a configuração atual. O teste não foi iniciado.')
         appendTransmissionLog('info', missed)
         setTestStatus(missed)
         return
       }
       ops = saved
+      ensureNotCancelled()
+
+      const verRaw = await sendLoggedTestCommand('ver', 8000)
+      ensureNotCancelled()
+      const rstRaw = await sendLoggedTestCommand('RST', 8000)
+      ensureNotCancelled()
+      const ltxsRaw = await sendLoggedTestCommand('LTXS', 8000)
+      ensureNotCancelled()
+      await sendLoggedTestCommand('techmode alpha')
+      let pwrRaw = ''
+      try {
+        ensureNotCancelled()
+        pwrRaw = await sendLoggedTestCommand('PWRLVL', 8000)
+      } finally {
+        await sendLoggedTestCommand('usermode')
+      }
+      ensureNotCancelled()
+      const testLine = buildTestTransmissionLine(
+        raw,
+        {
+          ns: labeledValue(verRaw, 'Serial Number:'),
+          firmware: labeledValue(verRaw, 'Firmware Version:'),
+          vbat: labeledValue(rstRaw, 'Supply voltage:'),
+          pwrlvl: pwrlvlValue(pwrRaw),
+          swr: swrValue(ltxsRaw)
+        },
+        message
+      )
 
       setMessageIsLoading(t('Enviando informações para o dispositivo!'))
       const setup = [
         'TDF=A',
         `NESID=${platformId}`,
         `TCH=${saved.tch}`,
-        `TBR=${saved.tbr}`,
+        `TBR=${saved.tbr || '300'}`,
         `TIN=${saved.tin}`,
         `FTT=${saved.ftt}`,
         `TWL=${saved.twl}`,
@@ -813,19 +1022,14 @@ export default function TSatDB(props: TSatDBProps) {
         'ETX'
       ]
       changed = true
-      for (const command of setup) await sendLoggedTestCommand(command)
-
-      const armAt = started + 20000
-      if (armAt > Date.now()) {
-        setIsLoading(false)
-        setTestStatus(t('Aguardando transmissão de teste...'))
-        while (Date.now() < armAt) {
-          if (!props.isConect || mode.state) throw new Error('offline')
-          await wait(Math.min(500, armAt - Date.now()))
-        }
+      testConfigChanged.current = true
+      for (const command of setup) {
+        ensureNotCancelled()
+        await sendLoggedTestCommand(command)
       }
 
       setIsLoading(true)
+      setTestStatus(t('Armando transmissão de teste...'))
       setMessageIsLoading(t('Armando transmissão de teste...'))
       const armed = [
         'TDT=B',
@@ -838,39 +1042,119 @@ export default function TSatDB(props: TSatDBProps) {
         'TWL=10',
         `FTT=${fttTestStamp()}`,
         'ETX',
-        `TDT=${message}`,
+        `TDT=${testLine}`,
         'RST'
       ]
+      let armedRst = ''
       for (const command of armed) {
-        await sendLoggedTestCommand(command, command === 'RST' ? 8000 : 2500)
+        ensureNotCancelled()
+        const response = await sendLoggedTestCommand(command, command === 'RST' ? 8000 : 2500)
+        if (command === 'RST') armedRst = response
       }
 
-      setIsLoading(false)
-      const endAt = started + 200000
-      while (Date.now() < endAt) {
-        if (!props.isConect || mode.state) throw new Error('offline')
-        await wait(Math.min(500, endAt - Date.now()))
+      const waitSeconds = secondsFromTimeToNextTx(armedRst)
+      if (waitSeconds === null) {
+        appendTransmissionLog('info', t('Não foi possível ler o tempo da próxima transmissão.'))
+      } else if (waitSeconds > 0) {
+        setIsLoading(false)
+        setTestSecondsTotal(waitSeconds)
+        setTestSecondsLeft(waitSeconds)
+        if (waitSeconds <= 40) setTestStatus(t('Concluindo...'))
+        else if (waitSeconds <= 60)
+          setTestStatus(t("LED 'DATA' deve estar apagado. Verifique!"))
+        else setTestStatus(t('Aguardando transmissão de teste...'))
+        const endAt = Date.now() + waitSeconds * 1000
+        vaisalaTxAt.current = endAt
+        tsatLog('vaisala: silencio na transmissao, 10s antes do fim do contador e 15s depois')
+        countdownActive = true
+        clock = setInterval(() => {
+          if (!countdownActive || testCancelRequested.current) return
+          const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000))
+          setTestSecondsLeft(left)
+          if (left <= 40) setTestStatus(t('Concluindo...'))
+          else if (left <= 60)
+            setTestStatus(t("LED 'DATA' deve estar apagado. Verifique!"))
+          else setTestStatus(t('Aguardando transmissão de teste...'))
+        }, 250)
+        while (Date.now() < endAt) {
+          ensureNotCancelled()
+          if (!props.isConect || mode.state) throw new Error('offline')
+          await wait(Math.min(250, Math.max(0, endAt - Date.now())))
+        }
+        countdownActive = false
+        clearInterval(clock)
+        clock = undefined
+        setTestSecondsLeft(0)
+
+        const transmitHoldSeconds = 15
+        setTestStatus(t('Transmitindo...'))
+        setTestSecondsTotal(transmitHoldSeconds)
+        setTestSecondsLeft(transmitHoldSeconds)
+        const transmitEndAt = Date.now() + transmitHoldSeconds * 1000
+        countdownActive = true
+        clock = setInterval(() => {
+          if (!countdownActive || testCancelRequested.current) return
+          setTestSecondsLeft(Math.max(0, Math.ceil((transmitEndAt - Date.now()) / 1000)))
+          setTestStatus(t('Transmitindo...'))
+        }, 250)
+        while (Date.now() < transmitEndAt) {
+          ensureNotCancelled()
+          if (!props.isConect || mode.state) throw new Error('offline')
+          await wait(Math.min(250, Math.max(0, transmitEndAt - Date.now())))
+        }
+        countdownActive = false
+        clearInterval(clock)
+        clock = undefined
+        setTestSecondsLeft(0)
       }
 
-      clearInterval(clock)
+      ensureNotCancelled()
       await restoreOperationalConfig(saved)
       ops = null
-      const finishedAt = new Date().toLocaleString()
-      setTestStatus(`${t('Envio de Teste Encerrado')} | Obs=${message} | Data: ${finishedAt}`)
-    } catch {
-      clearInterval(clock)
-      appendTransmissionLog('info', t('Teste abortado, modem nao responde.'))
-      setTestStatus(t('Teste abortado, modem nao responde.'))
+      changed = false
+      testConfigChanged.current = false
+      if (testCancelRequested.current) {
+        setTestStatus(t('Teste cancelado. Configuração original restaurada.'))
+      } else {
+        setIsLoading(true)
+        setMessageIsLoading(t('Baixando informações do dispositivo!'))
+        await sendLoggedTestCommand('LTXS', 8000)
+        const finishedAt = new Date().toLocaleString()
+        setTestStatus(
+          [
+            `${t('Envio de Teste Encerrado')} | Data: ${finishedAt}`,
+            t('Verifique no site da NOAA'),
+            'https://dcs1.noaa.gov/Account/FieldTest',
+            'https://dadds-dcs.data.nesdis.noaa.gov/messages'
+          ].join('\n')
+        )
+        setTestLedHint(true)
+      }
+    } catch (error) {
+      countdownActive = false
+      if (clock) clearInterval(clock)
+      const cancelled = error instanceof TestCancelled
+      if (!cancelled) {
+        appendTransmissionLog('info', t('Teste abortado, modem nao responde.'))
+        setTestStatus(t('Teste abortado, modem nao responde.'))
+      }
       if (changed && ops) {
-        clearInterval(clock)
         await restoreOperationalConfig(ops)
         ops = null
+        if (cancelled) setTestStatus(t('Teste cancelado. Configuração original restaurada.'))
+      } else if (cancelled) {
+        setTestStatus(t('Teste cancelado.'))
       }
     } finally {
-      clearInterval(clock)
+      countdownActive = false
+      if (clock) clearInterval(clock)
       testSerialLock.current = false
       testInProgress.current = false
+      testCancelRequested.current = false
+      testConfigChanged.current = false
+      releaseVaisalaTxQuiet()
       setTestSecondsLeft(null)
+      setTestSecondsTotal(null)
       setIsLoading(false)
     }
   }
@@ -895,29 +1179,149 @@ export default function TSatDB(props: TSatDBProps) {
   }, [MenuName])
 
   useEffect(() => {
-    if (!props.isConect || !vaisalaSelected || mode.state) {
+    if (!props.isConect) {
+      setVaisalaBridged(false)
       setVaisalaPhase('idle')
+      vaisalaUsesService = false
+    }
+  }, [props.isConect])
+
+  async function closeVaisalaService(): Promise<void> {
+    tsatLog('vaisala: TX close')
+    try {
+      const response = await handleComandSend('close', {
+        optionalReply: true,
+        timeoutMs: 2500,
+        silenceMs: 500,
+        keepLoading: true,
+        skipLog: true
+      })
+      tsatLog(`vaisala: close resposta=${quoteSerial(response)}`)
+    } catch (error) {
+      tsatLog(`vaisala: close sem resposta ${describeSerialError(error)}`)
+    }
+  }
+
+  async function openVaisalaService(): Promise<boolean> {
+    tsatLog('vaisala: TX open')
+    try {
+      const response = await handleComandSend('open', {
+        timeoutMs: 8000,
+        silenceMs: 1500,
+        keepLoading: true,
+        optionalReply: true,
+        skipLog: true,
+        isComplete: lineCompleteIgnoreCase('Service connection opened')
+      })
+      const opened = serviceConnectionOpened(response)
+      tsatLog(
+        `vaisala: open resposta=${quoteSerial(response)} servico=${opened ? 'aberto' : 'sem Service connection opened'}`
+      )
+      return opened
+    } catch (error) {
+      tsatLog(`vaisala: open erro ${describeSerialError(error)}`)
+      return false
+    }
+  }
+
+  async function openVaisalaDsu(port: string): Promise<string> {
+    tsatLog(`vaisala: TX open ${port}`)
+    try {
+      const response = await handleComandSend(`open ${port}`, {
+        timeoutMs: 8000,
+        silenceMs: 2000,
+        keepLoading: true,
+        optionalReply: true,
+        skipLog: true,
+        isComplete: vaisalaRerouteReady
+      })
+      const confirmed = confirmedVaisalaPort(response)
+      tsatLog(`vaisala: RX ${quoteSerial(response)} redirecionou=${confirmed || 'não'}`)
+      return confirmed
+    } catch (error) {
+      tsatLog(`vaisala: ${port} erro ${describeSerialError(error)}`)
+      return ''
+    }
+  }
+
+  async function probeVaisalaTime(): Promise<string> {
+    tsatLog('vaisala: TX time')
+    const deadline = Date.now() + 8000
+    while (Date.now() < deadline) {
+      try {
+        const response = await handleComandSend('time', {
+          optionalReply: true,
+          timeoutMs: 1500,
+          keepLoading: true,
+          skipLog: true,
+          isComplete: lineComplete('Time')
+        })
+        tsatLog(`vaisala: time resposta=${quoteSerial(response)}`)
+        if (response.includes('Time')) return response
+      } catch (error) {
+        tsatLog(`vaisala: time erro ${describeSerialError(error)}`)
+      }
+      await wait(200)
+    }
+    tsatLog('vaisala: time não respondeu em 8 s')
+    return ''
+  }
+
+  useEffect(() => {
+    if (!props.isConect || !vaisalaSelected || mode.state) {
+      if (!vaisalaSelected) setVaisalaPhase('idle')
       return
     }
+    if (vaisalaBridged) return
 
     let cancelled = false
-    setVaisalaPhase('opening')
+    setVaisalaPhase('searching')
+    tsatLog('vaisala: busca automática nas 4 portas DSU')
+
     const timer = setTimeout(() => {
       void (async (): Promise<void> => {
-        try {
-          const response = await handleComandSend('open', {
-            timeoutMs: 8000,
-            silenceMs: 1500,
-            keepLoading: true,
-            isComplete: lineComplete('Service connection opened')
-          })
+        for (const port of VAISALA_DSU_PORTS) {
           if (cancelled) return
-          const opened = lineComplete('Service connection opened')(response)
-          vaisalaUsesService = opened
-          setVaisalaPhase(opened ? 'service-open' : 'error')
-        } catch {
-          if (!cancelled) setVaisalaPhase('error')
+          tsatLog(`vaisala: tentando ${port}`)
+          const serviceOk = await openVaisalaService()
+          if (cancelled) return
+          if (!serviceOk) {
+            await closeVaisalaService()
+            continue
+          }
+          vaisalaUsesService = true
+
+          const confirmed = await openVaisalaDsu(port)
+          if (cancelled) return
+          if (!confirmed) {
+            await closeVaisalaService()
+            vaisalaUsesService = false
+            continue
+          }
+
+          const timeResponse = await probeVaisalaTime()
+          if (cancelled) return
+          if (!timeResponse) {
+            await closeVaisalaService()
+            vaisalaUsesService = false
+            continue
+          }
+
+          tsatLog(`vaisala: ponte pronta em ${confirmed}`)
+          setDataReceivedComandTIME(timeResponse)
+          setMessageIsLoading(t('Baixando informações do dispositivo!'))
+          setIsLoading(true)
+          setVaisalaBridged(true)
+          setVaisalaPhase('idle')
+          void executeListCommand('after-detect')
+          return
         }
+
+        if (cancelled) return
+        tsatLog('vaisala: nenhuma das 4 portas encontrou o TSatDB')
+        vaisalaUsesService = false
+        setVaisalaPhase('not-found')
+        setIsLoading(false)
       })()
     }, 250)
 
@@ -925,62 +1329,55 @@ export default function TSatDB(props: TSatDBProps) {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [props.isConect, vaisalaSelected, mode.state, vaisalaRetry])
+  }, [props.isConect, vaisalaSelected, mode.state, vaisalaRetry, vaisalaBridged])
 
   useEffect(() => {
-    if (!props.isConect) {
-      setVaisalaBridged(false)
-      vaisalaUsesService = false
-    }
-  }, [props.isConect])
+    if (!props.isConect || !vaisalaSelected || !vaisalaBridged || mode.state) return
 
-  async function openVaisalaDsu(port: string): Promise<boolean> {
-    const response = await handleComandSend(`open ${port}`, {
-      timeoutMs: 8000,
-      silenceMs: 2000,
-      keepLoading: true,
-      isComplete: lineCompleteIgnoreCase(vaisalaReroutePhrase(port))
-    })
-    return vaisalaPortRerouted(response, port)
-  }
-
-  async function redirectVaisalaPort(): Promise<void> {
-    if (vaisalaPhase !== 'service-open' && vaisalaPhase !== 'redirect-error') return
-    setVaisalaPhase('redirecting')
-    try {
-      if (await openVaisalaDsu('dsu232_0_0')) {
-        setVaisalaBridged(true)
+    touchVaisalaActivity()
+    const timer = window.setInterval(() => {
+      if (
+        !props.isConect ||
+        mode.state ||
+        restoreInProgress.current ||
+        vaisalaCommandBusy.current ||
+        vaisalaKeepaliveBusy.current ||
+        testSerialLock.current ||
+        vaisalaTransmitQuiet()
+      ) {
         return
       }
-    } catch {
-      // Sem a frase da primeira porta, fecha e tenta a segunda.
-    }
+      if (Date.now() - vaisalaLastActivityAt.current < 20000) return
 
-    try {
-      await handleComandSend('close', {
+      vaisalaKeepaliveBusy.current = true
+      touchVaisalaActivity()
+      // sendCommandTSatDB acrescenta \r\n; comando vazio é só a tecla Enter
+      tsatLog('vaisala: ocioso >20s, TX Enter')
+      void handleComandSend('', {
         optionalReply: true,
-        timeoutMs: 2500,
-        silenceMs: 500,
-        keepLoading: true
+        timeoutMs: 1500,
+        silenceMs: 400,
+        skipLog: true,
+        allowDuringTest: true
       })
-    } catch {
-      // Sem resposta do close, a segunda porta ainda é tentada.
-    }
+        .then((response) => {
+          if (response) tsatLog(`vaisala: Enter resposta=${quoteSerial(response)}`)
+        })
+        .catch((error) => {
+          tsatLog(`vaisala: Enter erro ${describeSerialError(error)}`)
+        })
+        .finally(() => {
+          vaisalaKeepaliveBusy.current = false
+          touchVaisalaActivity()
+        })
+    }, 1000)
 
-    try {
-      if (await openVaisalaDsu('dsu232_0_1')) {
-        setVaisalaBridged(true)
-        return
-      }
-    } catch {
-      // A segunda porta também não confirmou o redirecionamento.
-    }
-    setVaisalaPhase('redirect-error')
-  }
+    return () => window.clearInterval(timer)
+  }, [props.isConect, vaisalaSelected, vaisalaBridged, mode.state])
 
   useEffect(() => {
-    if (!props.isConect || mode.state || (vaisalaSelected && !vaisalaBridged)) {
-      setDeviceFound(null)
+    if (!props.isConect || mode.state || vaisalaSelected) {
+      if (!props.isConect || mode.state) setDeviceFound(null)
       return
     }
 
@@ -1031,7 +1428,7 @@ export default function TSatDB(props: TSatDBProps) {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [props.isConect, mode.state, vaisalaSelected, vaisalaBridged])
+  }, [props.isConect, mode.state, vaisalaSelected])
 
   const tabClass = (active: boolean): string =>
     `inline-flex items-center gap-1 overflow-visible whitespace-nowrap rounded-t-md px-1.5 py-2 text-[13px] font-medium leading-normal transition-colors duration-150 ${
@@ -1082,30 +1479,15 @@ export default function TSatDB(props: TSatDBProps) {
           </div>
 
           <div className="space-y-4 px-6 py-5">
-            {vaisalaPhase === 'service-open' ? (
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700">
-                <CheckCircle size={18} weight="fill" className="shrink-0" />
-                {t('Conectado ao datalogger')}
-              </div>
-            ) : vaisalaPhase === 'redirecting' ? (
-              <div className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm font-medium text-sky-700">
-                <CircleNotch size={18} className="shrink-0 animate-spin" />
-                {t('Redirecionando porta…')}
-              </div>
-            ) : vaisalaPhase === 'error' ? (
+            {vaisalaPhase === 'not-found' ? (
               <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
                 <WarningCircle size={18} weight="fill" className="shrink-0" />
-                {t('Não foi possível abrir o serviço do datalogger.')}
-              </div>
-            ) : vaisalaPhase === 'redirect-error' ? (
-              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
-                <WarningCircle size={18} weight="fill" className="shrink-0" />
-                {t('Nenhuma porta DSU232_0_0 ou DSU232_0_1 redirecionou.')}
+                {t('Dispositivo não encontrado.')}
               </div>
             ) : (
               <div className="flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-sm font-medium text-sky-700">
                 <CircleNotch size={18} className="shrink-0 animate-spin" />
-                {t('Abrindo serviço…')}
+                {t('Tentando encontrar o dispositivo')}
               </div>
             )}
 
@@ -1117,22 +1499,13 @@ export default function TSatDB(props: TSatDBProps) {
               >
                 {t('Cancelar')}
               </button>
-              {vaisalaPhase === 'error' ? (
+              {vaisalaPhase === 'not-found' && (
                 <button
                   type="button"
                   onClick={() => setVaisalaRetry((attempt) => attempt + 1)}
                   className="box-border min-h-[44px] flex-1 rounded-lg border-2 border-sky-500 bg-sky-500 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:border-sky-600 hover:bg-sky-600"
                 >
                   {t('Tentar de novo')}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={vaisalaPhase !== 'service-open' && vaisalaPhase !== 'redirect-error'}
-                  onClick={() => void redirectVaisalaPort()}
-                  className="box-border min-h-[44px] flex-1 rounded-lg border-2 border-sky-500 bg-sky-500 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:border-sky-600 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {t('Redirecionar porta')}
                 </button>
               )}
             </div>
@@ -1222,7 +1595,10 @@ export default function TSatDB(props: TSatDBProps) {
                 log={transmissionLog}
                 busy={isLoading || testSecondsLeft !== null}
                 status={testStatus}
+                ledHint={testLedHint}
                 secondsLeft={testSecondsLeft}
+                secondsTotal={testSecondsTotal}
+                onCancel={requestTestCancel}
                 onSend={(platformId, channel, message) =>
                   void handleTestTransmission(platformId, channel, message)
                 }
@@ -1230,6 +1606,7 @@ export default function TSatDB(props: TSatDBProps) {
                   if (testInProgress.current) return
                   setTransmissionLog([])
                   setTestStatus('')
+                  setTestLedHint(false)
                 }}
               />
             ) : MenuName === 'terminal' ? (
