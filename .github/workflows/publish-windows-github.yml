@@ -63,12 +63,24 @@ jobs:
           TELEMETRY_URL: ${{ secrets.TELEMETRY_URL }}
           TELEMETRY_TOKEN: ${{ secrets.TELEMETRY_TOKEN }}
           TELEMETRY_APPLICATION: suite-device-app
+          # Só repassar CSC se o secret existir — string vazia faz o electron-builder
+          # resolver WIN_CSC_LINK como path e falhar ("not a file").
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: |
           node scripts/validate-publish-inputs.cjs
-          if ($env:WIN_CSC_LINK) { $env:CSC_LINK = $env:WIN_CSC_LINK }
-          if ($env:WIN_CSC_KEY_PASSWORD) { $env:CSC_KEY_PASSWORD = $env:WIN_CSC_KEY_PASSWORD }
+          if ($env:WIN_CSC_LINK) {
+            $env:CSC_LINK = $env:WIN_CSC_LINK
+          } else {
+            Remove-Item Env:WIN_CSC_LINK -ErrorAction SilentlyContinue
+            Remove-Item Env:CSC_LINK -ErrorAction SilentlyContinue
+          }
+          if ($env:WIN_CSC_KEY_PASSWORD) {
+            $env:CSC_KEY_PASSWORD = $env:WIN_CSC_KEY_PASSWORD
+          } else {
+            Remove-Item Env:WIN_CSC_KEY_PASSWORD -ErrorAction SilentlyContinue
+            Remove-Item Env:CSC_KEY_PASSWORD -ErrorAction SilentlyContinue
+          }
           npm run build:win
 
       - uses: actions/upload-artifact@v4

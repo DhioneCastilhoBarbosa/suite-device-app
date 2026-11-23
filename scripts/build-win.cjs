@@ -32,6 +32,15 @@ const feedUrl = validateFeedUrl(process.env.UPDATE_SERVER_URL || feed.url)
 process.env.UPDATE_SERVER_URL = feedUrl
 process.env.CSC_IDENTITY_AUTO_DISCOVERY = 'false'
 process.env.ELECTRON_BUILDER_CACHE = path.join(__dirname, '..', '.cache', 'electron-builder')
+
+// Secrets vazios no Actions (WIN_CSC_LINK="") fazem o electron-builder tentar
+// resolver um path inválido. Remover antes do pack quando não há certificado.
+for (const key of ['WIN_CSC_LINK', 'CSC_LINK', 'WIN_CSC_KEY_PASSWORD', 'CSC_KEY_PASSWORD']) {
+  if (!process.env[key] || !String(process.env[key]).trim()) {
+    delete process.env[key]
+  }
+}
+
 console.log(`Gerando instalador com feed ${feedUrl}`)
 
 const cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx'
