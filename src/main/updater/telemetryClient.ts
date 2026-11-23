@@ -8,15 +8,24 @@ import {
   type TelemetryPayload
 } from './telemetry'
 
+function envOrEmpty(key: string): string {
+  const value = process.env[key]
+  return typeof value === 'string' ? value.trim() : ''
+}
+
 function readConfig(): TelemetryConfig {
-  const enabledEnv = process.env.TELEMETRY_ENABLED
+  const enabledEnv = envOrEmpty('TELEMETRY_ENABLED')
   const enabled =
-    enabledEnv === 'true' ? true : enabledEnv === 'false' ? false : Boolean(defaultTelemetry.enabled)
+    enabledEnv === 'true'
+      ? true
+      : enabledEnv === 'false'
+        ? false
+        : Boolean(defaultTelemetry.enabled)
   return {
     enabled,
-    url: process.env.TELEMETRY_URL?.trim() || defaultTelemetry.url,
-    token: process.env.TELEMETRY_TOKEN?.trim() || defaultTelemetry.token,
-    application: process.env.TELEMETRY_APPLICATION?.trim() || defaultTelemetry.application
+    url: envOrEmpty('TELEMETRY_URL') || defaultTelemetry.url,
+    token: envOrEmpty('TELEMETRY_TOKEN') || defaultTelemetry.token,
+    application: envOrEmpty('TELEMETRY_APPLICATION') || defaultTelemetry.application
   }
 }
 

@@ -240,7 +240,7 @@ Fire-and-forget para a API suite-update (`POST /v1/telemetry/events`, header `X-
 
 `application`: `suite-device-app`. Canal derivado do feed (`stable` / `beta`).
 
-Config: `config/default-telemetry.json` + env de build `TELEMETRY_*` (embutidos pelo electron-vite). Falha de telemetria **não** bloqueia o update.
+Config: `config/default-telemetry.json` (URL da API) + env de build `TELEMETRY_*` gravados no JSON por `scripts/bake-telemetry.cjs` antes do build. Falha de telemetria **não** bloqueia o update.
 
 ### GitHub Actions
 

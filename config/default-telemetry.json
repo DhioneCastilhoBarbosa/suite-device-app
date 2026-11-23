@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "url": "http://127.0.0.1:8080/v1/telemetry/events",
+  "url": "https://api-suite-update.dualbase.com.br/v1/telemetry/events",
   "token": "suite-update-telemetry-local",
   "application": "suite-device-app"
 }

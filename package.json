@@ -1,6 +1,6 @@
 {
   "name": "suite-device-app",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Suite Device",
   "main": "./dist/main/index.js",
   "author": "Dualbase",
@@ -15,7 +15,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "npm run typecheck && electron-vite build && npm run copy-resources",
+    "build": "node scripts/bake-telemetry.cjs && npm run typecheck && electron-vite build && npm run copy-resources",
     "copy-resources": "cpx \"resources/**/*\" dist/resources",
     "icons:generate": "node scripts/generate-icon.cjs",
     "build:win": "npm run icons:generate && npm run build && node scripts/build-win.cjs",
