@@ -1,8 +1,10 @@
+# Identidade estável — NÃO alterar (userData / SQLite dos clientes).
 appId: com.electron.app
 productName: suite-device-app
 forceCodeSigning: false
 
 directories:
+  output: release
   buildResources: resources
 
 files:
@@ -12,21 +14,23 @@ files:
   - resources/**
   - "!**/.vscode/*"
   - "!src/*"
+  - "!config/*"
+  - "!scripts/*"
   - "!*.config.{js,ts,cjs,mjs}"
   - "!{*.md,CHANGELOG.md,README.md}"
   - "!{.env,.env.*,pnpm-lock.yaml,yarn.lock}"
 
 asarUnpack:
-  - dist/preload/**       # 🔥 Garante que o preload não fique no asar
-  - resources/**          # 🔥 Se tiver recursos como imagens ou binários
+  - dist/preload/**
+  - resources/**
 
 win:
   target:
     - nsis
-  # .ico com vários tamanhos — embutido no .exe (atalho da área de trabalho usa o ícone do exe)
   icon: icon.ico
   sign: null
   executableName: suite-device-app
+  artifactName: ${productName} Setup ${version}.${ext}
 
 nsis:
   oneClick: false
@@ -38,12 +42,33 @@ nsis:
   shortcutName: Suite Device
   createDesktopShortcut: always
   createStartMenuShortcut: true
+  artifactName: ${productName} Setup ${version}.${ext}
+
+mac:
+  target:
+    - zip
+    - dmg
+  category: public.app-category.utilities
+  icon: icon.png
+  # Ad-hoc: electron-updater no Mac exige assinatura válida.
+  identity: '-'
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  hardenedRuntime: false
+  gatekeeperAssess: false
+
+linux:
+  target:
+    - AppImage
+  category: Utility
+  icon: icon.png
+  artifactName: ${productName}-${version}-${arch}.${ext}
 
 npmRebuild: false
 
+# Primeiro publisher = o que fica embutido em app-update.yml (generic).
+# Publicação no GitHub Releases (transição) ou no servidor próprio é feita pelos
+# workflows / scripts — não pelo provider github do electron-builder.
 publish:
-  provider: github
-  owner: DhioneCastilhoBarbosa
-  repo: suite-device-app
-  releaseType: release
-  vPrefixedTagName: true
+  provider: generic
+  url: ${env.UPDATE_SERVER_URL}
+  channel: latest

@@ -1,19 +1,37 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
-//import { viteStaticCopy } from 'vite-plugin-static-copy'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: resolve(__dirname, '.env') })
+
+/** Bake TELEMETRY_* at build time (packaged app has no .env). Empty → defaults JSON. */
+function telemetryDefine(): Record<string, string> {
+  const keys = [
+    'TELEMETRY_ENABLED',
+    'TELEMETRY_URL',
+    'TELEMETRY_TOKEN',
+    'TELEMETRY_APPLICATION'
+  ] as const
+  const define: Record<string, string> = {}
+  for (const key of keys) {
+    define[`process.env.${key}`] = JSON.stringify(process.env[key] ?? '')
+  }
+  return define
+}
 
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    define: telemetryDefine(),
     build: {
-      outDir: 'dist/main' // Define a saída do processo principal
+      outDir: 'dist/main'
     }
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
     build: {
-      outDir: 'dist/preload' // Define a saída do preload
+      outDir: 'dist/preload'
     }
   },
   renderer: {
@@ -22,20 +40,9 @@ export default defineConfig({
         '@renderer': resolve('src/renderer/src')
       }
     },
-    plugins: [
-      react()
-      // Configuração do plugin de cópia de arquivos
-      /*viteStaticCopy({
-        targets: [
-          {
-            src: 'resources/**', // Caminho para os arquivos que você deseja copiar
-            dest: 'resources' // Destino dentro do diretório de build
-          }
-        ]
-      })*/
-    ],
+    plugins: [react()],
     build: {
-      outDir: 'dist/renderer' // Define a saída do frontend
+      outDir: 'dist/renderer'
     }
   }
 })

@@ -1,0 +1,112 @@
+name: Publish Suite Device Windows (GitHub transição)
+
+# Versão de transição: artefatos no GitHub Releases para clientes 2.4.x (provider github).
+# O instalador embute app-update.yml generic → suite-device-app/{channel}.
+# Mesmo build que o workflow servidor; só muda o destino.
+# NÃO dispare sem autorização explícita. Versão = package.json (> 2.4.5).
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Canal embutido no feed generic do instalador
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - beta
+
+concurrency:
+  group: publish-suite-device-windows-github-${{ inputs.channel }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar e typecheck
+        run: |
+          npm ci
+          npm run typecheck
+
+      - name: Preparar a versão do package.json
+        id: release
+        shell: bash
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: staging
+        run: |
+          node scripts/prepare-release.cjs
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Versão que sobe: $VERSION (package.json) → GitHub Releases (transição)"
+
+      - name: Gerar o instalador
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: staging
+          UPDATE_SERVER_URL: https://app-suite-update.dualbase.com.br/suite-device-app/${{ inputs.channel }}
+          TELEMETRY_ENABLED: ${{ secrets.TELEMETRY_ENABLED }}
+          TELEMETRY_URL: ${{ secrets.TELEMETRY_URL }}
+          TELEMETRY_TOKEN: ${{ secrets.TELEMETRY_TOKEN }}
+          TELEMETRY_APPLICATION: suite-device-app
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          node scripts/validate-publish-inputs.cjs
+          if ($env:WIN_CSC_LINK) { $env:CSC_LINK = $env:WIN_CSC_LINK }
+          if ($env:WIN_CSC_KEY_PASSWORD) { $env:CSC_KEY_PASSWORD = $env:WIN_CSC_KEY_PASSWORD }
+          npm run build:win
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suite-device-app-github-win-${{ inputs.channel }}-${{ steps.release.outputs.version }}
+          path: |
+            release/*.exe
+            release/*.exe.blockmap
+            release/latest.yml
+          if-no-files-found: error
+
+  publish-github:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: suite-device-app-github-win-${{ inputs.channel }}-${{ needs.build.outputs.version }}
+          path: artifacts
+
+      - name: Publicar no GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          VERSION="${{ needs.build.outputs.version }}"
+          TAG="v${VERSION}"
+          echo "⚠  Transição: release GitHub ${TAG} (clientes antigos provider github)."
+          echo "   Instalador embute feed generic suite-device-app/${{ inputs.channel }}."
+          test -f artifacts/latest.yml
+          ls artifacts/*.exe >/dev/null
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/* --clobber
+          else
+            gh release create "$TAG" artifacts/* \
+              --title "Suite Device ${VERSION}" \
+              --notes "Versão de transição ${VERSION}. Clientes 2.4.x descobrem via GitHub; o instalador embute feed próprio (suite-device-app/${{ inputs.channel }})."
+          fi
+          echo "ok  GitHub Releases ${TAG}"

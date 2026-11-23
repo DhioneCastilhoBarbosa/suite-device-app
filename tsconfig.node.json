@@ -4,10 +4,12 @@
     "electron.vite.config.*",
     "src/main/**/*",
     "src/preload/*.ts",
-    "src/db/**/*"
+    "src/db/**/*",
+    "config/**/*.json"
   ],
   "compilerOptions": {
     "composite": true,
+    "resolveJsonModule": true,
     "types": ["electron-vite/node"],
     "noUnusedLocals": false,
     "noUnusedParameters": false

@@ -1,0 +1,103 @@
+name: Publish Suite Device Mac (GitHub transição)
+
+# Transição: artefatos no GitHub Releases. Feed embutido = generic suite-device-app.
+# NÃO dispare sem autorização. Pós-transição: publish-mac.yml (servidor).
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Canal embutido no feed generic do pacote
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - beta
+
+concurrency:
+  group: publish-suite-device-mac-github-${{ inputs.channel }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar e typecheck
+        run: |
+          npm ci
+          npm run typecheck
+
+      - name: Preparar a versão do package.json
+        id: release
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: staging
+        run: |
+          node scripts/prepare-release.cjs
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Gerar o pacote Mac
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: staging
+          UPDATE_SERVER_URL: https://app-suite-update.dualbase.com.br/suite-device-app/${{ inputs.channel }}
+          TELEMETRY_ENABLED: ${{ secrets.TELEMETRY_ENABLED }}
+          TELEMETRY_URL: ${{ secrets.TELEMETRY_URL }}
+          TELEMETRY_TOKEN: ${{ secrets.TELEMETRY_TOKEN }}
+          TELEMETRY_APPLICATION: suite-device-app
+        run: |
+          node scripts/validate-publish-inputs.cjs
+          npm run build:mac
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suite-device-app-github-mac-${{ inputs.channel }}-${{ steps.release.outputs.version }}
+          path: |
+            release/*.zip
+            release/*.zip.blockmap
+            release/latest-mac.yml
+            release/*.dmg
+          if-no-files-found: error
+
+  publish-github:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: suite-device-app-github-mac-${{ inputs.channel }}-${{ needs.build.outputs.version }}
+          path: artifacts
+
+      - name: Publicar no GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          VERSION="${{ needs.build.outputs.version }}"
+          TAG="v${VERSION}"
+          test -f artifacts/latest-mac.yml
+          ls artifacts/*.zip >/dev/null
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/* --clobber
+          else
+            gh release create "$TAG" artifacts/* \
+              --title "Suite Device ${VERSION}" \
+              --notes "Versão de transição ${VERSION} (Mac). Feed embutido: suite-device-app/${{ inputs.channel }}."
+          fi
+          echo "ok  GitHub Releases ${TAG} (Mac)"

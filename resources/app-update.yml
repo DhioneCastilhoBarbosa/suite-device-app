@@ -1,6 +1,7 @@
-# Copiado para o instalador via forge.config.js (extraResources → resources).
+# Embutido no instalador pelo electron-builder (publish.provider = generic).
 # electron-updater lê em produção: process.resourcesPath/app-update.yml
-provider: github
-owner: DhioneCastilhoBarbosa
-repo: suite-device-app
+# Versão de transição: clientes antigos (GitHub) descobrem este build no GitHub Releases;
+# este ficheiro aponta o feed próprio para as atualizações seguintes.
+provider: generic
+url: https://app-suite-update.dualbase.com.br/suite-device-app/stable
 updaterCacheDirName: suite-device-app-updater

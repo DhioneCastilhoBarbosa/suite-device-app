@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "url": "http://127.0.0.1:8080/v1/telemetry/events",
+  "token": "suite-update-telemetry-local",
+  "application": "suite-device-app"
+}

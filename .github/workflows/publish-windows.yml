@@ -1,0 +1,177 @@
+name: Publish Suite Device Windows (servidor)
+
+# Espelha suite-update/publish-electron-test-windows.yml (slug suite-device-app).
+# Disparo manual: versão = package.json — só canal e ambiente no formulário.
+# NÃO use environment=production sem autorização explícita.
+# Transição GitHub Releases: use publish-windows-github.yml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Canal
+        required: true
+        default: stable
+        type: choice
+        options:
+          - stable
+          - beta
+      environment:
+        description: staging publica em /staging (teste baixável); production libera no canal
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
+
+concurrency:
+  group: publish-suite-device-windows-${{ inputs.channel }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar e typecheck
+        run: |
+          npm ci
+          npm run typecheck
+
+      - name: Preparar a versão do package.json
+        id: release
+        shell: bash
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          node scripts/prepare-release.cjs
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Versão que sobe: $VERSION (package.json)"
+
+      - name: Gerar o instalador
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: ${{ inputs.environment }}
+          UPDATE_SERVER_URL: https://app-suite-update.dualbase.com.br/suite-device-app/${{ inputs.channel }}
+          TELEMETRY_ENABLED: ${{ secrets.TELEMETRY_ENABLED }}
+          TELEMETRY_URL: ${{ secrets.TELEMETRY_URL }}
+          TELEMETRY_TOKEN: ${{ secrets.TELEMETRY_TOKEN }}
+          TELEMETRY_APPLICATION: suite-device-app
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          node scripts/validate-publish-inputs.cjs
+          if ($env:WIN_CSC_LINK) { $env:CSC_LINK = $env:WIN_CSC_LINK }
+          if ($env:WIN_CSC_KEY_PASSWORD) { $env:CSC_KEY_PASSWORD = $env:WIN_CSC_KEY_PASSWORD }
+          npm run build:win
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suite-device-app-${{ inputs.channel }}-${{ steps.release.outputs.version }}
+          path: |
+            release/*.exe
+            release/*.exe.blockmap
+            release/latest.yml
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: suite-device-app-${{ inputs.channel }}-${{ needs.build.outputs.version }}
+          path: artifacts
+
+      - name: Validar parâmetros e artefatos
+        env:
+          PUBLISH_CHANNEL: ${{ inputs.channel }}
+          PUBLISH_ENVIRONMENT: ${{ inputs.environment }}
+          PUBLISH_PARAMS_FILE: ${{ github.workspace }}/publish-params.env
+        run: |
+          node scripts/validate-publish-inputs.cjs
+          echo "Publicando versão ${{ needs.build.outputs.version }} do package.json"
+
+      - name: Enviar e publicar
+        env:
+          SUITE_UPDATE_SSH_HOST: ${{ secrets.SUITE_UPDATE_SSH_HOST }}
+          SUITE_UPDATE_SSH_USER: ${{ secrets.SUITE_UPDATE_SSH_USER }}
+          SUITE_UPDATE_SSH_KEY: ${{ secrets.SUITE_UPDATE_SSH_KEY }}
+          SUITE_UPDATE_SSH_KNOWN_HOSTS: ${{ secrets.SUITE_UPDATE_SSH_KNOWN_HOSTS }}
+          SUITE_UPDATE_VOLUME_PATH: ${{ secrets.SUITE_UPDATE_VOLUME_PATH }}
+        run: |
+          set -eu
+          . ./publish-params.env
+          test -n "$SUITE_UPDATE_SSH_HOST"
+          test -n "$SUITE_UPDATE_SSH_USER"
+          test -n "$SUITE_UPDATE_SSH_KEY"
+          test -n "$SUITE_UPDATE_SSH_KNOWN_HOSTS"
+
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SUITE_UPDATE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SUITE_UPDATE_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+          volume="/var/lib/docker/volumes/suite_update_storage/_data"
+          if [ -n "${SUITE_UPDATE_VOLUME_PATH:-}" ]; then
+            printf '%s\n' "$SUITE_UPDATE_VOLUME_PATH" | grep -Eq '^/[A-Za-z0-9._/-]+$'
+            volume="$SUITE_UPDATE_VOLUME_PATH"
+          fi
+
+          remote="${SUITE_UPDATE_SSH_USER}@${SUITE_UPDATE_SSH_HOST}"
+          staging="suite-update-incoming/${CHANNEL}"
+          ssh -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$remote" "mkdir -p ~/${staging} && chmod 700 ~/suite-update-incoming ~/${staging}"
+          scp -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes artifacts/* "$remote:~/${staging}/"
+          scp -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes scripts/publish-remote.sh "$remote:~/${staging}/publish-remote.sh"
+          ssh -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$remote" \
+            "SUITE_UPDATE_VOLUME_PATH=$(printf '%q' "$volume") SUITE_UPDATE_RELEASE_SOURCE=github sh ~/${staging}/publish-remote.sh '$CHANNEL' '$VERSION' '$MODE' ~/${staging} suite-device-app"
+
+          if [ "$MODE" = "publish" ]; then
+            feed_channel="$CHANNEL"
+          else
+            feed_channel="staging"
+          fi
+          # Fonte da verdade: arquivos no volume (publish-remote). Nginx/HTTPS podem atrasar.
+          ssh -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$remote" \
+            "test -f $(printf '%q' "$volume")/suite-device-app/${feed_channel}/latest.yml && grep -q '^version: ${VERSION}$' $(printf '%q' "$volume")/suite-device-app/${feed_channel}/latest.yml && echo volume-ok"
+          echo "ok  Windows ${VERSION} no volume suite-device-app/${feed_channel}/"
+          if ssh -i "$HOME/.ssh/id_ed25519" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "$remote" \
+            "curl -fsS http://127.0.0.1:8099/health >/dev/null && curl -fsS http://127.0.0.1:8099/suite-device-app/${feed_channel}/latest.yml | grep -q '^version: ${VERSION}$'"; then
+            echo "ok  Nginx local serve /suite-device-app/${feed_channel}/"
+          else
+            echo "aviso  Nginx local ainda não serve /suite-device-app/${feed_channel}/ (redeploy da imagem nginx com path staging); arquivos já estão no volume para promover"
+          fi
+          if sh scripts/validate-feed.sh "https://update.api-castilho.com.br" "$feed_channel" "$VERSION" suite-device-app; then
+            echo "ok  público castilho conferido"
+          else
+            echo "aviso  validate-feed castilho falhou — volume já ok"
+          fi
+          if sh scripts/validate-feed.sh "https://app-suite-update.dualbase.com.br" "$feed_channel" "$VERSION" suite-device-app; then
+            echo "ok  público dualbase conferido"
+          else
+            echo "aviso  dualbase ainda sem esta versão — aponte o DNS/Traefik de app-suite-update para esta VPS"
+          fi
+          if [ "$MODE" = "stage" ]; then
+            echo "ok  staging Windows pronto; no painel use Promover → ${CHANNEL} quando validar"
+          fi

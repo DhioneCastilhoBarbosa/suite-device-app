@@ -4,7 +4,6 @@ import { autoUpdater } from 'electron-updater'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import appIcon from '../../resources/icon.png?asset'
-import squirrelStartup from 'electron-squirrel-startup'
 import { spawn, execFile } from 'child_process'
 import '../db/db'
 import { setupMQTTHandlers } from './mqttHandler'
@@ -13,6 +12,7 @@ import {
   registerPluvidbFirmwareHandlers,
   cleanupPluvidbFirmwareOnQuit
 } from './pluvidbFirmwareHandlers'
+import { UpdateTelemetry } from './updater/updateTelemetry'
 import express from 'express'
 
 import {
@@ -27,10 +27,9 @@ import {
 
 const fs = require('fs')
 
-/** Conteúdo mínimo se o YAML não vier no pacote (Forge antigo / cópia aninhada). */
-const DEFAULT_APP_UPDATE_YML = `provider: github
-owner: DhioneCastilhoBarbosa
-repo: suite-device-app
+/** Fallback generic se o YAML não vier no pacote (builds antigos / cópia aninhada). */
+const DEFAULT_APP_UPDATE_YML = `provider: generic
+url: https://app-suite-update.dualbase.com.br/suite-device-app/stable
 updaterCacheDirName: suite-device-app-updater
 `
 
@@ -58,16 +57,6 @@ function ensureAppUpdateYml(): void {
   }
 }
 
-if (squirrelStartup) {
-  app.quit()
-}
-
-/*const { updateElectronApp } = require('update-electron-app')
-updateElectronApp({
-  updateInterval: '5 minutes',
-  notifyUser: true
-})*/
-
 let mainWindow: BrowserWindow | null
 let localHttpServer: Server | null = null
 
@@ -77,6 +66,7 @@ let pendingUpdateVersion: string | null = null
 let downloadProgressWindow: BrowserWindow | null = null
 let autoUpdateCheckDone = false
 const LOCAL_HTTP_PORT = 3000
+const updateTelemetry = new UpdateTelemetry()
 
 autoUpdater.autoDownload = false
 autoUpdater.autoInstallOnAppQuit = false
@@ -105,6 +95,10 @@ function shutdownAppForUpdate(): void {
 }
 
 function runQuitAndInstall(): void {
+  if (pendingUpdateVersion) {
+    updateTelemetry.recordPendingInstall(pendingUpdateVersion)
+  }
+  updateTelemetry.setPhase('install')
   shutdownAppForUpdate()
   autoUpdater.quitAndInstall(true, true)
 }
@@ -306,6 +300,7 @@ function createWindow(): void {
   mainWindow.setTitle('Suite Device')
 }
 
+/** Legado Squirrel (Forge). NSIS não usa estes args; mantido para installs antigos. */
 function handleSquirrelEvent(): boolean {
   if (process.argv.length === 1) return false
 
@@ -363,6 +358,10 @@ if (!handleSquirrelEvent()) {
 
   if (gotSingleInstanceLock) app.on('ready', () => {
     ensureAppUpdateYml()
+    if (app.isPackaged) {
+      updateTelemetry.resolveFeedUrl(process.resourcesPath)
+      void updateTelemetry.confirmPendingInstall()
+    }
     createWindow()
 
     registerPluvidbFirmwareHandlers()
@@ -525,6 +524,7 @@ if (!handleSquirrelEvent()) {
   autoUpdater.on('update-available', async (info) => {
     pendingManualUpdateFeedback = false
     pendingUpdateVersion = info.version
+    updateTelemetry.markAvailable(info.version)
     const { message, detail } = getUpdateAvailableDialogText(info.version)
     const { response } = await showAppMessageBox({
       type: 'info',
@@ -537,10 +537,12 @@ if (!handleSquirrelEvent()) {
     })
     if (response !== 0) return
     showDownloadProgressWindow()
+    updateTelemetry.reportDownloadRequested(info.version)
     try {
       await autoUpdater.downloadUpdate()
     } catch (e) {
       console.error('Falha ao baixar atualização:', e)
+      updateTelemetry.reportFailure('download')
       closeDownloadProgressWindow()
       await showAppMessageBox({
         type: 'error',
@@ -569,6 +571,8 @@ if (!handleSquirrelEvent()) {
   autoUpdater.on('update-downloaded', (info) => {
     closeDownloadProgressWindow()
     pendingUpdateVersion = info.version
+    updateTelemetry.markDownloaded(info.version)
+    updateTelemetry.reportDownloadCompleted(info.version)
     void showAppMessageBox({
       type: 'info',
       buttons: ['Reiniciar e instalar', 'Mais tarde'],
@@ -587,11 +591,12 @@ if (!handleSquirrelEvent()) {
   })
 
   autoUpdater.on('checking-for-update', () => {
-    // Opcional: telemetria ou estado de UI
+    updateTelemetry.reportCheck()
   })
 
   autoUpdater.on('error', (err) => {
     closeDownloadProgressWindow()
+    updateTelemetry.reportFailure()
     if (pendingManualUpdateFeedback) {
       pendingManualUpdateFeedback = false
       void showAppMessageBox({
