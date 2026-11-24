@@ -50,11 +50,15 @@ mac:
     - dmg
   category: public.app-category.utilities
   icon: icon.png
-  # Ad-hoc: electron-updater no Mac exige assinatura válida.
+  # Ad-hoc: electron-updater/ShipIt exige assinatura válida.
+  # No CI, identity '-' pode não assinar (keychain vazio) — afterPack faz codesign -.
   identity: '-'
   artifactName: ${productName}-${version}-${arch}.${ext}
   hardenedRuntime: false
   gatekeeperAssess: false
+
+afterPack: scripts/after-pack-mac.cjs
+
 
 linux:
   target:

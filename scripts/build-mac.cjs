@@ -6,8 +6,8 @@ const { validateFeedUrl } = require('./validate-feed-url.cjs')
 
 const feedUrl = validateFeedUrl(process.env.UPDATE_SERVER_URL || feed.url)
 process.env.UPDATE_SERVER_URL = feedUrl
-// identity: '-' no electron-builder.yml (ad-hoc). Não desligar descoberta com
-// CSC_IDENTITY_AUTO_DISCOVERY=false — isso impedia a assinatura e quebrava o ShipIt.
+// identity: '-' + afterPack (scripts/after-pack-mac.cjs) para ad-hoc no CI.
+// Não forçar CSC_IDENTITY_AUTO_DISCOVERY=false — atrapalha assinatura local.
 process.env.ELECTRON_BUILDER_CACHE = path.join(__dirname, '..', '.cache', 'electron-builder')
 console.log(`Gerando build Mac (ad-hoc) com feed ${feedUrl}`)
 
