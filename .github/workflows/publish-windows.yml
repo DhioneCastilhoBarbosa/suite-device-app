@@ -46,7 +46,9 @@ jobs:
           cache: npm
 
       - name: Instalar e typecheck
+        shell: bash
         run: |
+          set -euo pipefail
           npm ci
           npm run typecheck
 
